@@ -27,7 +27,7 @@ const partners = [
 
 const Partners = () => {
   return (
-    <section id="socios" style={{ padding: '140px 24px', backgroundColor: '#fff', position: 'relative' }}>
+    <section id="socios" style={{ padding: 'var(--section-pad)', backgroundColor: '#fff', position: 'relative' }}>
       <div className="container" style={{ maxWidth: 1100 }}>
         {/* Header Section */}
         <div style={{ marginBottom: 80 }}>
@@ -62,11 +62,7 @@ const Partners = () => {
         </div>
 
         {/* Partners Grid */}
-        <div style={{ 
-          display: 'grid', 
-          gridTemplateColumns: 'repeat(auto-fit, minmax(400px, 1fr))', 
-          gap: 60,
-        }}>
+        <div className="partners-grid">
           {partners.map((partner, index) => (
             <motion.div
               key={index}
@@ -77,7 +73,7 @@ const Partners = () => {
               style={{ position: 'relative' }}
             >
               {/* Image Container with Editorial Border */}
-              <div style={{
+              <div className="partner-image-container" style={{
                 position: 'relative',
                 height: 520,
                 backgroundColor: 'var(--bg-secondary)',

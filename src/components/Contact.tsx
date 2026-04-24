@@ -21,7 +21,7 @@ const Contact = () => {
       display: 'flex',
       alignItems: 'center',
       justifyContent: 'center',
-      padding: '60px 20px',
+      padding: 'var(--section-pad)',
       overflow: 'hidden'
     }}>
       

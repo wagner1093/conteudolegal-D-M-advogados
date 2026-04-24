@@ -51,7 +51,7 @@ const PracticeAreas = () => {
   const [hovered, setHovered] = useState<number | null>(null);
 
   return (
-    <section id="atuacao" style={{ padding: '120px 24px', backgroundColor: 'var(--primary-deep)' }}>
+    <section id="atuacao" style={{ padding: 'var(--section-pad)', backgroundColor: 'var(--primary-deep)' }}>
       <div className="container">
 
         {/* Header row */}

@@ -208,6 +208,15 @@ section { padding: var(--section-pad); }
     flex-direction: column !important;
     gap: 40px !important;
   }
+
+  .partners-grid {
+    display: flex !important;
+    flex-direction: column !important;
+    gap: 40px !important;
+  }
+  .partner-image-container {
+    height: 380px !important; /* Adjusted for mobile */
+  }
 }
 
 @media (min-width: 769px) {
@@ -243,6 +252,12 @@ section { padding: var(--section-pad); }
   .footer-grid {
     display: grid !important;
     grid-template-columns: 2fr 1fr 1fr 1fr !important;
+  }
+  
+  .partners-grid {
+    display: grid !important;
+    grid-template-columns: 1fr 1fr !important;
+    gap: 60px !important;
   }
   
   .mobile-only {
