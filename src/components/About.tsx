@@ -301,9 +301,9 @@ const About = () => {
                     {item.title}
                   </h4>
                   <p style={{
-                    fontSize: '1.05rem',
+                    fontSize: '1rem',
                     color: 'var(--text-light)',
-                    lineHeight: 1.7,
+                    lineHeight: 1.8,
                     margin: 0,
                   }}>
                     {item.desc}
