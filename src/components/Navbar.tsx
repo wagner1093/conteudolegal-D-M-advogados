@@ -81,7 +81,7 @@ const Navbar = () => {
               style={{
                 color: active === link.href ? 'var(--accent)' : 'rgba(255,255,255,0.65)',
                 textDecoration: 'none',
-                fontSize: '0.83rem',
+                fontSize: '0.95rem',
                 fontWeight: 500,
                 letterSpacing: '0.3px',
                 transition: 'color 0.18s ease',
@@ -105,7 +105,7 @@ const Navbar = () => {
             border: '1px solid rgba(255,255,255,0.25)',
             color: '#fff',
             textDecoration: 'none',
-            fontSize: '0.83rem',
+            fontSize: '0.92rem',
             fontWeight: 500,
             transition: 'border-color 0.2s ease, background-color 0.2s ease',
           }}
