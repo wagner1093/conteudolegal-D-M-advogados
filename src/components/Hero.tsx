@@ -197,9 +197,9 @@ const Hero = () => {
         <div style={{
           position: 'absolute',
           inset: 0,
-          backgroundImage: 'url(/images/hero-bg.jpg)',
+          backgroundImage: 'url(/images/hero-main.jpg)',
           backgroundSize: 'cover',
-          backgroundPosition: 'center top',
+          backgroundPosition: 'center',
         }} />
         <div style={{
           position: 'absolute',
