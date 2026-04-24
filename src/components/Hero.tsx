@@ -207,6 +207,13 @@ const Hero = () => {
           height: '40%',
           background: 'linear-gradient(to top, rgba(8,25,41,0.6) 0%, transparent 100%)',
         }} />
+        <div style={{
+          position: 'absolute',
+          top: 0, left: 0, right: 0,
+          height: '140px',
+          background: 'linear-gradient(to bottom, rgba(8,25,41,0.6) 0%, transparent 100%)',
+          pointerEvents: 'none',
+        }} />
 
         {/* Trust badge */}
         <motion.div

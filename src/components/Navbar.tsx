@@ -52,10 +52,11 @@ const Navbar = () => {
           display: 'flex',
           alignItems: 'center',
           justifyContent: 'space-between',
-          backgroundColor: scrolled ? 'rgba(8,25,41,0.97)' : 'transparent',
+          backgroundColor: scrolled ? 'rgba(8,25,41,0.98)' : 'transparent',
+          backgroundImage: scrolled ? 'none' : 'linear-gradient(to bottom, rgba(8,25,41,0.7) 0%, rgba(8,25,41,0) 100%)',
           backdropFilter: scrolled ? 'blur(20px)' : 'none',
-          borderBottom: scrolled ? '1px solid rgba(255,255,255,0.06)' : '1px solid transparent',
-          transition: 'background-color 0.35s ease, border-color 0.35s ease',
+          borderBottom: scrolled ? '1px solid rgba(255,255,255,0.06)' : 'none',
+          transition: 'background-color 0.4s ease, background-image 0.4s ease',
           willChange: 'transform',
         }}
       >
@@ -79,15 +80,15 @@ const Navbar = () => {
               key={link.href}
               href={link.href}
               style={{
-                color: active === link.href ? 'var(--accent)' : 'rgba(255,255,255,0.65)',
+                color: active === link.href ? 'var(--accent)' : (scrolled ? 'rgba(255,255,255,0.7)' : 'rgba(255,255,255,0.9)'),
                 textDecoration: 'none',
                 fontSize: '0.95rem',
-                fontWeight: 500,
+                fontWeight: 600,
                 letterSpacing: '0.3px',
                 transition: 'color 0.18s ease',
               }}
               onMouseOver={e => (e.currentTarget.style.color = '#fff')}
-              onMouseOut={e => (e.currentTarget.style.color = active === link.href ? 'var(--accent)' : 'rgba(255,255,255,0.65)')}
+              onMouseOut={e => (e.currentTarget.style.color = active === link.href ? 'var(--accent)' : (scrolled ? 'rgba(255,255,255,0.7)' : 'rgba(255,255,255,0.9)'))}
             >
               {link.label}
             </a>
