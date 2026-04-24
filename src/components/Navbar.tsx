@@ -65,7 +65,7 @@ const Navbar = () => {
             src="/images/logo.png" 
             alt="Dohmen & Matta Advogados" 
             style={{ 
-              height: '40px', 
+              height: '50px', 
               width: 'auto', 
               objectFit: 'contain'
             }} 
