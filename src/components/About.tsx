@@ -10,10 +10,7 @@ const About = () => {
   return (
     <section id="sobre" style={{ padding: '120px 24px', backgroundColor: '#fff' }}>
       <div className="container">
-        <div style={{
-          display: 'grid',
-          gridTemplateColumns: '1fr 1fr',
-          gap: '80px 100px',
+        <div className="about-grid" style={{
           alignItems: 'center',
         }}>
           {/* Left: Image block */}

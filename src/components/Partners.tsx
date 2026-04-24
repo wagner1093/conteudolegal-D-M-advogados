@@ -38,7 +38,7 @@ const Partners = () => {
             transition={spring}
           >
             <span className="eyebrow" style={{ marginBottom: 16 }}>Liderança</span>
-            <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: 40, alignItems: 'end' }}>
+            <div className="partners-header-grid" style={{ gap: 40, alignItems: 'end' }}>
               <h2 style={{ 
                 fontSize: 'clamp(2.4rem, 4vw, 3.2rem)', 
                 color: 'var(--primary)', 

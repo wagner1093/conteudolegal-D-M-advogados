@@ -35,7 +35,6 @@ const Contact = () => {
         width: '100%',
         maxWidth: '1100px',
         display: 'grid',
-        gridTemplateColumns: '1.2fr 0.8fr',
         borderRadius: '0', // Sharp corners for editorial look
         overflow: 'hidden',
         boxShadow: '0 40px 100px -20px rgba(0,0,0,0.5)',
@@ -86,7 +85,7 @@ const Contact = () => {
 
           <form style={{ display: 'flex', flexDirection: 'column', gap: '20px' }}>
             {/* Input Row 1 */}
-            <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: '20px' }} className="input-grid">
+            <div className="input-grid" style={{ display: 'grid', gap: '20px' }}>
               <div style={{ position: 'relative' }}>
                 <label style={{ display: 'block', fontSize: '0.85rem', fontWeight: 600, color: focusedInput === 'nome' ? 'var(--accent)' : '#4b5563', marginBottom: '8px', transition: 'color 0.3s' }}>Nome Completo</label>
                 <input 

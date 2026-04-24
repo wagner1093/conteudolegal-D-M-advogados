@@ -139,7 +139,108 @@ section { padding: var(--section-pad); }
 
 /* Responsive */
 @media (max-width: 768px) {
-  :root { --section-pad: 80px 20px; }
-  h1 { font-size: 2.4rem !important; }
-  h2 { font-size: 2rem !important; }
+  :root { --section-pad: 60px 20px; }
+  h1 { font-size: 2.2rem !important; }
+  h2 { font-size: 1.8rem !important; }
+
+  .desktop-nav {
+    display: none !important;
+  }
+  .mobile-nav-toggle {
+    display: block !important;
+  }
+
+  .hero-section {
+    display: flex !important;
+    flex-direction: column !important;
+    min-height: auto !important;
+  }
+  .hero-left-panel {
+    padding: 120px 24px 60px 24px !important;
+  }
+  .hero-right-panel {
+    height: 300px;
+  }
+  .hero-stats {
+    flex-direction: column;
+    gap: 24px !important;
+    margin-top: 40px !important;
+    padding-top: 24px !important;
+  }
+
+  .about-grid, .partners-header-grid {
+    display: flex !important;
+    flex-direction: column !important;
+    gap: 40px !important;
+    align-items: flex-start !important;
+  }
+  
+  .practice-expanded {
+    display: flex !important;
+    flex-direction: column !important;
+    padding: 0 16px 32px 16px !important; /* Reduces left padding on mobile */
+    gap: 24px !important;
+  }
+  .practice-item-header {
+    gap: 16px !important;
+  }
+
+  .contact-wrapper {
+    display: flex !important;
+    flex-direction: column !important;
+  }
+  .form-panel, .info-panel {
+    padding: 40px 24px !important;
+  }
+  .input-grid {
+    display: flex !important;
+    flex-direction: column !important;
+    gap: 20px !important;
+  }
+
+  .footer-grid {
+    display: flex !important;
+    flex-direction: column !important;
+    gap: 40px !important;
+  }
+}
+
+@media (min-width: 769px) {
+  .hero-section {
+    display: grid !important;
+    grid-template-columns: 55% 45% !important;
+  }
+  .hero-left-panel {
+    padding: 160px 64px 80px 64px !important;
+  }
+  .about-grid {
+    display: grid !important;
+    grid-template-columns: 1fr 1fr !important;
+    gap: 80px 100px !important;
+  }
+  .partners-header-grid {
+    display: grid !important;
+    grid-template-columns: 1fr 1fr !important;
+  }
+  .practice-expanded {
+    display: grid !important;
+    grid-template-columns: 1fr auto !important;
+    padding: 0 16px 40px 76px !important;
+  }
+  .contact-wrapper {
+    display: grid !important;
+    grid-template-columns: 1.2fr 0.8fr !important;
+  }
+  .input-grid {
+    display: grid !important;
+    grid-template-columns: 1fr 1fr !important;
+  }
+  .footer-grid {
+    display: grid !important;
+    grid-template-columns: 2fr 1fr 1fr 1fr !important;
+  }
+  
+  .mobile-only {
+    display: none !important;
+  }
 }

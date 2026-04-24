@@ -108,7 +108,7 @@ const Footer = () => {
       {/* Footer */}
       <footer style={{ backgroundColor: 'var(--primary-deep)', borderTop: '1px solid rgba(255,255,255,0.06)', padding: '60px 24px 40px' }}>
         <div className="container">
-          <div style={{ display: 'grid', gridTemplateColumns: '2fr 1fr 1fr 1fr', gap: 60, marginBottom: 60 }}>
+          <div className="footer-grid" style={{ gap: 60, marginBottom: 60 }}>
             {/* Brand column */}
             <div>
               <div style={{ marginBottom: 24 }}>

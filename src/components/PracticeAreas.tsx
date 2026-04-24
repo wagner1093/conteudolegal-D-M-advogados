@@ -107,7 +107,7 @@ const PracticeAreas = () => {
                   marginLeft: '-4px', // compensa a borda para não empurrar o layout
                 }}
               >
-                <div style={{ display: 'flex', alignItems: 'center', gap: 32 }}>
+                <div className="practice-item-header" style={{ display: 'flex', alignItems: 'center', gap: 32 }}>
                   <span style={{
                     fontSize: '0.85rem',
                     fontWeight: 600,
@@ -164,11 +164,7 @@ const PracticeAreas = () => {
                     variants={accordionVariants}
                     style={{ overflow: 'hidden', willChange: 'height, opacity' }}
                   >
-                    <div style={{
-                      display: 'grid',
-                      gridTemplateColumns: '1fr auto',
-                      gap: 40,
-                      padding: '0 16px 40px 76px', // Alinhado com o título
+                    <div className="practice-expanded" style={{
                       alignItems: 'start',
                     }}>
                       <div>

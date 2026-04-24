@@ -16,22 +16,21 @@ const Hero = () => {
   return (
     <section
       id="hero"
+      className="hero-section"
       style={{
         padding: 0,
         minHeight: '100vh',
-        display: 'grid',
-        gridTemplateColumns: '55% 45%',
       }}
     >
       {/* LEFT PANEL */}
       <div
+        className="hero-left-panel"
         style={{
           backgroundColor: 'var(--primary-deep)',
           position: 'relative',
           display: 'flex',
           flexDirection: 'column',
           justifyContent: 'flex-end',
-          padding: '160px 64px 80px 64px',
           overflow: 'hidden',
         }}
       >
@@ -150,6 +149,7 @@ const Hero = () => {
 
         {/* Stats */}
         <motion.div
+          className="hero-stats"
           initial={{ opacity: 0 }}
           animate={{ opacity: 1 }}
           transition={{ duration: 0.6, delay: 0.5 }}
@@ -193,7 +193,7 @@ const Hero = () => {
       </div>
 
       {/* RIGHT PANEL — Photo */}
-      <div style={{ position: 'relative', overflow: 'hidden', backgroundColor: '#c8d0d8' }}>
+      <div className="hero-right-panel" style={{ position: 'relative', overflow: 'hidden', backgroundColor: '#c8d0d8' }}>
         <div style={{
           position: 'absolute',
           inset: 0,
