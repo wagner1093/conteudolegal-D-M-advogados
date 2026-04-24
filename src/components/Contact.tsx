@@ -214,7 +214,7 @@ const Contact = () => {
 
         {/* RIGHT COLUMN: DIRECT CONTACTS (DARK) */}
         <div style={{
-          backgroundColor: '#0f172a', // Very dark slate
+          backgroundColor: 'var(--primary-deep)', // Same tone as the menu
           padding: '56px 48px',
           display: 'flex',
           flexDirection: 'column',
