@@ -67,8 +67,7 @@ const Navbar = () => {
             style={{ 
               height: '40px', 
               width: 'auto', 
-              objectFit: 'contain',
-              filter: 'brightness(0) invert(1)' // Make logo white if it's dark, or remove if it should be original
+              objectFit: 'contain'
             }} 
           />
         </a>

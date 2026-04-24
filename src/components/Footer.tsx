@@ -96,8 +96,7 @@ const Footer = () => {
                   style={{ 
                     height: '45px', 
                     width: 'auto', 
-                    objectFit: 'contain',
-                    filter: 'brightness(0) invert(1)'
+                    objectFit: 'contain'
                   }} 
                 />
               </div>
