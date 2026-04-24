@@ -211,7 +211,7 @@ const Hero = () => {
           position: 'absolute',
           top: 0, left: 0, right: 0,
           height: '140px',
-          background: 'linear-gradient(to bottom, rgba(8,25,41,0.6) 0%, transparent 100%)',
+          background: 'linear-gradient(to bottom, rgba(8,25,41,0.8) 0%, transparent 100%)',
           pointerEvents: 'none',
         }} />
 
