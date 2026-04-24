@@ -23,10 +23,7 @@ const Team = () => {
     <section id="equipe" style={{ padding: '100px 24px', backgroundColor: 'var(--bg-secondary)', borderTop: '1px solid var(--border)' }}>
       <div className="container" style={{ maxWidth: 1000 }}>
         {/* Section Header */}
-        <div style={{
-          display: 'grid',
-          gridTemplateColumns: '1.2fr 1fr',
-          gap: 60,
+        <div className="team-header-grid" style={{
           marginBottom: 80,
           alignItems: 'end',
         }}>
@@ -64,73 +61,42 @@ const Team = () => {
           </motion.p>
         </div>
 
-        {/* Members List - High-End Editorial Style */}
-        <div style={{ borderTop: '1px solid var(--border)' }}>
+        {/* Members Grid — Cards with 3D Flip Animation */}
+        <div className="team-grid">
           {members.map((member, index) => (
             <motion.div
               key={index}
-              initial={{ opacity: 0, y: 10 }}
+              initial={{ opacity: 0, y: 30 }}
               whileInView={{ opacity: 1, y: 0 }}
               viewport={{ once: true }}
-              transition={{ duration: 0.4, delay: index * 0.05 }}
-              style={{ position: 'relative' }}
+              transition={{ duration: 0.5, delay: index * 0.05 }}
+              style={{ width: '100%', display: 'flex', justifyContent: 'center' }}
             >
-              <motion.div
-                whileHover={{ backgroundColor: 'rgba(15,44,65,0.02)', x: 10 }}
-                transition={{ duration: 0.2 }}
-                style={{
-                  display: 'flex',
-                  justifyContent: 'space-between',
-                  alignItems: 'center',
-                  padding: '24px 12px',
-                  borderBottom: '1px solid var(--border)',
-                  cursor: 'default',
-                }}
-              >
-                <div style={{ display: 'flex', alignItems: 'center', gap: 32 }}>
-                  <span style={{
-                    fontSize: '0.75rem',
-                    fontWeight: 600,
-                    color: 'var(--accent)',
-                    minWidth: 24,
-                    opacity: 0.6,
-                    fontFamily: 'var(--font-body)',
-                  }}>
-                    {String(index + 1).padStart(2, '0')}
-                  </span>
-                  <span style={{
-                    fontSize: '1.15rem',
-                    fontWeight: 500,
-                    color: 'var(--primary)',
-                    fontFamily: 'var(--font-headings)',
-                    letterSpacing: '-0.2px'
-                  }}>
-                    {member.name}
+              <div className="team-card">
+                {/* Gray Placeholder Image */}
+                <div 
+                  className="team-card-image" 
+                  style={{ 
+                    backgroundColor: '#d1d5db', 
+                    display: 'flex', 
+                    alignItems: 'center', 
+                    justifyContent: 'center',
+                    backgroundImage: 'linear-gradient(135deg, #d1d5db 0%, #9ca3af 100%)'
+                  }} 
+                >
+                  <span style={{ color: 'rgba(255,255,255,0.5)', fontSize: '0.8rem', fontWeight: 600, textTransform: 'uppercase', letterSpacing: '1px' }}>
+                    Foto Indisponível
                   </span>
                 </div>
-                
-                <div style={{ display: 'flex', alignItems: 'center', gap: 20 }}>
-                  <span style={{
-                    fontSize: '0.8rem',
-                    color: 'var(--text-muted)',
-                    fontWeight: 500,
-                    letterSpacing: '0.5px',
-                    textTransform: 'uppercase',
-                  }}>
-                    {member.role}
-                  </span>
-                  <motion.div 
-                    initial={{ scaleX: 0 }}
-                    whileHover={{ scaleX: 1 }}
-                    style={{ 
-                      width: 40, 
-                      height: 1, 
-                      backgroundColor: 'var(--accent)', 
-                      transformOrigin: 'left' 
-                    }}
-                  />
+
+                <div className="team-card__content">
+                  <h3 className="team-card__title">{member.name}</h3>
+                  <p className="team-card__role">{member.role}</p>
+                  <p className="team-card__description">
+                    Profissional dedicado à excelência jurídica e ao atendimento estratégico dos nossos clientes.
+                  </p>
                 </div>
-              </motion.div>
+              </div>
             </motion.div>
           ))}
         </div>
