@@ -5,9 +5,9 @@ import { motion } from 'framer-motion';
 import { MapPin, Mail, ArrowRight, MessageSquare, Phone } from 'lucide-react';
 
 const whatsAppContacts = [
-  { name: 'Atendimento Geral', role: 'Recepção', number: '(11) 98779-5023', raw: '11987795023' },
-  { name: 'Lucas Dohmen', role: 'Sócio Diretor', number: '(11) 94862-2339', raw: '11948622339' },
-  { name: 'Alexandre Matta', role: 'Sócio Diretor', number: '(11) 98338-0371', raw: '11983380371' },
+  { name: 'Atendimento Especializado', role: 'Direito da Saúde', number: '(11) 98779-5023', raw: '11987795023' },
+  { name: 'Lucas Dohmen', role: 'Sócio Fundador', number: '(11) 94862-2339', raw: '11948622339' },
+  { name: 'Alexandre Matta', role: 'Diretor Operacional', number: '(11) 98338-0371', raw: '11983380371' },
 ];
 
 const Contact = () => {
@@ -152,10 +152,10 @@ const Contact = () => {
                   }}
                 >
                   <option value="" disabled selected hidden>Selecione uma área...</option>
-                  <option>Direito de Família e Sucessões</option>
-                  <option>Direito do Consumidor</option>
-                  <option>Direito Empresarial e Cível</option>
                   <option>Direito da Saúde</option>
+                  <option>Erro Médico</option>
+                  <option>Cumprimento de Decisões</option>
+                  <option>Visão Estratégica (Clínicas/Profissionais)</option>
                 </select>
                 <div style={{ position: 'absolute', right: '16px', top: '50%', transform: 'translateY(-50%)', pointerEvents: 'none' }}>
                   <svg width="12" height="8" viewBox="0 0 12 8" fill="none" xmlns="http://www.w3.org/2000/svg">
@@ -295,7 +295,7 @@ const Contact = () => {
                 <div>
                   <span style={{ display: 'block', color: '#fff', fontWeight: 600, fontSize: '0.9rem', marginBottom: '2px' }}>E-mail Institucional</span>
                   <span style={{ display: 'block', color: '#94a3b8', fontSize: '0.85rem' }}>
-                    contato@dmaadvs.com.br
+                    alexandre@dmaadvs.com.br
                   </span>
                 </div>
               </div>

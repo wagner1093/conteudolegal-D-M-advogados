@@ -7,33 +7,27 @@ import { ArrowUpRight, ArrowRight } from 'lucide-react';
 const areas = [
   {
     num: '01',
-    title: 'Direito de Família e Sucessões',
-    desc: 'Assessoria completa em divórcio, guarda, inventários e planejamento sucessório com agilidade e sensibilidade.',
-    items: ['Divórcio e Separação', 'Guarda e Alimentos', 'Inventário e Herança'],
+    title: 'Direito da Saúde',
+    desc: 'Atuação voltada à defesa do paciente diante de negativas de cobertura, tratamentos de alto custo, reajustes abusivos e cancelamentos indevidos.',
+    items: ['Negativas de Plano', 'Tratamentos de Alto Custo', 'Reajustes Abusivos'],
   },
   {
     num: '02',
-    title: 'Direito do Consumidor',
-    desc: 'Defesa dos seus direitos contra práticas abusivas, cobranças indevidas e vícios de produtos e serviços.',
-    items: ['Cobranças Indevidas', 'Recall e Vícios', 'Indenizações'],
+    title: 'Erro Médico',
+    desc: 'Análise técnica de falhas na prestação de serviços de saúde, com apuração de responsabilidade de profissionais e instituições.',
+    items: ['Falha em Atendimento', 'Responsabilidade Civil', 'Suporte Especializado'],
   },
   {
     num: '03',
-    title: 'Direito Cível',
-    desc: 'Representação em disputas contratuais, responsabilidade civil e execuções judiciais com excelência técnica.',
-    items: ['Contratos', 'Responsabilidade Civil', 'Execuções'],
+    title: 'Cumprimento de Decisões',
+    desc: 'Atuação em casos de descumprimento de decisões judiciais, garantindo efetividade ao que já foi reconhecido pelo judiciário.',
+    items: ['Efetividade Judicial', 'Demandas contra Planos', 'Garantia de Direitos'],
   },
   {
     num: '04',
-    title: 'Direito Empresarial e Trabalhista',
-    desc: 'Proteção jurídica completa para empresas: contratos, relações trabalhistas e conformidade regulatória.',
-    items: ['Contratos Empresariais', 'Relações Trabalhistas', 'Compliance'],
-  },
-  {
-    num: '05',
-    title: 'Direito da Saúde',
-    desc: 'Especialistas em planos de saúde, erro médico e direitos de pacientes para garantir o acesso à saúde.',
-    items: ['Planos de Saúde', 'Erro Médico', 'Direitos do Paciente'],
+    title: 'Visão Estratégica para Profissionais e Clínicas',
+    desc: 'Atuação consultiva e preventiva com foco em contratos, compliance e estruturação de decisões com base em indicadores.',
+    items: ['Gestão de Riscos', 'Compliance em Saúde', 'Análise de Contratos'],
   },
 ];
 

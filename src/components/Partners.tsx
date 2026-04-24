@@ -8,20 +8,20 @@ const spring = { type: 'spring' as const, stiffness: 180, damping: 22 };
 
 const partners = [
   {
-    name: 'Lucas Dohmen',
+    name: 'Dr. Lucas Dohmen',
     role: 'Sócio Fundador',
-    spec: 'Direito Empresarial',
+    spec: 'Direito da Saúde',
     oab: 'OAB/SP 000.000',
-    bio: 'Especialista em direito empresarial e cível com mais de 10 anos de atuação estratégica em casos complexos.',
+    bio: 'Especialista em Direito da Saúde com ampla experiência na defesa de pacientes em demandas de alta complexidade. Atua na linha de frente estratégica do escritório, garantindo soluções jurídicas ágeis e eficazes para casos críticos.',
     whatsapp: '11948622339',
     image: '/images/lucas-dohmen.png'
   },
   {
-    name: 'Alexandre Matta',
-    role: 'Sócio Fundador',
+    name: 'Dr. Alexandre Matta',
+    role: 'Sócio - Diretor Operacional e Financeiro',
     spec: 'Direito da Saúde',
     oab: 'OAB/SP 000.001',
-    bio: 'Referência em direito da saúde, planos de saúde e erro médico, com foco em resultados de alto impacto.',
+    bio: 'Responsável pela estrutura operacional e financeira, assegura que cada processo seja gerido com máxima eficiência e clareza. Especialista em garantir que a entrega jurídica esteja alinhada aos indicadores de sucesso do escritório.',
     whatsapp: '11983380371',
     image: '/images/alexandre-matta.png'
   },

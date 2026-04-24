@@ -8,14 +8,10 @@ const spring = { type: 'spring' as const, stiffness: 180, damping: 25 };
 const members = [
   { name: 'Yarla V. G. Ferreira', role: 'Advogada' },
   { name: 'Bianca Fortes S.', role: 'Advogada' },
-  { name: 'Júlia Simões L. Franco', role: 'Advogada' },
-  { name: 'Emily Bom de Oliveira', role: 'Advogada' },
-  { name: 'Aline Franciele Alexandre', role: 'Advogada' },
-  { name: 'Bruna F. F. Oliveira', role: 'Advogada' },
-  { name: 'Jessica Paloma de Paiva', role: 'Controller' },
-  { name: 'Giovanna L. M. da Silva', role: 'Estagiária' },
   { name: 'Rafael Jelezoglo', role: 'Advogado' },
   { name: 'Luiz Gustavo Ricca', role: 'Advogado' },
+  { name: 'Jessica Paloma de Paiva', role: 'Controller' },
+  { name: 'Giovanna L. M. da Silva', role: 'Estagiária' },
 ];
 
 const Team = () => {

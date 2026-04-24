@@ -70,8 +70,8 @@ const Hero = () => {
             willChange: 'transform',
           }}
         >
-          Defendendo seus direitos com<br />
-          <span style={{ color: 'var(--accent)' }}>estratégia e precisão.</span>
+          Cuidar da saúde também é uma<br />
+          <span style={{ color: 'var(--accent)' }}>decisão jurídica.</span>
         </motion.h1>
 
         {/* Subtext */}
@@ -82,13 +82,13 @@ const Hero = () => {
           style={{
             color: 'rgba(255,255,255,0.5)',
             fontSize: '1rem',
-            maxWidth: 460,
+            maxWidth: 480,
             lineHeight: 1.75,
             marginBottom: 44,
             willChange: 'transform',
           }}
         >
-          Atendimento humanizado, transparente e estratégico nas áreas de Família, Consumidor, Cível, Empresarial e Saúde.
+          Atuação estratégica em Direito da Saúde, erro médico e relações de consumo, com foco na resolução de conflitos complexos e na proteção de pacientes e profissionais.
         </motion.p>
 
         {/* CTA */}
