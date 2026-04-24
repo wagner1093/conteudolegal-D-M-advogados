@@ -94,7 +94,7 @@ const Footer = () => {
                   src="/images/logo.png" 
                   alt="Dohmen & Matta Advogados" 
                   style={{ 
-                    height: '45px', 
+                    height: '65px', 
                     width: 'auto', 
                     objectFit: 'contain'
                   }} 
