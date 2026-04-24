@@ -14,6 +14,7 @@ const partners = [
     oab: 'OAB/SP 000.000',
     bio: 'Especialista em direito empresarial e cível com mais de 10 anos de atuação estratégica em casos complexos.',
     whatsapp: '11948622339',
+    image: '/images/lucas-dohmen.png'
   },
   {
     name: 'Alexandre Matta',
@@ -22,6 +23,7 @@ const partners = [
     oab: 'OAB/SP 000.001',
     bio: 'Referência em direito da saúde, planos de saúde e erro médico, com foco em resultados de alto impacto.',
     whatsapp: '11983380371',
+    image: '/images/alexandre-matta.png'
   },
 ];
 
@@ -88,7 +90,7 @@ const Partners = () => {
                   style={{
                     width: '100%',
                     height: '100%',
-                    backgroundImage: 'url(/images/partners.png)',
+                    backgroundImage: `url(${partner.image})`,
                     backgroundSize: 'cover',
                     backgroundPosition: 'center top',
                     filter: 'grayscale(100%) contrast(1.1)',
