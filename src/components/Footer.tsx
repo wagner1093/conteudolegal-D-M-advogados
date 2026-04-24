@@ -89,15 +89,17 @@ const Footer = () => {
           <div style={{ display: 'grid', gridTemplateColumns: '2fr 1fr 1fr 1fr', gap: 60, marginBottom: 60 }}>
             {/* Brand column */}
             <div>
-              <div style={{
-                fontFamily: 'var(--font-headings)',
-                fontSize: '2rem',
-                fontWeight: 600,
-                color: '#fff',
-                letterSpacing: '-1px',
-                marginBottom: 16,
-              }}>
-                DMA<span style={{ color: 'var(--accent)' }}>.</span>
+              <div style={{ marginBottom: 24 }}>
+                <img 
+                  src="/images/logo.png" 
+                  alt="Dohmen & Matta Advogados" 
+                  style={{ 
+                    height: '45px', 
+                    width: 'auto', 
+                    objectFit: 'contain',
+                    filter: 'brightness(0) invert(1)'
+                  }} 
+                />
               </div>
               <p style={{ color: 'rgba(255,255,255,0.4)', fontSize: '0.85rem', lineHeight: 1.7, marginBottom: 24, maxWidth: 280 }}>
                 Dohmen & Matta Advogados. Especialistas em soluções jurídicas modernas e eficazes em todo o Brasil.

@@ -60,16 +60,17 @@ const Navbar = () => {
         }}
       >
         {/* Logo */}
-        <a href="#" style={{ textDecoration: 'none' }}>
-          <span style={{
-            fontFamily: 'var(--font-headings)',
-            fontSize: '1.55rem',
-            fontWeight: 600,
-            color: '#fff',
-            letterSpacing: '-0.5px',
-          }}>
-            DMA<span style={{ color: 'var(--accent)' }}>.</span>
-          </span>
+        <a href="#" style={{ textDecoration: 'none', display: 'flex', alignItems: 'center' }}>
+          <img 
+            src="/images/logo.png" 
+            alt="Dohmen & Matta Advogados" 
+            style={{ 
+              height: '40px', 
+              width: 'auto', 
+              objectFit: 'contain',
+              filter: 'brightness(0) invert(1)' // Make logo white if it's dark, or remove if it should be original
+            }} 
+          />
         </a>
 
         {/* Desktop Nav */}
