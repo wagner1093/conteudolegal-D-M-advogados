@@ -54,20 +54,7 @@ const Contact = () => {
             viewport={{ once: true }}
             transition={{ duration: 0.6 }}
           >
-            <span style={{ 
-              display: 'inline-block', 
-              padding: '6px 14px', 
-              backgroundColor: 'rgba(102, 178, 142, 0.1)', 
-              color: 'var(--accent)', 
-              borderRadius: '100px',
-              fontSize: '0.8rem',
-              fontWeight: 600,
-              letterSpacing: '1px',
-              textTransform: 'uppercase',
-              marginBottom: '24px'
-            }}>
-              Avaliação Gratuita
-            </span>
+
             <h2 style={{ 
               fontSize: 'clamp(1.75rem, 2.5vw, 2.2rem)', 
               color: 'var(--primary-deep)', 

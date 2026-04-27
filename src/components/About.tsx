@@ -30,36 +30,13 @@ const About = () => {
               <div style={{
                 position: 'absolute',
                 inset: 0,
-                backgroundImage: 'url(/images/hero-bg.jpg)',
+                backgroundImage: 'url(/images/about-us.jpeg)',
                 backgroundSize: 'cover',
                 backgroundPosition: 'center',
               }} />
             </div>
 
-            {/* Floating stat card */}
-            <motion.div
-              initial={{ opacity: 0, y: 16 }}
-              whileInView={{ opacity: 1, y: 0 }}
-              viewport={{ once: true, amount: 0.2 }}
-              transition={{ ...fade, delay: 0.15 }}
-              style={{
-                position: 'absolute',
-                bottom: -30,
-                right: -30,
-                backgroundColor: 'var(--primary)',
-                color: '#fff',
-                padding: '32px',
-                width: 180,
-                willChange: 'transform',
-              }}
-            >
-              <div style={{ fontSize: '2.8rem', fontWeight: 600, lineHeight: 1, fontFamily: 'var(--font-headings)', color: 'var(--accent)' }}>
-                10+
-              </div>
-              <div style={{ fontSize: '0.8rem', marginTop: 8, color: 'rgba(255,255,255,0.6)', letterSpacing: '0.5px', textTransform: 'uppercase' }}>
-                Anos de<br />Experiência
-              </div>
-            </motion.div>
+
           </motion.div>
 
           {/* Right: Content */}
@@ -78,7 +55,7 @@ const About = () => {
               marginBottom: 24,
               lineHeight: 1.15,
             }}>
-              Atuação Técnica e Estratégica em Demandas Sensíveis.
+              Atuação técnica e estratégica em demandas sensíveis.
             </h2>
 
             <p style={{ fontSize: '1rem', color: 'var(--text-light)', lineHeight: 1.8, marginBottom: 20 }}>

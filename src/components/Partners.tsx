@@ -93,7 +93,7 @@ const Partners = () => {
                     backgroundImage: `url(${partner.image})`,
                     backgroundSize: 'cover',
                     backgroundPosition: 'center top',
-                    filter: 'grayscale(100%) contrast(1.1)',
+                    filter: 'none',
                   }}
                 />
                 

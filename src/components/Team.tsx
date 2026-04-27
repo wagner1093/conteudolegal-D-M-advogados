@@ -6,18 +6,22 @@ import { motion } from 'framer-motion';
 const spring = { type: 'spring' as const, stiffness: 180, damping: 25 };
 
 const members = [
-  { name: 'Yarla V. G. Ferreira', role: 'Advogada' },
-  { name: 'Bianca Fortes S.', role: 'Advogada' },
-  { name: 'Rafael Jelezoglo', role: 'Advogado' },
-  { name: 'Luiz Gustavo Ricca', role: 'Advogado' },
-  { name: 'Jessica Paloma de Paiva', role: 'Controller' },
-  { name: 'Giovanna L. M. da Silva', role: 'Estagiária' },
+  { name: 'Yarla V. G. Ferreira', role: 'Advogada', image: '/images/team/yarla.png' },
+  { name: 'Bianca Fortes S.', role: 'Advogada', image: '/images/team/bianca.png' },
+  { name: 'Júlia Simões L. Franco', role: 'Advogada', image: '/images/team/julia.png' },
+  { name: 'Emily Bom de Oliveira', role: 'Advogada', image: '/images/team/emily.png' },
+  { name: 'Aline Franciele Alexandre', role: 'Advogada', image: '/images/team/aline.png' },
+  { name: 'Bruna F. F. Oliveira', role: 'Advogada', image: '/images/team/bruna.png' },
+  { name: 'Jessica Paloma de Paiva', role: 'Controller', image: '/images/team/jessica.png' },
+  { name: 'Giovanna L. M. da Silva', role: 'Estagiária', image: '/images/team/giovanna.png' },
+  { name: 'Rafael Jelezoglo', role: 'Advogado', image: '/images/team/rafael.png' },
+  { name: 'Luiz Gustavo Ricca', role: 'Advogado', image: '/images/team/luiz.png' },
 ];
 
 const Team = () => {
   return (
     <section id="equipe" style={{ padding: '100px 24px', backgroundColor: 'var(--bg-secondary)', borderTop: '1px solid var(--border)' }}>
-      <div className="container" style={{ maxWidth: 1000 }}>
+      <div className="container" style={{ maxWidth: 1100 }}>
         {/* Section Header */}
         <div className="team-header-grid" style={{
           marginBottom: 80,
@@ -69,20 +73,22 @@ const Team = () => {
               style={{ width: '100%', display: 'flex', justifyContent: 'center' }}
             >
               <div className="team-card">
-                {/* Gray Placeholder Image */}
                 <div 
                   className="team-card-image" 
                   style={{ 
-                    backgroundColor: '#d1d5db', 
-                    display: 'flex', 
-                    alignItems: 'center', 
-                    justifyContent: 'center',
-                    backgroundImage: 'linear-gradient(135deg, #d1d5db 0%, #9ca3af 100%)'
+                    backgroundImage: member.image ? `url(${member.image})` : 'linear-gradient(135deg, #d1d5db 0%, #9ca3af 100%)',
+                    backgroundSize: 'cover',
+                    backgroundPosition: 'center',
+                    display: 'flex',
+                    alignItems: 'center',
+                    justifyContent: 'center'
                   }} 
                 >
-                  <span style={{ color: 'rgba(255,255,255,0.5)', fontSize: '0.8rem', fontWeight: 600, textTransform: 'uppercase', letterSpacing: '1px' }}>
-                    Foto Indisponível
-                  </span>
+                  {!member.image && (
+                    <span style={{ color: 'rgba(255,255,255,0.5)', fontSize: '0.8rem', fontWeight: 600, textTransform: 'uppercase', letterSpacing: '1px' }}>
+                      Foto Indisponível
+                    </span>
+                  )}
                 </div>
 
                 <div className="team-card__content">

@@ -6,11 +6,7 @@ import { ArrowRight } from 'lucide-react';
 
 const spring = { type: 'spring' as const, stiffness: 200, damping: 24 };
 
-const stats = [
-  { value: '500+', label: 'Clientes Atendidos' },
-  { value: '10+', label: 'Anos de Experiência' },
-  { value: '98%', label: 'Taxa de Sucesso' },
-];
+
 
 const Hero = () => {
   return (
@@ -30,7 +26,7 @@ const Hero = () => {
           position: 'relative',
           display: 'flex',
           flexDirection: 'column',
-          justifyContent: 'flex-end',
+          justifyContent: 'center',
           overflow: 'hidden',
         }}
       >
@@ -70,8 +66,7 @@ const Hero = () => {
             willChange: 'transform',
           }}
         >
-          Cuidar da saúde também é uma<br />
-          <span style={{ color: 'var(--accent)' }}>decisão jurídica.</span>
+          Cuidar da saúde também é <span style={{ whiteSpace: 'nowrap' }}>uma <span style={{ color: 'var(--accent)', fontFamily: "'Playfair Display', serif", fontStyle: 'italic', fontWeight: 700 }}>decisão jurídica.</span></span>
         </motion.h1>
 
         {/* Subtext */}
@@ -147,49 +142,7 @@ const Hero = () => {
           </a>
         </motion.div>
 
-        {/* Stats */}
-        <motion.div
-          className="hero-stats"
-          initial={{ opacity: 0 }}
-          animate={{ opacity: 1 }}
-          transition={{ duration: 0.6, delay: 0.5 }}
-          style={{
-            display: 'flex',
-            gap: 48,
-            marginTop: 64,
-            paddingTop: 36,
-            borderTop: '1px solid rgba(255,255,255,0.08)',
-          }}
-        >
-          {stats.map((s, i) => (
-            <motion.div
-              key={i}
-              initial={{ opacity: 0, y: 10 }}
-              animate={{ opacity: 1, y: 0 }}
-              transition={{ ...spring, delay: 0.55 + i * 0.07 }}
-              style={{ willChange: 'transform' }}
-            >
-              <div style={{
-                fontSize: 'clamp(1.8rem, 2.5vw, 2.4rem)',
-                fontWeight: 600,
-                color: '#fff',
-                fontFamily: 'var(--font-headings)',
-                letterSpacing: '-1px',
-              }}>
-                {s.value}
-              </div>
-              <div style={{
-                fontSize: '0.75rem',
-                color: 'rgba(255,255,255,0.38)',
-                marginTop: 4,
-                letterSpacing: '0.5px',
-                textTransform: 'uppercase',
-              }}>
-                {s.label}
-              </div>
-            </motion.div>
-          ))}
-        </motion.div>
+
       </div>
 
       {/* RIGHT PANEL — Photo */}
@@ -197,7 +150,7 @@ const Hero = () => {
         <div style={{
           position: 'absolute',
           inset: 0,
-          backgroundImage: 'url(/images/hero-main.jpg)',
+          backgroundImage: 'url(/images/hero-main.jpeg)',
           backgroundSize: 'cover',
           backgroundPosition: 'center',
         }} />
