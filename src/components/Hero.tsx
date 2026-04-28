@@ -48,7 +48,7 @@ const Hero = () => {
           style={{ marginBottom: 28, willChange: 'transform' }}
         >
           <span className="eyebrow" style={{ color: 'rgba(255,255,255,0.45)' }}>
-            Excelência Jurídica em São Paulo
+            Excelência jurídica nacional
           </span>
         </motion.div>
 
@@ -83,7 +83,7 @@ const Hero = () => {
             willChange: 'transform',
           }}
         >
-          Atuação estratégica em Direito da Saúde, erro médico e relações de consumo, com foco na resolução de conflitos complexos e na proteção de pacientes e profissionais.
+          Atuação estratégica em direito da saúde, erro médico e relações de consumo, com foco na resolução de conflitos complexos e na proteção de pacientes e profissionais.
         </motion.p>
 
         {/* CTA */}
@@ -119,7 +119,7 @@ const Hero = () => {
               e.currentTarget.style.borderColor = 'rgba(255,255,255,0.2)';
             }}
           >
-            Consulta Gratuita <ArrowRight size={16} />
+            Entrar em contato <ArrowRight size={16} />
           </a>
 
           <a
@@ -138,7 +138,7 @@ const Hero = () => {
             onMouseOver={e => e.currentTarget.style.color = '#fff'}
             onMouseOut={e => e.currentTarget.style.color = 'rgba(255,255,255,0.55)'}
           >
-            Ver Áreas de Atuação
+            Ver áreas de atuação
           </a>
         </motion.div>
 
@@ -146,13 +146,14 @@ const Hero = () => {
       </div>
 
       {/* RIGHT PANEL — Photo */}
-      <div className="hero-right-panel" style={{ position: 'relative', overflow: 'hidden', backgroundColor: '#c8d0d8' }}>
+      <div className="hero-right-panel" style={{ position: 'relative', overflow: 'hidden', backgroundColor: 'var(--primary-deep)' }}>
         <div style={{
           position: 'absolute',
           inset: 0,
           backgroundImage: 'url(/images/hero-main.jpeg)',
           backgroundSize: 'cover',
           backgroundPosition: 'center',
+          opacity: 0.5,
         }} />
         <div style={{
           position: 'absolute',
@@ -168,31 +169,7 @@ const Hero = () => {
           pointerEvents: 'none',
         }} />
 
-        {/* Trust badge */}
-        <motion.div
-          initial={{ opacity: 0, y: 12 }}
-          animate={{ opacity: 1, y: 0 }}
-          transition={{ ...spring, delay: 0.7 }}
-          style={{
-            position: 'absolute',
-            bottom: 40,
-            right: 40,
-            backgroundColor: 'rgba(255,255,255,0.95)',
-            backdropFilter: 'blur(16px)',
-            padding: '16px 20px',
-            boxShadow: '0 20px 40px rgba(0,0,0,0.15)',
-            minWidth: 200,
-            willChange: 'transform',
-          }}
-        >
-          <div style={{ fontSize: '0.72rem', fontWeight: 600, color: 'var(--primary)', letterSpacing: '1px', textTransform: 'uppercase', marginBottom: 4 }}>
-            Assessores Jurídicos
-          </div>
-          <div style={{ display: 'flex', alignItems: 'center', gap: 8 }}>
-            <span style={{ color: 'var(--accent)', fontSize: '1rem' }}>★★★★★</span>
-            <span style={{ fontSize: '0.85rem', color: 'var(--text-light)', fontWeight: 500 }}>4.9 Avaliação</span>
-          </div>
-        </motion.div>
+
       </div>
     </section>
   );

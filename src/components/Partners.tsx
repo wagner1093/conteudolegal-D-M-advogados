@@ -10,16 +10,16 @@ const partners = [
   {
     name: 'Dr. Lucas Dohmen',
     role: 'Sócio Fundador',
-    spec: 'Direito da Saúde',
+    spec: 'Direito da saúde',
     oab: 'OAB/SP 000.000',
-    bio: 'Especialista em Direito da Saúde com ampla experiência na defesa de pacientes em demandas de alta complexidade. Atua na linha de frente estratégica do escritório, garantindo soluções jurídicas ágeis e eficazes para casos críticos.',
+    bio: 'Especialista em direito da saúde com ampla experiência na defesa de pacientes em demandas de alta complexidade. Atua na linha de frente estratégica do escritório, garantindo soluções jurídicas ágeis e eficazes para casos críticos.',
     whatsapp: '11948622339',
     image: '/images/lucas-dohmen.png'
   },
   {
     name: 'Dr. Alexandre Matta',
     role: 'Sócio - Diretor Operacional e Financeiro',
-    spec: 'Direito da Saúde',
+    spec: 'Direito da saúde',
     oab: 'OAB/SP 000.001',
     bio: 'Responsável pela estrutura operacional e financeira, assegura que cada processo seja gerido com máxima eficiência e clareza. Especialista em garantir que a entrega jurídica esteja alinhada aos indicadores de sucesso do escritório.',
     whatsapp: '11983380371',

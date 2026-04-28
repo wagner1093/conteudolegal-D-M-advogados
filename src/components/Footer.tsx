@@ -64,7 +64,7 @@ const Footer = () => {
               margin: '0 auto 24px auto',
               lineHeight: 1.1,
             }}>
-              Pronto para resolver seu caso? Agende sua consulta agora.
+              Pronto para resolver seu caso? Fale conosco agora.
             </h2>
             <p style={{
               color: 'rgba(255,255,255,0.5)',
@@ -99,7 +99,7 @@ const Footer = () => {
                 e.currentTarget.style.borderColor = 'rgba(255,255,255,0.3)';
               }}
             >
-              Consulta Gratuita <ArrowRight size={16} />
+              Entrar em contato <ArrowRight size={16} />
             </a>
           </motion.div>
         </div>

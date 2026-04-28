@@ -102,7 +102,7 @@ const About = () => {
               onMouseOver={e => e.currentTarget.style.gap = '16px'}
               onMouseOut={e => e.currentTarget.style.gap = '10px'}
             >
-              Iniciar Consulta <ArrowRight size={16} />
+              Entrar em contato <ArrowRight size={16} />
             </a>
           </motion.div>
         </div>
@@ -194,7 +194,7 @@ const About = () => {
               {[
                 { step: '01', title: 'Diagnóstico', desc: 'Análise técnica profunda do cenário jurídico e mapeamento de riscos.' },
                 { step: '02', title: 'Planejamento', desc: 'Definição da melhor estratégia com foco em viabilidade e rapidez.' },
-                { step: '03', title: 'Execução Ágil', desc: 'Implementação direta com foco em velocidade e máxima precisão.' },
+                { step: '03', title: 'Execução ágil', desc: 'Implementação direta com foco em velocidade e máxima precisão.' },
                 { step: '04', title: 'Monitoramento', desc: 'Acompanhamento constante via indicadores de performance e sucesso.' },
               ].map((item, idx) => (
                 <motion.div

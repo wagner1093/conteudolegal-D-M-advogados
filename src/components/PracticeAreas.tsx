@@ -9,25 +9,25 @@ const areas = [
     num: '01',
     title: 'Direito da Saúde',
     desc: 'Atuação voltada à defesa do paciente diante de negativas de cobertura, tratamentos de alto custo, reajustes abusivos e cancelamentos indevidos.',
-    items: ['Negativas de Plano', 'Tratamentos de Alto Custo', 'Reajustes Abusivos'],
+    items: ['Negativas de plano', 'Tratamentos de alto custo', 'Reajustes abusivos'],
   },
   {
     num: '02',
     title: 'Erro Médico',
     desc: 'Análise técnica de falhas na prestação de serviços de saúde, com apuração de responsabilidade de profissionais e instituições.',
-    items: ['Falha em Atendimento', 'Responsabilidade Civil', 'Suporte Especializado'],
+    items: ['Falha em atendimento', 'Responsabilidade civil', 'Suporte especializado'],
   },
   {
     num: '03',
     title: 'Cumprimento de Decisões',
     desc: 'Atuação em casos de descumprimento de decisões judiciais, garantindo efetividade ao que já foi reconhecido pelo judiciário.',
-    items: ['Efetividade Judicial', 'Demandas contra Planos', 'Garantia de Direitos'],
+    items: ['Efetividade judicial', 'Demandas contra planos', 'Garantia de direitos'],
   },
   {
     num: '04',
     title: 'Visão Estratégica para Profissionais e Clínicas',
     desc: 'Atuação consultiva e preventiva com foco em contratos, compliance e estruturação de decisões com base em indicadores.',
-    items: ['Gestão de Riscos', 'Compliance em Saúde', 'Análise de Contratos'],
+    items: ['Gestão de riscos', 'Compliance em saúde', 'Análise de contratos'],
   },
 ];
 
@@ -214,7 +214,7 @@ const PracticeAreas = () => {
                           e.currentTarget.style.borderColor = 'rgba(255,255,255,0.2)';
                         }}
                       >
-                        Falar com Especialista <ArrowRight size={14} />
+                        Falar com especialista <ArrowRight size={14} />
                       </a>
                     </div>
                   </motion.div>
