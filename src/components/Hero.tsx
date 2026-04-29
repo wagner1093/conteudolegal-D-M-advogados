@@ -16,18 +16,33 @@ const Hero = () => {
       style={{
         padding: 0,
         minHeight: '100vh',
+        position: 'relative',
+        overflow: 'hidden',
+        backgroundColor: 'var(--primary-deep)', // Base color
       }}
     >
+      {/* GLOBAL BACKGROUND IMAGE WITH OPACITY */}
+      <div style={{
+        position: 'absolute',
+        inset: 0,
+        backgroundImage: 'url(/images/fundo-geral.jpeg)',
+        backgroundSize: 'cover',
+        backgroundPosition: 'center',
+        opacity: 0.25, // Increased visibility as requested
+        zIndex: 0
+      }} />
+
       {/* LEFT PANEL */}
       <div
         className="hero-left-panel"
         style={{
-          backgroundColor: 'var(--primary-deep)',
+          backgroundColor: 'transparent', // Consistent with the right side
           position: 'relative',
           display: 'flex',
           flexDirection: 'column',
           justifyContent: 'center',
           overflow: 'hidden',
+          zIndex: 1,
         }}
       >
         {/* Decorative lines */}
@@ -145,31 +160,9 @@ const Hero = () => {
 
       </div>
 
-      {/* RIGHT PANEL — Photo */}
-      <div className="hero-right-panel" style={{ position: 'relative', overflow: 'hidden', backgroundColor: 'var(--primary-deep)' }}>
-        <div style={{
-          position: 'absolute',
-          inset: 0,
-          backgroundImage: 'url(/images/hero-main.jpeg)',
-          backgroundSize: 'cover',
-          backgroundPosition: 'center',
-          opacity: 0.5,
-        }} />
-        <div style={{
-          position: 'absolute',
-          bottom: 0, left: 0, right: 0,
-          height: '40%',
-          background: 'linear-gradient(to top, rgba(8,25,41,0.6) 0%, transparent 100%)',
-        }} />
-        <div style={{
-          position: 'absolute',
-          top: 0, left: 0, right: 0,
-          height: '140px',
-          background: 'linear-gradient(to bottom, rgba(8,25,41,0.8) 0%, transparent 100%)',
-          pointerEvents: 'none',
-        }} />
-
-
+      {/* RIGHT PANEL — Now showing global background */}
+      <div className="hero-right-panel" style={{ position: 'relative', overflow: 'hidden', backgroundColor: 'transparent', zIndex: 1 }}>
+        {/* Gradients removed as requested to show only the horizontal background image */}
       </div>
     </section>
   );
