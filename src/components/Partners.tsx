@@ -11,17 +11,15 @@ const partners = [
     name: 'Dr. Lucas Dohmen',
     role: 'Sócio Fundador',
     spec: 'Direito da saúde',
-    oab: 'OAB/SP 000.000',
-    bio: 'Especialista em direito da saúde com ampla experiência na defesa de pacientes em demandas de alta complexidade. Atua na linha de frente estratégica do escritório, garantindo soluções jurídicas ágeis e eficazes para casos críticos.',
+    bio: 'Atuação focada em Direito da Saúde, com experiência na condução de demandas complexas envolvendo operadoras de saúde, responsabilidade civil e garantia de acesso a tratamentos.\n\nSua atuação se destaca pela leitura estratégica dos casos, combinando técnica jurídica com análise prática dos impactos das decisões, especialmente em situações de urgência e alta sensibilidade.\n\nParticipa diretamente da definição das estratégias do escritório, com foco em eficiência, segurança jurídica e resultado concreto para o cliente.',
     whatsapp: '11948622339',
     image: '/images/lucas-dohmen.png'
   },
   {
     name: 'Dr. Alexandre Matta',
-    role: 'Sócio - Diretor Operacional e Financeiro',
+    role: 'Sócio Fundador',
     spec: 'Direito da saúde',
-    oab: 'OAB/SP 000.001',
-    bio: 'Responsável pela estrutura operacional e financeira, assegura que cada processo seja gerido com máxima eficiência e clareza. Especialista em garantir que a entrega jurídica esteja alinhada aos indicadores de sucesso do escritório.',
+    bio: 'Diretor Operacional e Financeiro, com atuação relevante na estruturação e condução estratégica das demandas do escritório.\n\nPossui experiência consolidada em relações de consumo e atuação institucional no Direito da Saúde, contribuindo para a organização dos fluxos internos e para a entrega de soluções com consistência técnica e operacional.\n\nSua atuação garante solidez na condução dos casos e alinhamento entre estratégia jurídica e execução.',
     whatsapp: '11983380371',
     image: '/images/alexandre-matta.png'
   },
@@ -48,7 +46,7 @@ const Partners = () => {
                 fontWeight: 600,
                 letterSpacing: '-1px'
               }}>
-                Visão Estratégica e<br />Experiência de Mercado
+                Visão estratégica e<br />experiência de mercado
               </h2>
               <p style={{ 
                 color: 'var(--text-light)', 
@@ -116,27 +114,12 @@ const Partners = () => {
                   </p>
                 </div>
 
-                {/* Corner Label */}
-                <div style={{
-                  position: 'absolute',
-                  top: 24,
-                  right: 24,
-                  backgroundColor: 'rgba(255,255,255,0.9)',
-                  padding: '8px 16px',
-                  fontSize: '0.7rem',
-                  fontWeight: 600,
-                  color: 'var(--primary)',
-                  letterSpacing: '1px',
-                  textTransform: 'uppercase',
-                  backdropFilter: 'blur(8px)',
-                }}>
-                  {partner.oab}
-                </div>
+
               </div>
 
               {/* Textual Content */}
-              <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'flex-start' }}>
-                <div>
+              <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'flex-start', gap: 24 }}>
+                <div style={{ flex: 1 }}>
                   <h3 style={{ 
                     fontSize: '1.6rem', 
                     color: 'var(--primary)', 
@@ -146,7 +129,7 @@ const Partners = () => {
                   }}>
                     {partner.name}
                   </h3>
-                  <div style={{ display: 'flex', alignItems: 'center', gap: 12 }}>
+                  <div style={{ display: 'flex', alignItems: 'center', gap: 12, marginBottom: 20 }}>
                     <span style={{ fontSize: '0.85rem', color: 'var(--accent)', fontWeight: 600, textTransform: 'uppercase', letterSpacing: '0.5px' }}>
                       {partner.role}
                     </span>
@@ -155,6 +138,15 @@ const Partners = () => {
                       {partner.spec}
                     </span>
                   </div>
+                  <p style={{ 
+                    fontSize: '0.9rem', 
+                    color: 'var(--text-light)', 
+                    lineHeight: 1.6,
+                    whiteSpace: 'pre-line',
+                    margin: 0
+                  }}>
+                    {partner.bio}
+                  </p>
                 </div>
 
                 <motion.a
@@ -164,6 +156,7 @@ const Partners = () => {
                   style={{
                     width: 48,
                     height: 48,
+                    flexShrink: 0,
                     backgroundColor: 'var(--primary)',
                     color: '#fff',
                     display: 'flex',
