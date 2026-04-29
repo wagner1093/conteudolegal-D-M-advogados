@@ -148,48 +148,19 @@ const About = () => {
             }}
             initial="hidden"
             whileInView="visible"
-            viewport={{ once: true, margin: "-100px" }}
+            viewport={{ once: true, amount: 0.1 }}
           >
-            {/* Background Line (Muted) */}
-            <div style={{
-              position: 'absolute',
-              top: 70, // 40px padding + 30px (half of 60px icon)
-              left: '12.5%',
-              right: '12.5%',
-              height: '2px',
-              backgroundColor: 'rgba(76, 175, 80, 0.1)',
-              zIndex: 0,
-            }} />
-
-            {/* Progress Line (Animated) */}
-            <motion.div 
-              variants={{
-                hidden: { scaleX: 0 },
-                visible: { 
-                  scaleX: 1,
-                  transition: { duration: 2, ease: "easeInOut" }
-                }
-              }}
-              style={{
-                position: 'absolute',
-                top: 70, // Matches background line
-                left: '12.5%',
-                right: '12.5%',
-                height: '2px',
-                backgroundColor: 'var(--accent)',
-                zIndex: 1,
-                transformOrigin: 'left',
-              }} 
-            />
+            {/* Lines removed as requested for a cleaner look */}
 
             {/* Items row */}
             <div style={{
               display: 'flex',
               flexDirection: 'row',
-              justifyContent: 'space-between',
+              flexWrap: 'wrap',
+              justifyContent: 'center',
               alignItems: 'flex-start',
-              gap: 0,
-              minWidth: '900px',
+              gap: '40px',
+              width: '100%',
             }}>
               {[
                 { icon: <Laptop size={24} />, title: 'Pioneiros no atendimento 100% digital', desc: 'Processos e consultas realizados de forma remota com máxima segurança e agilidade.' },
@@ -208,12 +179,13 @@ const About = () => {
                         type: "spring",
                         stiffness: 100,
                         damping: 15,
-                        delay: idx * 0.6 // Coordinated with line duration
+                        delay: idx * 0.15
                       } 
                     }
                   }}
                   style={{
-                    flex: '1 1 0',
+                    flex: '1 1 300px',
+                    maxWidth: '350px',
                     display: 'flex',
                     flexDirection: 'column',
                     alignItems: 'center',
