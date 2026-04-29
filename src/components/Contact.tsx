@@ -224,45 +224,104 @@ const Contact = () => {
               Fale diretamente com nossos especialistas via WhatsApp.
             </p>
 
-            <div style={{ display: 'flex', flexDirection: 'column', gap: '12px', marginBottom: '40px' }}>
-              {whatsAppContacts.map((contact, idx) => (
-                <motion.a
-                  key={idx}
-                  href={`https://wa.me/55${contact.raw}`}
-                  target="_blank"
-                  rel="noopener noreferrer"
-                  initial={{ opacity: 0, y: 15 }}
-                  whileInView={{ opacity: 1, y: 0 }}
-                  viewport={{ once: true }}
-                  transition={{ duration: 0.4, delay: 0.3 + (idx * 0.1) }}
-                  style={{
-                    display: 'flex',
-                    alignItems: 'center',
-                    justifyContent: 'space-between',
-                    padding: '16px 20px',
-                    backgroundColor: 'rgba(255, 255, 255, 0.03)',
-                    border: '1px solid rgba(255, 255, 255, 0.08)',
-                    borderRadius: '12px',
-                    textDecoration: 'none',
-                    transition: 'all 0.3s ease',
-                    cursor: 'pointer'
-                  }}
-                  className="whatsapp-card"
-                >
-                  <div style={{ display: 'flex', alignItems: 'center', gap: '14px' }}>
-                    <div style={{ width: '42px', height: '42px', borderRadius: '10px', backgroundColor: 'rgba(102, 178, 142, 0.15)', display: 'flex', alignItems: 'center', justifyContent: 'center' }}>
-                      <Phone size={20} color="var(--accent)" />
-                    </div>
-                    <div>
-                      <span style={{ display: 'block', color: '#fff', fontWeight: 600, fontSize: '0.95rem', marginBottom: '2px' }}>{contact.name}</span>
-                      <span style={{ display: 'block', color: 'var(--accent)', fontSize: '0.75rem', fontWeight: 500 }}>{contact.role}</span>
-                    </div>
-                  </div>
-                  <div className="wa-icon-wrapper" style={{ width: '32px', height: '32px', borderRadius: '50%', border: '1px solid rgba(255,255,255,0.1)', display: 'flex', alignItems: 'center', justifyContent: 'center', transition: 'all 0.3s', color: '#94a3b8' }}>
-                    <ArrowRight size={14} className="wa-icon" style={{ transition: 'all 0.3s' }} />
-                  </div>
-                </motion.a>
-              ))}
+            <div style={{ display: 'flex', flexDirection: 'column', gap: '32px', marginBottom: '40px' }}>
+              {/* SECTION 1: GERAL */}
+              <div>
+                <h4 style={{ color: 'rgba(255,255,255,0.4)', fontSize: '0.75rem', textTransform: 'uppercase', letterSpacing: '1px', marginBottom: '12px' }}>Atendimento Geral</h4>
+                <div style={{ 
+                  display: 'flex', 
+                  gap: '12px', 
+                  overflowX: 'auto', 
+                  paddingBottom: '8px',
+                  scrollSnapType: 'x mandatory',
+                  WebkitOverflowScrolling: 'touch'
+                }} className="hide-scrollbar">
+                  {whatsAppContacts.slice(0, 1).map((contact, idx) => (
+                    <motion.a
+                      key={idx}
+                      href={`https://wa.me/55${contact.raw}`}
+                      target="_blank"
+                      rel="noopener noreferrer"
+                      style={{
+                        flex: '0 0 100%',
+                        scrollSnapAlign: 'start',
+                        display: 'flex',
+                        alignItems: 'center',
+                        justifyContent: 'space-between',
+                        padding: '16px 20px',
+                        backgroundColor: 'rgba(255, 255, 255, 0.03)',
+                        border: '1px solid rgba(255, 255, 255, 0.08)',
+                        borderRadius: '12px',
+                        textDecoration: 'none',
+                        transition: 'all 0.3s ease',
+                      }}
+                      className="whatsapp-card"
+                    >
+                      <div style={{ display: 'flex', alignItems: 'center', gap: '14px' }}>
+                        <div style={{ width: '42px', height: '42px', borderRadius: '10px', backgroundColor: 'rgba(102, 178, 142, 0.15)', display: 'flex', alignItems: 'center', justifyContent: 'center' }}>
+                          <Phone size={20} color="var(--accent)" />
+                        </div>
+                        <div>
+                          <span style={{ display: 'block', color: '#fff', fontWeight: 600, fontSize: '0.95rem', marginBottom: '2px' }}>{contact.name}</span>
+                          <span style={{ display: 'block', color: 'var(--accent)', fontSize: '0.75rem', fontWeight: 500 }}>{contact.role}</span>
+                        </div>
+                      </div>
+                      <div className="wa-icon-wrapper" style={{ width: '32px', height: '32px', borderRadius: '50%', border: '1px solid rgba(255,255,255,0.1)', display: 'flex', alignItems: 'center', justifyContent: 'center', color: '#94a3b8' }}>
+                        <ArrowRight size={14} className="wa-icon" />
+                      </div>
+                    </motion.a>
+                  ))}
+                </div>
+              </div>
+
+              {/* SECTION 2: SÓCIOS */}
+              <div>
+                <h4 style={{ color: 'rgba(255,255,255,0.4)', fontSize: '0.75rem', textTransform: 'uppercase', letterSpacing: '1px', marginBottom: '12px' }}>Contatos Diretos</h4>
+                <div style={{ 
+                  display: 'flex', 
+                  gap: '12px', 
+                  overflowX: 'auto', 
+                  paddingBottom: '8px',
+                  scrollSnapType: 'x mandatory',
+                  WebkitOverflowScrolling: 'touch'
+                }} className="hide-scrollbar">
+                  {whatsAppContacts.slice(1).map((contact, idx) => (
+                    <motion.a
+                      key={idx}
+                      href={`https://wa.me/55${contact.raw}`}
+                      target="_blank"
+                      rel="noopener noreferrer"
+                      style={{
+                        flex: '0 0 85%',
+                        scrollSnapAlign: 'start',
+                        display: 'flex',
+                        alignItems: 'center',
+                        justifyContent: 'space-between',
+                        padding: '16px 20px',
+                        backgroundColor: 'rgba(255, 255, 255, 0.03)',
+                        border: '1px solid rgba(255, 255, 255, 0.08)',
+                        borderRadius: '12px',
+                        textDecoration: 'none',
+                        transition: 'all 0.3s ease',
+                      }}
+                      className="whatsapp-card"
+                    >
+                      <div style={{ display: 'flex', alignItems: 'center', gap: '14px' }}>
+                        <div style={{ width: '42px', height: '42px', borderRadius: '10px', backgroundColor: 'rgba(102, 178, 142, 0.15)', display: 'flex', alignItems: 'center', justifyContent: 'center' }}>
+                          <Phone size={20} color="var(--accent)" />
+                        </div>
+                        <div>
+                          <span style={{ display: 'block', color: '#fff', fontWeight: 600, fontSize: '0.95rem', marginBottom: '2px' }}>{contact.name}</span>
+                          <span style={{ display: 'block', color: 'var(--accent)', fontSize: '0.75rem', fontWeight: 500 }}>{contact.role}</span>
+                        </div>
+                      </div>
+                      <div className="wa-icon-wrapper" style={{ width: '32px', height: '32px', borderRadius: '50%', border: '1px solid rgba(255,255,255,0.1)', display: 'flex', alignItems: 'center', justifyContent: 'center', color: '#94a3b8' }}>
+                        <ArrowRight size={14} className="wa-icon" />
+                      </div>
+                    </motion.a>
+                  ))}
+                </div>
+              </div>
             </div>
 
             {/* Firm Details */}
@@ -294,6 +353,14 @@ const Contact = () => {
       </div>
 
       <style dangerouslySetInnerHTML={{__html: `
+        .hide-scrollbar::-webkit-scrollbar {
+          display: none;
+        }
+        .hide-scrollbar {
+          -ms-overflow-style: none;
+          scrollbar-width: none;
+        }
+
         .whatsapp-card:hover {
           background-color: rgba(255, 255, 255, 0.06) !important;
           border-color: rgba(102, 178, 142, 0.4) !important;

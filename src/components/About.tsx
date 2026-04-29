@@ -2,7 +2,7 @@
 
 import React from 'react';
 import { motion } from 'framer-motion';
-import { ArrowRight } from 'lucide-react';
+import { ArrowRight, Laptop, Search, UserCheck } from 'lucide-react';
 
 const fade = { type: 'spring' as const, stiffness: 180, damping: 22 };
 
@@ -129,7 +129,7 @@ const About = () => {
               textTransform: 'uppercase',
               fontFamily: 'var(--font-body)'
             }}>
-              NOSSO MÉTODO
+              DIFERENCIAIS
             </span>
             <div style={{ width: 60, height: 2, backgroundColor: 'var(--accent)', marginTop: 12 }} />
           </div>
@@ -192,10 +192,9 @@ const About = () => {
               minWidth: '900px',
             }}>
               {[
-                { step: '01', title: 'Diagnóstico', desc: 'Análise técnica profunda do cenário jurídico e mapeamento de riscos.' },
-                { step: '02', title: 'Planejamento', desc: 'Definição da melhor estratégia com foco em viabilidade e rapidez.' },
-                { step: '03', title: 'Execução ágil', desc: 'Implementação direta com foco em velocidade e máxima precisão.' },
-                { step: '04', title: 'Monitoramento', desc: 'Acompanhamento constante via indicadores de performance e sucesso.' },
+                { icon: <Laptop size={24} />, title: 'Pioneiros no atendimento 100% digital', desc: 'Processos e consultas realizados de forma remota com máxima segurança e agilidade.' },
+                { icon: <Search size={24} />, title: 'Clareza como método de trabalho', desc: 'Linguagem acessível e transparência total em cada etapa do seu processo jurídico.' },
+                { icon: <UserCheck size={24} />, title: 'Atuação especializada e personalizada', desc: 'Foco estratégico nas necessidades individuais de cada cliente, garantindo soluções sob medida.' },
               ].map((item, idx) => (
                 <motion.div
                   key={idx}
@@ -258,14 +257,12 @@ const About = () => {
                         display: 'flex',
                         alignItems: 'center',
                         justifyContent: 'center',
-                        fontSize: '1rem',
-                        fontWeight: 800,
                         boxShadow: '0 8px 24px rgba(8,25,41,0.25)',
                         border: '4px solid #fff',
                         flexShrink: 0,
                       }}
                     >
-                      {item.step}
+                      {item.icon}
                     </motion.div>
                   </div>
 
@@ -288,6 +285,32 @@ const About = () => {
                 </motion.div>
               ))}
             </div>
+          </motion.div>
+
+          {/* Institutional Quote */}
+          <motion.div
+            initial={{ opacity: 0, y: 20 }}
+            whileInView={{ opacity: 1, y: 0 }}
+            viewport={{ once: true }}
+            transition={{ duration: 0.8, delay: 0.5 }}
+            style={{ 
+              marginTop: 80, 
+              textAlign: 'center',
+              padding: '0 24px'
+            }}
+          >
+            <p style={{ 
+              fontFamily: "'Playfair Display', serif", 
+              fontSize: 'clamp(1.2rem, 2.5vw, 1.8rem)', 
+              color: 'var(--primary)', 
+              fontStyle: 'italic',
+              fontWeight: 500,
+              maxWidth: '800px',
+              margin: '0 auto',
+              lineHeight: 1.4
+            }}>
+              “O cliente é o centro da estratégia, não o advogado, não o discurso técnico.”
+            </p>
           </motion.div>
         </motion.div>
       </div>

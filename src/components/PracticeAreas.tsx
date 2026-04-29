@@ -65,7 +65,7 @@ const PracticeAreas = () => {
           >
             <span className="eyebrow" style={{ color: 'rgba(255,255,255,0.4)' }}>Nossas Áreas</span>
             <h2 style={{ color: '#fff', fontSize: 'clamp(2rem, 3.5vw, 3rem)', maxWidth: 500 }}>
-              Soluções Jurídicas<br />Completas para Você
+              Soluções jurídicas completas para você
             </h2>
           </motion.div>
         </div>

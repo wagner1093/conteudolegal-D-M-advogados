@@ -41,7 +41,7 @@ const Team = () => {
               fontWeight: 600,
               letterSpacing: '-0.8px'
             }}>
-              Talento e Dedicação<br />em Cada Detalhe
+              Talento e dedicação em cada detalhe
             </h2>
           </motion.div>
 
