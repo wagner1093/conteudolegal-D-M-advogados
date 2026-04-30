@@ -359,3 +359,42 @@ section { padding: var(--section-pad); }
   line-height: 1.4;
 }
 
+
+/* Blog Content Styling */
+.blog-content h3 {
+  font-size: 1.8rem;
+  color: var(--primary);
+  margin: 40px 0 20px;
+  font-weight: 700;
+  line-height: 1.2;
+}
+
+.blog-content p {
+  margin-bottom: 24px;
+  color: var(--text);
+  font-size: 1.1rem;
+}
+
+.blog-content blockquote {
+  border-left: 4px solid var(--accent);
+  padding: 24px 40px;
+  margin: 48px 0;
+  background-color: var(--bg-secondary);
+  font-size: 1.4rem;
+  font-style: italic;
+  color: var(--primary);
+  line-height: 1.5;
+  font-family: 'Playfair Display', serif;
+  border-radius: 0 16px 16px 0;
+}
+
+@media (max-width: 992px) {
+  .blog-article-grid {
+    grid-template-columns: 1fr !important;
+    gap: 40px !important;
+  }
+  
+  .blog-article-grid aside {
+    display: none;
+  }
+}

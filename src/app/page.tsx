@@ -6,6 +6,7 @@ import About from "@/components/About";
 import PracticeAreas from "@/components/PracticeAreas";
 import Partners from "@/components/Partners";
 import Team from "@/components/Team";
+import BlogSection from "@/components/BlogSection";
 import Contact from "@/components/Contact";
 import Footer from "@/components/Footer";
 
@@ -18,8 +19,10 @@ export default function Home() {
       <PracticeAreas />
       <Partners />
       <Team />
+      <BlogSection />
       <Contact />
       <Footer />
     </main>
   );
 }
+

@@ -5,12 +5,15 @@ import { motion, AnimatePresence } from 'framer-motion';
 import { ArrowUpRight, Menu, X } from 'lucide-react';
 
 const links = [
-  { label: 'Sobre', href: '#sobre' },
-  { label: 'Atuação', href: '#atuacao' },
-  { label: 'Sócios', href: '#socios' },
-  { label: 'Equipe', href: '#equipe' },
-  { label: 'Contato', href: '#contato' },
+  { label: 'Home', href: '/#hero' },
+  { label: 'Sobre', href: '/#sobre' },
+  { label: 'Atuação', href: '/#atuacao' },
+  { label: 'Sócios', href: '/#socios' },
+  { label: 'Equipe', href: '/#equipe' },
+  { label: 'Blog', href: '/blog' },
+  { label: 'Contato', href: '/#contato' },
 ];
+
 
 const spring = { type: 'spring' as const, stiffness: 300, damping: 30 };
 
