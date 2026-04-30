@@ -230,12 +230,9 @@ const Contact = () => {
                 <h4 style={{ color: 'rgba(255,255,255,0.4)', fontSize: '0.75rem', textTransform: 'uppercase', letterSpacing: '1px', marginBottom: '12px' }}>Atendimento Geral</h4>
                 <div style={{ 
                   display: 'flex', 
-                  gap: '12px', 
-                  overflowX: 'auto', 
-                  paddingBottom: '8px',
-                  scrollSnapType: 'x mandatory',
-                  WebkitOverflowScrolling: 'touch'
-                }} className="hide-scrollbar">
+                  flexDirection: 'column',
+                  gap: '12px'
+                }}>
                   {whatsAppContacts.slice(0, 1).map((contact, idx) => (
                     <motion.a
                       key={idx}
@@ -243,8 +240,7 @@ const Contact = () => {
                       target="_blank"
                       rel="noopener noreferrer"
                       style={{
-                        flex: '0 0 100%',
-                        scrollSnapAlign: 'start',
+                        width: '100%',
                         display: 'flex',
                         alignItems: 'center',
                         justifyContent: 'space-between',
@@ -279,12 +275,9 @@ const Contact = () => {
                 <h4 style={{ color: 'rgba(255,255,255,0.4)', fontSize: '0.75rem', textTransform: 'uppercase', letterSpacing: '1px', marginBottom: '12px' }}>Contatos Diretos</h4>
                 <div style={{ 
                   display: 'flex', 
-                  gap: '12px', 
-                  overflowX: 'auto', 
-                  paddingBottom: '8px',
-                  scrollSnapType: 'x mandatory',
-                  WebkitOverflowScrolling: 'touch'
-                }} className="hide-scrollbar">
+                  flexDirection: 'column',
+                  gap: '12px'
+                }}>
                   {whatsAppContacts.slice(1).map((contact, idx) => (
                     <motion.a
                       key={idx}
@@ -292,8 +285,7 @@ const Contact = () => {
                       target="_blank"
                       rel="noopener noreferrer"
                       style={{
-                        flex: '0 0 85%',
-                        scrollSnapAlign: 'start',
+                        width: '100%',
                         display: 'flex',
                         alignItems: 'center',
                         justifyContent: 'space-between',
