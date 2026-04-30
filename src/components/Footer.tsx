@@ -166,7 +166,12 @@ const Footer = () => {
                 Áreas de Atuação
               </h5>
               <ul style={{ listStyle: 'none', display: 'flex', flexDirection: 'column', gap: 12 }}>
-                {['Família e Sucessões', 'Consumidor', 'Cível', 'Empresarial', 'Saúde'].map(area => (
+                {[
+                  'Direito da Saúde', 
+                  'Erro Médico', 
+                  'Cumprimento de Decisões', 
+                  'Visão Estratégica para Profissionais e Clínicas'
+                ].map(area => (
                   <li key={area}>
                     <a href="#atuacao" style={{ color: 'rgba(255,255,255,0.4)', textDecoration: 'none', fontSize: '0.85rem', transition: 'color 0.2s ease' }}
                       onMouseOver={e => e.currentTarget.style.color = '#fff'}
@@ -185,7 +190,15 @@ const Footer = () => {
                 Navegação
               </h5>
               <ul style={{ listStyle: 'none', display: 'flex', flexDirection: 'column', gap: 12 }}>
-                {[['Sobre', '#sobre'], ['Sócios', '#socios'], ['Equipe', '#equipe'], ['Contato', '#contato']].map(([label, href]) => (
+                {[
+                  ['Home', '/#hero'],
+                  ['Sobre', '/#sobre'],
+                  ['Atuação', '/#atuacao'],
+                  ['Sócios', '/#socios'],
+                  ['Equipe', '/#equipe'],
+                  ['Blog', '/blog'],
+                  ['Contato', '/#contato']
+                ].map(([label, href]) => (
                   <li key={label}>
                     <a href={href} style={{ color: 'rgba(255,255,255,0.4)', textDecoration: 'none', fontSize: '0.85rem', transition: 'color 0.2s ease' }}
                       onMouseOver={e => e.currentTarget.style.color = '#fff'}
