@@ -19,6 +19,8 @@ export default async function RootLayout({
   let faviconUrl = "/favicon.ico";
 
   try {
+    if (!supabase) return;
+
     const { data: scriptsData } = await supabase
       .from("site_dm_advogados_integracoes")
       .select("head_script, body_script")
