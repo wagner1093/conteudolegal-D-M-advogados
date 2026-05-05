@@ -45,8 +45,10 @@ export default function NewPostPage() {
   }, []);
 
   const fetchCategories = async () => {
+    const client = supabase;
+    if (!client) return;
     try {
-      const { data, error } = await supabase
+      const { data, error } = await client
         .from('site_dm_advogados_categorias')
         .select('nome')
         .order('nome');
@@ -69,9 +71,12 @@ export default function NewPostPage() {
   const handleAddCategory = async () => {
     if (!newCategoryName.trim()) return;
     
+    const client = supabase;
+    if (!client) return;
+
     setLoading(true);
     try {
-      const { error } = await supabase
+      const { error } = await client
         .from('site_dm_advogados_categorias')
         .insert([{ nome: newCategoryName.trim() }]);
 
@@ -124,17 +129,20 @@ export default function NewPostPage() {
 
     setUploading(true);
     try {
+      const client = supabase;
+      if (!client) return;
+
       const fileExt = file.name.split('.').pop();
       const fileName = `${Math.random().toString(36).substring(2)}.${fileExt}`;
       const filePath = `${fileName}`;
 
-      const { data, error: uploadError } = await supabase.storage
+      const { data, error: uploadError } = await client.storage
         .from('blog_covers')
         .upload(filePath, file);
 
       if (uploadError) throw uploadError;
 
-      const { data: { publicUrl } } = supabase.storage
+      const { data: { publicUrl } } = client.storage
         .from('blog_covers')
         .getPublicUrl(filePath);
 
