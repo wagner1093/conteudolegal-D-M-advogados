@@ -162,17 +162,10 @@ const BlogSection = () => {
                     marginBottom: '15px',
                     lineHeight: 1.3,
                     fontWeight: 600,
-                    letterSpacing: '-0.5px'
+                    fontFamily: "'Inter', sans-serif",
+                    letterSpacing: '-0.01em'
                   }}>
-                    {post.titulo.split(' ').slice(0, -1).join(' ')} {' '}
-                    <span style={{ 
-                      color: 'var(--accent)', 
-                      fontFamily: "'Outfit', sans-serif", 
-                      fontStyle: 'italic', 
-                      fontWeight: 700 
-                    }}>
-                      {post.titulo.split(' ').slice(-1)}
-                    </span>
+                    {post.titulo}
                   </h3>
                   
                   <p style={{ 

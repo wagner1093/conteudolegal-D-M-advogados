@@ -153,7 +153,7 @@ const BlogPostPage = () => {
                 letterSpacing: '-0.02em'
               }}
             >
-              {post.title}
+              {post.titulo}
             </motion.h1>
 
             <div style={{ 

@@ -44,8 +44,8 @@ const BlogPage = () => {
 
   const filteredPosts = posts.filter(post => {
     const matchesCategory = activeCategory === 'Todos' || post.category === activeCategory;
-    const matchesSearch = post.title.toLowerCase().includes(searchQuery.toLowerCase()) || 
-                         post.excerpt.toLowerCase().includes(searchQuery.toLowerCase());
+    const matchesSearch = post.titulo.toLowerCase().includes(searchQuery.toLowerCase()) || 
+                         post.resumo.toLowerCase().includes(searchQuery.toLowerCase());
     return matchesCategory && matchesSearch;
   });
 
@@ -75,15 +75,15 @@ const BlogPage = () => {
           >
             <span className="eyebrow" style={{ color: 'var(--accent)' }}>Conhecimento & Estratégia</span>
             <h1 style={{ 
-              fontSize: 'clamp(2.5rem, 6vw, 4.5rem)', 
+              fontSize: 'clamp(2rem, 5vw, 4rem)', 
               color: 'var(--white)',
-              lineHeight: 1.08,
+              lineHeight: 1.1,
               marginBottom: '24px',
               fontWeight: 600,
-              fontFamily: 'var(--font-headings)',
-              letterSpacing: '-1px'
+              fontFamily: "'Inter', sans-serif",
+              letterSpacing: '-0.02em'
             }}>
-              Blog <span style={{ color: 'var(--accent)', fontFamily: "'Outfit', sans-serif", fontStyle: 'italic', fontWeight: 700 }}>Jurídico.</span>
+              Blog Jurídico
             </h1>
 
             <p style={{ 
@@ -215,22 +215,15 @@ const BlogPage = () => {
                   </div>
                   
                   <h3 style={{ 
-                    fontSize: '1.5rem', 
+                    fontSize: '1.4rem', 
                     color: 'var(--primary)', 
                     marginBottom: '16px',
-                    lineHeight: 1.2,
+                    lineHeight: 1.25,
                     fontWeight: 600,
-                    letterSpacing: '-0.5px'
+                    fontFamily: "'Inter', sans-serif",
+                    letterSpacing: '-0.01em'
                   }}>
-                    {post.titulo.split(' ').slice(0, -1).join(' ')} {' '}
-                    <span style={{ 
-                      color: 'var(--accent)', 
-                      fontFamily: "'Outfit', sans-serif", 
-                      fontStyle: 'italic', 
-                      fontWeight: 700 
-                    }}>
-                      {post.titulo.split(' ').slice(-1)}
-                    </span>
+                    {post.titulo}
                   </h3>
                   
                   <p style={{ 
