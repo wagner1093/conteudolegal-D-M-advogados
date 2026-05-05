@@ -1,5 +1,4 @@
 "use client";
-
 import {
   LayoutDashboard,
   FileText,
@@ -13,8 +12,9 @@ import {
   MessageCircle,
 } from "lucide-react";
 import Link from "next/link";
-import { usePathname } from "next/navigation";
+import { usePathname, useRouter } from "next/navigation";
 import React from "react";
+import { supabase } from "@/lib/supabaseClient";
 
 const MENU_ITEMS = [
   { icon: LayoutDashboard, label: "Painel", href: "/admin" },
@@ -28,6 +28,21 @@ const MENU_ITEMS = [
 
 export default function AdminSidebar() {
   const pathname = usePathname();
+  const router = useRouter();
+
+  const handleLogout = async () => {
+    try {
+      if (supabase) {
+        await supabase.auth.signOut();
+      }
+      // Redireciona para a home após o logout
+      router.push("/");
+    } catch (error) {
+      console.error("Erro ao sair:", error);
+      // Mesmo com erro, tenta forçar o redirecionamento
+      window.location.href = "/";
+    }
+  };
 
   return (
     <div
@@ -135,6 +150,7 @@ export default function AdminSidebar() {
       {/* ── Footer / Logout ── */}
       <div style={{ padding: "24px 16px", borderTop: "1px solid rgba(255,255,255,0.05)" }}>
         <button
+          onClick={handleLogout}
           style={{
             width: "100%",
             display: "flex",
@@ -160,3 +176,4 @@ export default function AdminSidebar() {
     </div>
   );
 }
+
