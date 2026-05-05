@@ -41,6 +41,7 @@ export default function EditPostPage() {
 
   const fetchPost = async () => {
     try {
+      if (!supabase) return;
       const { data, error: fetchError } = await supabase
         .from('site_dm_advogados_posts')
         .select('*')
@@ -73,6 +74,7 @@ export default function EditPostPage() {
     setError(null);
 
     try {
+      if (!supabase) throw new Error("Database client not initialized");
       const { error: updateError } = await supabase
         .from('site_dm_advogados_posts')
         .update(formData)

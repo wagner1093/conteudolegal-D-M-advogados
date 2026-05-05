@@ -26,6 +26,7 @@ export default function IntegrationsPage() {
 
   const fetchIntegrations = async () => {
     try {
+      if (!supabase) return;
       const { data, error } = await supabase
         .from("site_dm_advogados_integracoes")
         .select("*")
@@ -43,6 +44,7 @@ export default function IntegrationsPage() {
   const handleToggleStatus = async (id: string, currentStatus: string) => {
     const newStatus = currentStatus === "ativo" ? "inativo" : "ativo";
     try {
+      if (!supabase) throw new Error("Database client not initialized");
       const { error } = await supabase
         .from("site_dm_advogados_integracoes")
         .update({ status: newStatus })
@@ -58,6 +60,7 @@ export default function IntegrationsPage() {
   const handleDelete = async (id: string) => {
     if (!confirm("Tem certeza que deseja excluir esta integração?")) return;
     try {
+      if (!supabase) throw new Error("Database client not initialized");
       const { error } = await supabase
         .from("site_dm_advogados_integracoes")
         .delete()
@@ -279,6 +282,7 @@ function IntegrationModal({ onClose, onSave, editingItem }: { onClose: () => voi
     
     setIsSaving(true);
     try {
+      if (!supabase) throw new Error("Database client not initialized");
       const { data: { user } } = await supabase.auth.getUser();
       if (!user) throw new Error("Não autenticado");
 

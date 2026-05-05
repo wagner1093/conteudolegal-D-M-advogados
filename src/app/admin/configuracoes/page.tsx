@@ -78,6 +78,7 @@ export default function SettingsPage() {
 
   const fetchSettings = async () => {
     try {
+      if (!supabase) return;
       const { data: { user } } = await supabase.auth.getUser();
       
       let query = supabase.from("site_dm_advogados_configuracoes").select("*");
@@ -100,7 +101,9 @@ export default function SettingsPage() {
 
   const handleSave = async () => {
     setIsSaving(true);
+    setIsSaving(true);
     try {
+      if (!supabase) throw new Error("Database client not initialized");
       const { data: { user } } = await supabase.auth.getUser();
       
       const saveData: any = {
@@ -140,7 +143,7 @@ export default function SettingsPage() {
       const fileExt = file.name.split('.').pop();
       const fileName = `favicon-${Date.now()}.${fileExt}`;
       const filePath = `branding/${fileName}`;
-
+      if (!supabase) throw new Error("Database client not initialized");
       const { error: uploadError } = await supabase.storage
         .from('site_dm_advogados')
         .upload(filePath, file);
@@ -151,6 +154,7 @@ export default function SettingsPage() {
         throw uploadError;
       }
 
+      if (!supabase) throw new Error("Database client not initialized");
       const { data: { publicUrl } } = supabase.storage
         .from('site_dm_advogados')
         .getPublicUrl(filePath);
