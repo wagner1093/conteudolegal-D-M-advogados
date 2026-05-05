@@ -35,14 +35,15 @@ export default function AdminSidebar() {
       if (supabase) {
         await supabase.auth.signOut();
       }
-      // Redireciona para a home após o logout
-      router.push("/");
+      // Redireciona para o login após o logout
+      router.push("/admin/login");
     } catch (error) {
       console.error("Erro ao sair:", error);
       // Mesmo com erro, tenta forçar o redirecionamento
-      window.location.href = "/";
+      window.location.href = "/admin/login";
     }
   };
+
 
   return (
     <div
