@@ -1,7 +1,7 @@
 "use client";
 
 import { useEffect, useState } from "react";
-import { useRouter } from "next/navigation";
+import { useRouter, usePathname } from "next/navigation";
 import { supabase } from "@/lib/supabaseClient";
 import { Loader2 } from "lucide-react";
 
@@ -9,8 +9,11 @@ export default function AuthGuard({ children }: { children: React.ReactNode }) {
   const [loading, setLoading] = useState(true);
   const [authenticated, setAuthenticated] = useState(false);
   const router = useRouter();
+  const pathname = usePathname();
 
   useEffect(() => {
+    const isLoginPage = pathname === "/admin/login";
+
     const checkUser = async () => {
       if (!supabase) {
         setLoading(false);
@@ -19,9 +22,9 @@ export default function AuthGuard({ children }: { children: React.ReactNode }) {
 
       const { data: { session } } = await supabase.auth.getSession();
       
-      if (!session) {
+      if (!session && !isLoginPage) {
         router.push("/admin/login");
-      } else {
+      } else if (session) {
         setAuthenticated(true);
       }
       setLoading(false);
@@ -31,10 +34,10 @@ export default function AuthGuard({ children }: { children: React.ReactNode }) {
 
     // Subscribe to auth changes
     const { data: { subscription } } = supabase?.auth.onAuthStateChange((_event, session) => {
-      if (!session) {
+      if (!session && !isLoginPage) {
         router.push("/admin/login");
         setAuthenticated(false);
-      } else {
+      } else if (session) {
         setAuthenticated(true);
       }
     }) || { data: { subscription: null } };
@@ -42,7 +45,12 @@ export default function AuthGuard({ children }: { children: React.ReactNode }) {
     return () => {
       subscription?.unsubscribe();
     };
-  }, [router]);
+  }, [router, pathname]);
+
+  // Se for a página de login, permitimos renderizar sem autenticação
+  if (pathname === "/admin/login") {
+    return <>{children}</>;
+  }
 
   if (loading) {
     return (
@@ -72,3 +80,4 @@ export default function AuthGuard({ children }: { children: React.ReactNode }) {
 
   return <>{children}</>;
 }
+

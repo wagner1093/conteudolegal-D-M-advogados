@@ -1,12 +1,28 @@
+"use client";
+
 import AdminSidebar from "@/components/admin/Sidebar";
 import AdminHeader from "@/components/admin/AdminHeader";
 import AuthGuard from "@/components/admin/AuthGuard";
 import { ReactNode } from "react";
 import { Inter } from "next/font/google";
+import { usePathname } from "next/navigation";
 
 const inter = Inter({ subsets: ["latin"] });
 
 export default function AdminLayout({ children }: { children: ReactNode }) {
+  const pathname = usePathname();
+  const isLoginPage = pathname === "/admin/login";
+
+  if (isLoginPage) {
+    return (
+      <div className={inter.className}>
+        <AuthGuard>
+          {children}
+        </AuthGuard>
+      </div>
+    );
+  }
+
   return (
     <div className={inter.className}>
       <AuthGuard>
@@ -81,4 +97,5 @@ export default function AdminLayout({ children }: { children: ReactNode }) {
     </div>
   );
 }
+
 
