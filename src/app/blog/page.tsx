@@ -7,67 +7,40 @@ import Footer from '@/components/Footer';
 import { ArrowRight, Calendar, User, Search, ChevronRight } from 'lucide-react';
 import Link from 'next/link';
 
-const posts = [
-  {
-    id: 1,
-    title: 'Novas atualizações no Direito da Saúde em 2024',
-    excerpt: 'Entenda as principais mudanças regulatórias que impactam hospitais e profissionais da saúde neste ano. As atualizações focam na transparência e segurança do paciente.',
-    date: '28 Abr, 2024',
-    author: 'Dr. Lucas Dohmen',
-    category: 'Direito da Saúde',
-    image: '/images/blog/health-law.png',
-  },
-  {
-    id: 2,
-    title: 'Como prevenir litígios em casos de erro médico',
-    excerpt: 'A importância do prontuário médico e da comunicação assertiva na mitigação de riscos jurídicos. Estratégias práticas para profissionais e instituições.',
-    date: '15 Abr, 2024',
-    author: 'Dr. Alexandre Matta',
-    category: 'Erro Médico',
-    image: '/images/blog/medical-risk.png',
-  },
-  {
-    id: 3,
-    title: 'Telemedicina: Aspectos Legais e Desafios Éticos',
-    excerpt: 'Uma análise profunda sobre a regulamentação do atendimento remoto e a proteção de dados sensíveis. O que mudou com a nova resolução do CFM.',
-    date: '05 Abr, 2024',
-    author: 'Dra. Yarla Ferreira',
-    category: 'Bioética',
-    image: '/images/blog/telemedicine.png',
-  },
-  {
-    id: 4,
-    title: 'Responsabilidade Civil do Médico e LGPD',
-    excerpt: 'Como a Lei Geral de Proteção de Dados impacta a rotina dos consultórios e a responsabilidade civil dos profissionais frente ao vazamento de dados.',
-    date: '22 Mar, 2024',
-    author: 'Dr. Rafael Jelezoglo',
-    category: 'Digital',
-    image: '/images/blog/health-law.png',
-  },
-  {
-    id: 5,
-    title: 'Direito do Paciente com Doenças Raras',
-    excerpt: 'Os desafios jurídicos para a obtenção de medicamentos de alto custo e tratamentos experimentais no sistema público e privado.',
-    date: '10 Mar, 2024',
-    author: 'Dra. Bianca Fortes',
-    category: 'Direito da Saúde',
-    image: '/images/blog/medical-risk.png',
-  },
-  {
-    id: 6,
-    title: 'Compliance Hospitalar: Melhores Práticas',
-    excerpt: 'Como implementar um programa de integridade eficaz em instituições de saúde para evitar fraudes e melhorar a governança corporativa.',
-    date: '01 Mar, 2024',
-    author: 'Dr. Luiz Gustavo Ricca',
-    category: 'Compliance',
-    image: '/images/blog/telemedicine.png',
-  },
-
-];
+import { supabase } from '@/lib/supabaseClient';
 
 const BlogPage = () => {
   const [activeCategory, setActiveCategory] = useState('Todos');
   const [searchQuery, setSearchQuery] = useState('');
+  const [posts, setPosts] = useState<any[]>([]);
+  const [loading, setLoading] = useState(true);
+
+  React.useEffect(() => {
+    fetchPosts();
+  }, []);
+
+  const fetchPosts = async () => {
+    const client = supabase;
+    if (!client) {
+      setLoading(false);
+      return;
+    }
+
+    try {
+      const { data, error } = await client
+        .from('site_dm_advogados_posts')
+        .select('*')
+        .eq('status', 'Publicado')
+        .order('created_at', { ascending: false });
+
+      if (error) throw error;
+      setPosts(data || []);
+    } catch (err) {
+      console.error('Erro ao buscar posts:', err);
+    } finally {
+      setLoading(false);
+    }
+  };
 
   const filteredPosts = posts.filter(post => {
     const matchesCategory = activeCategory === 'Todos' || post.category === activeCategory;
@@ -183,10 +156,24 @@ const BlogPage = () => {
           {/* Posts Grid */}
           <div style={{ 
             display: 'grid', 
-            gridTemplateColumns: filteredPosts.length > 0 ? 'repeat(auto-fill, minmax(360px, 1fr))' : '1fr', 
+            gridTemplateColumns: loading ? '1fr' : filteredPosts.length > 0 ? 'repeat(auto-fill, minmax(360px, 1fr))' : '1fr', 
             gap: '40px' 
           }}>
-            {filteredPosts.length > 0 ? (
+            {loading ? (
+              <div style={{ textAlign: 'center', padding: '100px 0', gridColumn: '1 / -1' }}>
+                <div className="loader" style={{ 
+                  width: '40px', 
+                  height: '40px', 
+                  border: '3px solid var(--border)', 
+                  borderTopColor: 'var(--primary)', 
+                  borderRadius: '50%', 
+                  animation: 'spin 1s linear infinite',
+                  margin: '0 auto'
+                }} />
+                <style>{`@keyframes spin { to { transform: rotate(360deg); } }`}</style>
+                <p style={{ marginTop: '20px', color: 'var(--text-light)', fontWeight: 500 }}>Carregando artigos...</p>
+              </div>
+            ) : filteredPosts.length > 0 ? (
               filteredPosts.map((post, index) => (
                 <motion.article
                   key={post.id}
@@ -208,8 +195,8 @@ const BlogPage = () => {
               >
                 <div style={{ height: '240px', overflow: 'hidden' }}>
                   <img 
-                    src={post.image} 
-                    alt={post.title} 
+                    src={post.imagem_url || '/images/blog/health-law.png'} 
+                    alt={post.titulo} 
                     style={{ width: '100%', height: '100%', objectFit: 'cover' }}
                   />
                 </div>
@@ -223,7 +210,7 @@ const BlogPage = () => {
                       textTransform: 'uppercase',
                       letterSpacing: '1px'
                     }}>
-                      {post.category}
+                      {post.categoria}
                     </span>
                   </div>
                   
@@ -235,14 +222,14 @@ const BlogPage = () => {
                     fontWeight: 600,
                     letterSpacing: '-0.5px'
                   }}>
-                    {post.title.split(' ').slice(0, -1).join(' ')} {' '}
+                    {post.titulo.split(' ').slice(0, -1).join(' ')} {' '}
                     <span style={{ 
                       color: 'var(--accent)', 
                       fontFamily: "'Outfit', sans-serif", 
                       fontStyle: 'italic', 
                       fontWeight: 700 
                     }}>
-                      {post.title.split(' ').slice(-1)}
+                      {post.titulo.split(' ').slice(-1)}
                     </span>
                   </h3>
                   
@@ -253,7 +240,7 @@ const BlogPage = () => {
                     marginBottom: '24px',
                     flex: 1
                   }}>
-                    {post.excerpt}
+                    {post.resumo}
                   </p>
                   
                   <div style={{ 
@@ -267,7 +254,7 @@ const BlogPage = () => {
                       <div style={{ width: '32px', height: '32px', borderRadius: '50%', backgroundColor: 'var(--bg-secondary)', display: 'flex', alignItems: 'center', justifyContent: 'center' }}>
                         <User size={16} color="var(--primary)" />
                       </div>
-                      <span style={{ fontSize: '0.85rem', fontWeight: 500, color: 'var(--text)' }}>{post.author}</span>
+                      <span style={{ fontSize: '0.85rem', fontWeight: 500, color: 'var(--text)' }}>{post.autor}</span>
                     </div>
                     <Link href={`/blog/${post.id}`} style={{ color: 'var(--primary)', textDecoration: 'none' }}>
                       <motion.div whileHover={{ x: 5 }}>

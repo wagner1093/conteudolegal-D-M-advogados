@@ -19,28 +19,28 @@ export default async function RootLayout({
   let faviconUrl = "/favicon.ico";
 
   try {
-    if (!supabase) return;
+    if (supabase) {
+      const { data: scriptsData } = await supabase
+        .from("site_dm_advogados_integracoes")
+        .select("head_script, body_script")
+        .eq("status", "ativo");
 
-    const { data: scriptsData } = await supabase
-      .from("site_dm_advogados_integracoes")
-      .select("head_script, body_script")
-      .eq("status", "ativo");
+      if (scriptsData) {
+        scriptsData.forEach((s) => {
+          if (s.head_script) headScripts.push(s.head_script);
+          if (s.body_script) bodyScripts.push(s.body_script);
+        });
+      }
 
-    if (scriptsData) {
-      scriptsData.forEach((s) => {
-        if (s.head_script) headScripts.push(s.head_script);
-        if (s.body_script) bodyScripts.push(s.body_script);
-      });
-    }
+      const { data: configData } = await supabase
+        .from("site_dm_advogados_configuracoes")
+        .select("favicon_url")
+        .limit(1)
+        .maybeSingle();
 
-    const { data: configData } = await supabase
-      .from("site_dm_advogados_configuracoes")
-      .select("favicon_url")
-      .limit(1)
-      .maybeSingle();
-
-    if (configData?.favicon_url) {
-      faviconUrl = configData.favicon_url;
+      if (configData?.favicon_url) {
+        faviconUrl = configData.favicon_url;
+      }
     }
   } catch (error) {
     console.error("Erro ao carregar dados dinâmicos:", error);

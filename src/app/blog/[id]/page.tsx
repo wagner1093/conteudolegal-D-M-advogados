@@ -28,93 +28,81 @@ const LinkedinIcon = ({ size = 18, color = 'currentColor' }: { size?: number; co
 import Link from 'next/link';
 import { useParams } from 'next/navigation';
 
-const postsData = {
-  '1': {
-    title: 'Novas atualizações no Direito da Saúde em 2024',
-    date: '28 Abr, 2024',
-    author: 'Dr. Lucas Dohmen',
-    category: 'Direito da Saúde',
-    image: '/images/blog/health-law.png',
-    readTime: '8 min',
-    content: `
-      <p>O cenário do Direito da Saúde no Brasil está passando por transformações significativas em 2024. Novas resoluções e decisões dos tribunais superiores têm moldado a forma como hospitais, clínicas e profissionais da saúde operam e se defendem juridicamente.</p>
-      
-      <h3>A Transparência como Pilar Fundamental</h3>
-      <p>Uma das principais tendências deste ano é o reforço na transparência das informações. O dever de informar ao paciente não é mais apenas uma formalidade, mas um requisito essencial para a validade de qualquer procedimento. Isso inclui não apenas os riscos, mas também as alternativas de tratamento e as possíveis consequências da não realização do procedimento.</p>
-      
-      <h3>Novas Regulamentações da ANS</h3>
-      <p>A Agência Nacional de Saúde Suplementar (ANS) atualizou recentemente o rol de procedimentos e eventos em saúde, trazendo novos desafios para as operadoras de planos de saúde e oportunidades para os pacientes que necessitam de tratamentos de alta complexidade.</p>
-      
-      <blockquote>
-        "A segurança jurídica na área da saúde depende da conformidade rigorosa com as normas técnicas e éticas vigentes."
-      </blockquote>
-      
-      <h3>Impactos para Profissionais da Saúde</h3>
-      <p>Para o médico, a conformidade com a LGPD e o registro meticuloso em prontuários eletrônicos tornaram-se as melhores ferramentas de defesa preventiva. Em 2024, observamos um aumento no rigor da análise desses documentos em processos judiciais.</p>
-      
-      <p>Concluindo, manter-se atualizado com essas mudanças não é apenas uma necessidade acadêmica, mas uma estratégia vital para a sustentabilidade de qualquer prática médica contemporânea.</p>
-    `
-  },
-  '2': {
-    title: 'Como prevenir litígios em casos de erro médico',
-    date: '15 Abr, 2024',
-    author: 'Dr. Alexandre Matta',
-    category: 'Gestão de Risco',
-    image: '/images/blog/medical-risk.png',
-    readTime: '12 min',
-    content: `
-      <p>A judicialização da medicina é um fenômeno crescente que preocupa toda a classe médica. No entanto, a grande maioria dos processos por suposto erro médico poderia ser evitada com medidas preventivas eficazes e uma gestão de risco assertiva.</p>
-      
-      <h3>A Importância do Prontuário Médico</h3>
-      <p>O prontuário é o documento mais importante em uma defesa jurídica. Ele deve ser preenchido de forma clara, objetiva e, acima de tudo, contemporânea ao atendimento. Lacunas ou rasuras podem ser interpretadas negativamente em juízo.</p>
-      
-      <h3>Comunicação Médico-Paciente</h3>
-      <p>A falha na comunicação é a causa raiz de mais de 70% dos processos judiciais. Estabelecer uma relação de confiança e garantir que o paciente compreenda as limitações da medicina é fundamental.</p>
-      
-      <h3>Termo de Consentimento Livre e Esclarecido (TCLE)</h3>
-      <p>O TCLE não deve ser visto como um "escudo" burocrático, mas como um processo de diálogo. Documentar que o paciente foi devidamente esclarecido é a maior prova de boa-fé e respeito à autonomia.</p>
-    `
-  },
-  '3': {
-    title: 'Telemedicina: Aspectos Legais e Desafios Éticos',
-    date: '05 Abr, 2024',
-    author: 'Dra. Yarla Ferreira',
-    category: 'Bioética',
-    image: '/images/blog/telemedicine.png',
-    readTime: '10 min',
-    content: `
-      <p>A consolidação da telemedicina trouxe agilidade ao sistema de saúde, mas também abriu uma série de discussões jurídicas sobre a responsabilidade profissional e a proteção de dados sensíveis.</p>
-      
-      <h3>Regulamentação Atual</h3>
-      <p>Analisamos a última resolução do Conselho Federal de Medicina (CFM) que estabelece os critérios para a prática da telemedicina no Brasil, garantindo a autonomia do médico e a segurança do paciente.</p>
-      
-      <h3>Segurança de Dados e LGPD</h3>
-      <p>O tráfego de informações de saúde por meios digitais exige plataformas seguras com criptografia de ponta a ponta. O uso de aplicativos de mensagens comuns para consultas pode acarretar sérias sanções administrativas e civis.</p>
-      
-      <h3>O Futuro da Bioética Digital</h3>
-      <p>Como manter a humanização no atendimento remoto? Este é o grande desafio da bioética para os próximos anos. A tecnologia deve ser uma aliada, não um substituto para a ética médica tradicional.</p>
-    `
-  }
-};
+import { supabase } from '@/lib/supabaseClient';
 
 const BlogPostPage = () => {
   const params = useParams();
   const id = params?.id as string;
-  const post = postsData[id as keyof typeof postsData] || postsData['1'];
+  const [post, setPost] = React.useState<any>(null);
+  const [loading, setLoading] = React.useState(true);
+
+  React.useEffect(() => {
+    if (id) {
+      fetchPost();
+    }
+  }, [id]);
+
+  const fetchPost = async () => {
+    const client = supabase;
+    if (!client) {
+      setLoading(false);
+      return;
+    }
+
+    try {
+      const { data, error } = await client
+        .from('site_dm_advogados_posts')
+        .select('*')
+        .eq('id', id)
+        .single();
+
+      if (error) throw error;
+      setPost(data);
+    } catch (err) {
+      console.error('Erro ao buscar post:', err);
+    } finally {
+      setLoading(false);
+    }
+  };
 
   return (
     <main style={{ backgroundColor: 'var(--white)' }}>
       <Navbar />
 
-      {/* Post Header */}
-      <section style={{ 
-        padding: '180px 24px 120px', 
-        backgroundColor: 'var(--primary-deep)',
-        color: '#ffffff',
-        textAlign: 'center',
-        position: 'relative',
-        zIndex: 1
-      }}>
+      {/* Loading/Error State */}
+      {(loading || !post) && (
+        <section style={{ padding: '200px 24px', textAlign: 'center', backgroundColor: 'var(--primary-deep)', color: 'white' }}>
+          {loading ? (
+            <div className="loader" style={{ 
+              width: '40px', 
+              height: '40px', 
+              border: '3px solid rgba(255,255,255,0.1)', 
+              borderTopColor: 'var(--accent)', 
+              borderRadius: '50%', 
+              animation: 'spin 1s linear infinite',
+              margin: '0 auto 20px'
+            }} />
+          ) : (
+            <div>
+              <h2 style={{ fontSize: '2rem', marginBottom: '20px' }}>Artigo não encontrado</h2>
+              <Link href="/blog" style={{ color: 'var(--accent)', fontWeight: 600 }}>Voltar para o Blog</Link>
+            </div>
+          )}
+          <style>{`@keyframes spin { to { transform: rotate(360deg); } }`}</style>
+        </section>
+      )}
+
+      {post && !loading && (
+        <>
+          {/* Post Header */}
+          <section style={{ 
+            padding: '180px 24px 120px', 
+            backgroundColor: 'var(--primary-deep)',
+            color: '#ffffff',
+            textAlign: 'center',
+            position: 'relative',
+            zIndex: 1
+          }}>
         <div className="container" style={{ maxWidth: '900px', margin: '0 auto' }}>
           <motion.div
             initial={{ opacity: 0, y: 20 }}
@@ -156,24 +144,16 @@ const BlogPostPage = () => {
               animate={{ opacity: 1, y: 0 }}
               transition={{ duration: 0.6, delay: 0.1 }}
               style={{ 
-                fontSize: 'clamp(2.4rem, 5vw, 4rem)', 
-                lineHeight: 1.08, 
+                fontSize: 'clamp(2rem, 4vw, 3.5rem)', 
+                lineHeight: 1.1, 
                 marginBottom: '32px',
                 fontWeight: 600,
                 color: '#ffffff',
-                fontFamily: 'var(--font-headings)',
-                letterSpacing: '-1px'
+                fontFamily: "'Inter', sans-serif",
+                letterSpacing: '-0.02em'
               }}
             >
-              {post.title.split(' ').slice(0, -1).join(' ')} {' '}
-              <span style={{ 
-                color: 'var(--accent)', 
-                fontFamily: "'Outfit', sans-serif", 
-                fontStyle: 'italic', 
-                fontWeight: 700 
-              }}>
-                {post.title.split(' ').slice(-1)}
-              </span>
+              {post.title}
             </motion.h1>
 
             <div style={{ 
@@ -186,13 +166,13 @@ const BlogPostPage = () => {
               flexWrap: 'wrap'
             }}>
               <span style={{ display: 'flex', alignItems: 'center', gap: '10px' }}>
-                <Calendar size={18} color="var(--accent)" /> {post.date}
+                <Calendar size={18} color="var(--accent)" /> {new Date(post.created_at).toLocaleDateString('pt-BR')}
               </span>
               <span style={{ display: 'flex', alignItems: 'center', gap: '10px' }}>
-                <User size={18} color="var(--accent)" /> {post.author}
+                <User size={18} color="var(--accent)" /> {post.autor}
               </span>
               <span style={{ display: 'flex', alignItems: 'center', gap: '10px' }}>
-                <Clock size={18} color="var(--accent)" /> {post.readTime} de leitura
+                <Clock size={18} color="var(--accent)" /> {post.tempo_leitura || '5 min'} de leitura
               </span>
             </div>
           </motion.div>
@@ -214,8 +194,8 @@ const BlogPostPage = () => {
             }}
           >
             <img 
-              src={post.image} 
-              alt={post.title} 
+              src={post.imagem_url || '/images/blog/health-law.png'} 
+              alt={post.titulo} 
               style={{ width: '100%', height: '100%', objectFit: 'cover' }}
             />
           </motion.div>
@@ -241,7 +221,7 @@ const BlogPostPage = () => {
                 color: '#374151' 
               }}
               className="blog-content"
-              dangerouslySetInnerHTML={{ __html: post.content }}
+              dangerouslySetInnerHTML={{ __html: post.conteudo }}
             />
 
             {/* Social Share */}
@@ -293,8 +273,8 @@ const BlogPostPage = () => {
                     <User size={30} color="white" />
                   </div>
                   <div>
-                    <span style={{ display: 'block', fontWeight: 700, color: 'var(--primary)' }}>{post.author}</span>
-                    <span style={{ fontSize: '0.8rem', color: 'var(--text-light)' }}>Advogado Especialista</span>
+                    <span style={{ display: 'block', fontWeight: 700, color: 'var(--primary)', fontFamily: "'Inter', sans-serif" }}>{post.autor}</span>
+                    <span style={{ fontSize: '0.8rem', color: 'var(--text-light)', fontFamily: "'Inter', sans-serif" }}>Advogado Especialista</span>
                   </div>
                 </div>
                 <p style={{ fontSize: '0.85rem', color: 'var(--text-light)', lineHeight: 1.5 }}>
@@ -311,7 +291,7 @@ const BlogPostPage = () => {
                 <p style={{ fontSize: '0.9rem', color: 'rgba(255,255,255,0.7)', marginBottom: '24px', lineHeight: 1.5 }}>
                   Fale com nossos especialistas agora mesmo e tire suas dúvidas.
                 </p>
-                <a href="https://wa.me/5511987795023" className="btn btn-accent" style={{ width: '100%', borderRadius: '12px' }}>
+                <a href="https://wa.me/5547992793347" className="btn btn-accent" style={{ width: '100%', borderRadius: '12px', textAlign: 'center', textDecoration: 'none', display: 'block', padding: '14px' }}>
                   Falar no WhatsApp
                 </a>
               </div>
@@ -322,6 +302,8 @@ const BlogPostPage = () => {
 
       <Footer />
 
+        </>
+      )}
     </main>
   );
 };

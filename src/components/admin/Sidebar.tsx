@@ -9,6 +9,8 @@ import {
   LogOut,
   ChevronRight,
   Shield,
+  Globe,
+  MessageCircle,
 } from "lucide-react";
 import Link from "next/link";
 import { usePathname } from "next/navigation";
@@ -20,6 +22,8 @@ const MENU_ITEMS = [
   { icon: Users, label: "Leads", href: "/admin/leads" },
   { icon: Share2, label: "Integração", href: "/admin/integracao" },
   { icon: Settings, label: "Configurações", href: "/admin/configuracoes" },
+  { icon: Globe, label: "Ver Site", href: "/", target: "_blank" },
+  { icon: MessageCircle, label: "Falar com Suporte", href: "https://wa.me/5547992793347", target: "_blank" },
 ];
 
 export default function AdminSidebar() {
@@ -92,6 +96,7 @@ export default function AdminSidebar() {
               <Link
                 key={item.href}
                 href={item.href}
+                target={item.target || "_self"}
                 style={{
                   display: "flex",
                   alignItems: "center",
