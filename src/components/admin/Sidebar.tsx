@@ -30,13 +30,13 @@ export default function AdminSidebar() {
       style={{
         width: "280px",
         height: "100%",
-        background: "#0B1E2D",
+        background: "#1e293b",
         display: "flex",
         flexDirection: "column",
         flexShrink: 0,
         position: "relative",
         zIndex: 50,
-        boxShadow: "10px 0 30px rgba(0,0,0,0.1)",
+        boxShadow: "10px 0 30px rgba(0,0,0,0.05)",
       }}
     >
       {/* ── Brand Logo ── */}
@@ -60,21 +60,21 @@ export default function AdminSidebar() {
             boxShadow: "0 4px 12px rgba(197,160,89,0.3)",
           }}
         >
-          <Shield size={22} color="#0B1E2D" />
+          <Shield size={22} color="#1e293b" />
         </div>
         <div>
           <h2
             style={{
               color: "#ffffff",
-              fontSize: "18px",
-              fontWeight: 600,
+              fontSize: "16px",
+              fontWeight: 700,
               margin: 0,
-              letterSpacing: "0.5px",
+              letterSpacing: "-0.01em",
             }}
           >
-            D&M <span style={{ color: "#c5a059", fontWeight: 500 }}>Admin</span>
+            D&M <span style={{ color: "#c5a059", fontWeight: 600 }}>Admin</span>
           </h2>
-          <p style={{ color: "rgba(255,255,255,0.4)", fontSize: "10px", fontWeight: 600, textTransform: "uppercase", marginTop: "2px", letterSpacing: "1px" }}>
+          <p style={{ color: "rgba(255,255,255,0.4)", fontSize: "10px", fontWeight: 500, textTransform: "uppercase", marginTop: "1px", letterSpacing: "1px" }}>
             Management Portal
           </p>
         </div>

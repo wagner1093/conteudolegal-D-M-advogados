@@ -184,10 +184,10 @@ export default function SettingsPage() {
         }}
       >
         <div>
-          <h1 style={{ fontSize: "32px", fontWeight: 700, color: "#0B1E2D", margin: 0, letterSpacing: "-0.02em" }}>
+          <h1 style={{ fontSize: "28px", fontWeight: 700, color: "#1e293b", margin: 0, letterSpacing: "-0.02em" }}>
             Configurações
           </h1>
-          <p style={{ fontSize: "15px", color: "#64748b", marginTop: "6px", fontWeight: 500 }}>
+          <p style={{ fontSize: "14px", color: "#64748b", marginTop: "4px", fontWeight: 400 }}>
             Gerencie as preferências globais do seu escritório e as configurações do site.
           </p>
         </div>
@@ -197,7 +197,7 @@ export default function SettingsPage() {
           disabled={isSaving}
           style={{
             padding: "12px 28px",
-            background: isSaving ? "#22c55e" : "#0B1E2D",
+            background: isSaving ? "#22c55e" : "#1e293b",
             color: "#ffffff",
             border: "none",
             borderRadius: "14px",
@@ -252,10 +252,10 @@ export default function SettingsPage() {
                     padding: "14px 16px",
                     borderRadius: "16px",
                     border: "none",
-                    background: isActive ? "#0B1E2D" : "transparent",
+                    background: isActive ? "#1e293b" : "transparent",
                     color: isActive ? "#ffffff" : "#64748b",
-                    fontSize: "14px",
-                    fontWeight: 700,
+                    fontSize: "13px",
+                    fontWeight: 600,
                     cursor: "pointer",
                     transition: "all 0.2s ease",
                     textAlign: "left",
@@ -263,7 +263,7 @@ export default function SettingsPage() {
                   onMouseEnter={(e) => {
                     if (!isActive) {
                       e.currentTarget.style.background = "#f8fafc";
-                      e.currentTarget.style.color = "#0B1E2D";
+                      e.currentTarget.style.color = "#1e293b";
                     }
                   }}
                   onMouseLeave={(e) => {
@@ -299,7 +299,7 @@ export default function SettingsPage() {
           <div style={{
             marginTop: "24px",
             padding: "20px",
-            background: "linear-gradient(135deg, #0B1E2D 0%, #1c4b70 100%)",
+            background: "linear-gradient(135deg, #1e293b 0%, #1c4b70 100%)",
             borderRadius: "24px",
             color: "#ffffff",
             position: "relative",
@@ -310,19 +310,26 @@ export default function SettingsPage() {
             <p style={{ fontSize: "12px", color: "rgba(255,255,255,0.7)", lineHeight: "1.5", marginBottom: "16px" }}>
               Precisa de ajuda com alguma configuração? Nossa equipe está disponível.
             </p>
-            <button style={{
-              width: "100%",
-              padding: "10px",
-              background: "rgba(255,255,255,0.1)",
-              border: "1px solid rgba(255,255,255,0.2)",
-              borderRadius: "12px",
-              color: "#ffffff",
-              fontSize: "12px",
-              fontWeight: 700,
-              cursor: "pointer"
-            }}>
-              Falar com Suporte
-            </button>
+            <a 
+              href="https://wa.me/5547992793347" 
+              target="_blank" 
+              rel="noopener noreferrer"
+              style={{ textDecoration: 'none' }}
+            >
+              <button style={{
+                width: "100%",
+                padding: "10px",
+                background: "rgba(255,255,255,0.1)",
+                border: "1px solid rgba(255,255,255,0.2)",
+                borderRadius: "12px",
+                color: "#ffffff",
+                fontSize: "12px",
+                fontWeight: 700,
+                cursor: "pointer"
+              }}>
+                Falar com Suporte
+              </button>
+            </a>
           </div>
         </div>
 
@@ -337,9 +344,9 @@ export default function SettingsPage() {
               boxShadow: "0 10px 40px rgba(0,0,0,0.03)",
             }}
           >
-            <div style={{ display: "flex", alignItems: "center", gap: "12px", marginBottom: "32px" }}>
-              <div style={{ width: "8px", height: "24px", background: "#c5a059", borderRadius: "4px" }} />
-              <h3 style={{ fontSize: "20px", fontWeight: 700, color: "#0B1E2D", margin: 0 }}>
+            <div style={{ display: "flex", alignItems: "center", gap: "10px", marginBottom: "32px" }}>
+              <div style={{ width: "4px", height: "18px", background: "#c5a059", borderRadius: "2px", opacity: 0.8 }} />
+              <h3 style={{ fontSize: "18px", fontWeight: 600, color: "#1e293b", margin: 0 }}>
                 {activeTab}
               </h3>
             </div>
@@ -384,7 +391,7 @@ export default function SettingsPage() {
                 </div>
 
                 <div style={{ borderTop: "1px solid #f1f5f9", marginTop: "12px", paddingTop: "24px" }}>
-                  <h4 style={{ fontSize: "14px", fontWeight: 700, color: "#0B1E2D", marginBottom: "20px" }}>Redes Sociais</h4>
+                  <h4 style={{ fontSize: "13px", fontWeight: 600, color: "#475569", marginBottom: "20px", textTransform: 'uppercase', letterSpacing: '0.05em' }}>Redes Sociais</h4>
                   <div style={{ display: "grid", gridTemplateColumns: "1fr 1fr", gap: "20px" }}>
                     <Field 
                       label="Instagram" 
@@ -433,7 +440,7 @@ export default function SettingsPage() {
                   textAlign: "center",
                   gap: "20px"
                 }}>
-                  <h4 style={{ fontSize: "16px", fontWeight: 700, color: "#0B1E2D", alignSelf: "flex-start", margin: 0 }}>Ícone do Navegador</h4>
+                  <h4 style={{ fontSize: "16px", fontWeight: 700, color: "#1e293b", alignSelf: "flex-start", margin: 0 }}>Ícone do Navegador</h4>
                   
                   <div style={{
                     width: "120px",
@@ -469,7 +476,7 @@ export default function SettingsPage() {
                         background: "#ffffff",
                         border: "1px solid #e2e8f0",
                         borderRadius: "12px",
-                        color: "#0B1E2D",
+                        color: "#1e293b",
                         fontSize: "13px",
                         fontWeight: 700,
                         cursor: "pointer",
@@ -507,11 +514,11 @@ export default function SettingsPage() {
                         outline: "none",
                         fontFamily: "inherit",
                         fontWeight: 600,
-                        color: "#0B1E2D",
+                        color: "#1e293b",
                         lineHeight: "1.6",
                         transition: "all 0.2s ease",
                       }}
-                      onFocus={(e) => (e.currentTarget.style.borderColor = "#0B1E2D")}
+                      onFocus={(e) => (e.currentTarget.style.borderColor = "#1e293b")}
                       onBlur={(e) => (e.currentTarget.style.borderColor = "#e2e8f0")}
                     />
                   </div>
@@ -577,22 +584,6 @@ export default function SettingsPage() {
                 </div>
                 
                 <div style={{ borderTop: "1px solid #f1f5f9", paddingTop: "24px" }}>
-                  <button style={{
-                    background: "transparent",
-                    border: "1px solid #e2e8f0",
-                    padding: "12px 20px",
-                    borderRadius: "12px",
-                    color: "#ef4444",
-                    fontSize: "13px",
-                    fontWeight: 700,
-                    cursor: "pointer",
-                    transition: "all 0.2s"
-                  }}
-                  onMouseEnter={(e) => e.currentTarget.style.background = "#fff1f2"}
-                  onMouseLeave={(e) => e.currentTarget.style.background = "transparent"}
-                  >
-                    Ativar Autenticação em Dois Fatores (2FA)
-                  </button>
                 </div>
               </div>
             )}
@@ -605,20 +596,20 @@ export default function SettingsPage() {
 
 function Field({ label, placeholder, type = "text", value, onChange, icon: Icon, style = {} }: any) {
   return (
-    <div style={{ display: "flex", flexDirection: "column", gap: "10px", ...style }}>
-      <label style={{ fontSize: "14px", fontWeight: 700, color: "#475569" }}>{label}</label>
+    <div style={{ display: "flex", flexDirection: "column", gap: "8px", ...style }}>
+      <label style={{ fontSize: "13px", fontWeight: 600, color: "#64748b" }}>{label}</label>
       <div style={{ position: "relative" }}>
         {Icon && (
           <div style={{
             position: "absolute",
-            left: "16px",
+            left: "14px",
             top: "50%",
             transform: "translateY(-50%)",
             color: "#94a3b8",
             display: "flex",
             alignItems: "center"
           }}>
-            <Icon size={18} />
+            <Icon size={16} />
           </div>
         )}
         <input
@@ -628,21 +619,21 @@ function Field({ label, placeholder, type = "text", value, onChange, icon: Icon,
           onChange={(e) => onChange && onChange(e.target.value)}
           style={{
             width: "100%",
-            padding: "16px",
-            paddingLeft: Icon ? "48px" : "16px",
+            padding: "12px 16px",
+            paddingLeft: Icon ? "42px" : "16px",
             background: "#f8fafc",
             border: "1px solid #e2e8f0",
-            borderRadius: "16px",
+            borderRadius: "12px",
             fontSize: "14px",
             outline: "none",
-            transition: "all 0.2s cubic-bezier(0.4, 0, 0.2, 1)",
-            fontWeight: 600,
-            color: "#0B1E2D",
+            transition: "all 0.2s ease",
+            fontWeight: 500,
+            color: "#1e293b",
           }}
           onFocus={(e) => {
-            e.currentTarget.style.borderColor = "#0B1E2D";
+            e.currentTarget.style.borderColor = "#1e293b";
             e.currentTarget.style.background = "#ffffff";
-            e.currentTarget.style.boxShadow = "0 8px 24px -10px rgba(11,30,45,0.15)";
+            e.currentTarget.style.boxShadow = "0 4px 12px rgba(0,0,0,0.05)";
           }}
           onBlur={(e) => {
             e.currentTarget.style.borderColor = "#e2e8f0";

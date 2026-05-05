@@ -89,7 +89,7 @@ function StatCard({ title, value, desc, icon: Icon, accent }: StatProps) {
           style={{
             fontSize: "38px",
             fontWeight: 700,
-            color: "#0B1E2D",
+            color: "#1e293b",
             margin: "4px 0",
             lineHeight: 1,
           }}
@@ -171,7 +171,7 @@ export default function AdminDashboard() {
             style={{
               fontSize: "32px",
               fontWeight: 700,
-              color: "#0B1E2D",
+              color: "#1e293b",
               margin: 0,
               letterSpacing: "-0.5px",
             }}
@@ -248,7 +248,7 @@ export default function AdminDashboard() {
           }}
         >
           <div style={{ display: "flex", justifyContent: "space-between", alignItems: "center", marginBottom: "24px" }}>
-             <h3 style={{ fontSize: "18px", fontWeight: 700, color: "#0B1E2D", margin: 0 }}>
+             <h3 style={{ fontSize: "18px", fontWeight: 700, color: "#1e293b", margin: 0 }}>
                Acesso Rápido
              </h3>
              <span style={{ fontSize: "12px", color: "#64748b", fontWeight: 600, background: "#f1f5f9", padding: "4px 10px", borderRadius: "8px" }}>
@@ -344,7 +344,7 @@ function QuickActionCard({ icon: Icon, label, desc, href, color }: any) {
         <Icon size={20} strokeWidth={2.5} />
       </div>
       <div>
-        <div style={{ fontSize: "14px", fontWeight: 700, color: "#0B1E2D" }}>{label}</div>
+        <div style={{ fontSize: "14px", fontWeight: 700, color: "#1e293b" }}>{label}</div>
         <div style={{ fontSize: "11px", color: "#94a3b8", fontWeight: 500, marginTop: "2px" }}>{desc}</div>
       </div>
     </Link>

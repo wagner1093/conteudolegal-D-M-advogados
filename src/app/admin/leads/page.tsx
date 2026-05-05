@@ -100,7 +100,7 @@ export default function LeadsPage() {
       {/* ── Header ── */}
       <div style={{ display: "flex", justifyContent: "space-between", alignItems: "center", marginBottom: "40px" }}>
         <div>
-          <h1 style={{ fontSize: "28px", fontWeight: 700, color: "#0B1E2D", margin: 0, display: "flex", alignItems: "center", gap: "12px" }}>
+          <h1 style={{ fontSize: "28px", fontWeight: 700, color: "#1e293b", margin: 0, display: "flex", alignItems: "center", gap: "12px" }}>
             <span style={{ color: "#f59e0b" }}><Users size={28} strokeWidth={2.5} /></span>
             Gestão de Leads
           </h1>
@@ -137,7 +137,7 @@ export default function LeadsPage() {
               fontSize: "14px",
               fontWeight: 500,
               outline: "none",
-              color: "#0B1E2D",
+              color: "#1e293b",
               transition: "all 0.2s"
             }}
           />
@@ -152,8 +152,8 @@ export default function LeadsPage() {
                 borderRadius: "10px",
                 fontSize: "13px",
                 fontWeight: 600,
-                border: filterStatus === s ? "1px solid #0B1E2D" : "1px solid #e2e8f0",
-                background: filterStatus === s ? "#0B1E2D" : "#ffffff",
+                border: filterStatus === s ? "1px solid #1e293b" : "1px solid #e2e8f0",
+                background: filterStatus === s ? "#1e293b" : "#ffffff",
                 color: filterStatus === s ? "#ffffff" : "#64748b",
                 cursor: "pointer",
                 transition: "all 0.2s",
@@ -188,7 +188,7 @@ export default function LeadsPage() {
             {loading ? (
               <tr>
                 <td colSpan={5} style={{ padding: "100px", textAlign: "center" }}>
-                  <Loader2 size={32} className="animate-spin" color="#0B1E2D" />
+                  <Loader2 size={32} className="animate-spin" color="#1e293b" />
                 </td>
               </tr>
             ) : filteredLeads.length === 0 ? (
@@ -202,7 +202,7 @@ export default function LeadsPage() {
                 <tr key={lead.id} style={{ borderBottom: "1px solid #f1f5f9", transition: "all 0.2s" }} onMouseEnter={(e) => e.currentTarget.style.background = "#fbfcfd"} onMouseLeave={(e) => e.currentTarget.style.background = "transparent"}>
                   <td style={{ padding: "20px 24px" }}>
                     <div style={{ display: "flex", flexDirection: "column" }}>
-                      <span style={{ fontSize: "15px", fontWeight: 700, color: "#0B1E2D" }}>{lead.name}</span>
+                      <span style={{ fontSize: "15px", fontWeight: 700, color: "#1e293b" }}>{lead.name}</span>
                       <div style={{ display: "flex", gap: "12px", marginTop: "4px" }}>
                         <span style={{ fontSize: "12px", color: "#64748b", display: "flex", alignItems: "center", gap: "4px" }}>
                           <Mail size={12} /> {lead.email}

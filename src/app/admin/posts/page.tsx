@@ -99,10 +99,10 @@ export default function PostsPage() {
         }}
       >
         <div>
-          <h1 style={{ fontSize: "32px", fontWeight: 700, color: "#0B1E2D", margin: 0, letterSpacing: "-0.02em" }}>
+          <h1 style={{ fontSize: "28px", fontWeight: 700, color: "#1e293b", margin: 0, letterSpacing: "-0.02em" }}>
             Gerenciar Posts
           </h1>
-          <p style={{ fontSize: "15px", color: "#64748b", marginTop: "6px", fontWeight: 500 }}>
+          <p style={{ fontSize: "14px", color: "#64748b", marginTop: "4px", fontWeight: 400 }}>
             Crie, edite e organize os artigos do seu blog jurídico com facilidade.
           </p>
         </div>
@@ -111,7 +111,7 @@ export default function PostsPage() {
           href="/admin/posts/novo"
           style={{
             padding: "12px 24px",
-            background: "#0B1E2D",
+            background: "#1e293b",
             color: "#ffffff",
             border: "none",
             borderRadius: "14px",
@@ -121,17 +121,17 @@ export default function PostsPage() {
             display: "flex",
             alignItems: "center",
             gap: "10px",
-            boxShadow: "0 10px 25px -5px rgba(11,30,45,0.2)",
+            boxShadow: "0 10px 25px -5px rgba(30,41,59,0.2)",
             transition: "all 0.2s ease",
             textDecoration: "none"
           }}
           onMouseEnter={(e) => {
             e.currentTarget.style.transform = "translateY(-2px)";
-            e.currentTarget.style.boxShadow = "0 15px 30px -5px rgba(11,30,45,0.3)";
+            e.currentTarget.style.boxShadow = "0 15px 30px -5px rgba(30,41,59,0.3)";
           }}
           onMouseLeave={(e) => {
             e.currentTarget.style.transform = "translateY(0)";
-            e.currentTarget.style.boxShadow = "0 10px 25px -5px rgba(11,30,45,0.2)";
+            e.currentTarget.style.boxShadow = "0 10px 25px -5px rgba(30,41,59,0.2)";
           }}
         >
           <Plus size={20} strokeWidth={2.5} /> Novo Artigo
@@ -140,7 +140,7 @@ export default function PostsPage() {
 
       {/* ── Stats Summary ── */}
       <div style={{ display: "grid", gridTemplateColumns: "repeat(4, 1fr)", gap: "20px", marginBottom: "32px" }}>
-        <MiniStat label="Total de Posts" value={stats.total.toString()} color="#0B1E2D" />
+        <MiniStat label="Total de Posts" value={stats.total.toString()} color="#1e293b" />
         <MiniStat label="Publicados" value={stats.publicados.toString()} color="#22c55e" />
         <MiniStat label="Visualizações" value={stats.views.toString()} color="#6366f1" />
         <MiniStat label="Rascunhos" value={stats.rascunhos.toString()} color="#94a3b8" />
@@ -178,11 +178,11 @@ export default function PostsPage() {
               fontSize: "14px",
               outline: "none",
               fontWeight: 500,
-              color: "#0B1E2D",
+              color: "#1e293b",
               transition: "all 0.2s ease",
             }}
             onFocus={(e) => {
-              e.currentTarget.style.borderColor = "#0B1E2D";
+              e.currentTarget.style.borderColor = "#1e293b";
               e.currentTarget.style.background = "#ffffff";
             }}
             onBlur={(e) => {
@@ -238,7 +238,7 @@ export default function PostsPage() {
               {loading ? (
                 <tr>
                   <td colSpan={5} style={{ padding: "100px", textAlign: "center" }}>
-                    <Loader2 size={32} className="animate-spin" color="#0B1E2D" />
+                    <Loader2 size={32} className="animate-spin" color="#1e293b" />
                   </td>
                 </tr>
               ) : filteredPosts.length === 0 ? (
@@ -269,14 +269,14 @@ export default function PostsPage() {
                           <div style={{ position: "absolute", bottom: "-4px", right: "-4px", width: "12px", height: "12px", borderRadius: "50%", background: post.status === "Publicado" ? "#22c55e" : "#94a3b8", border: "2px solid #ffffff" }} />
                         </div>
                         <div>
-                          <div style={{ fontWeight: 700, color: "#0B1E2D", fontSize: "15px", marginBottom: "6px", lineHeight: "1.4" }}>
+                          <div style={{ fontWeight: 600, color: "#1e293b", fontSize: "15px", marginBottom: "6px", lineHeight: "1.4" }}>
                             {post.titulo}
                           </div>
                           <div style={{ display: "flex", gap: "14px", alignItems: "center" }}>
                             <span style={{ fontSize: "12px", color: "#64748b", display: "flex", alignItems: "center", gap: "5px", fontWeight: 600 }}>
                               <User size={13} strokeWidth={2.5} /> {post.autor}
                             </span>
-                            <span style={{ fontSize: "12px", color: "#0B1E2D", background: "rgba(11,30,45,0.05)", padding: "2px 8px", borderRadius: "6px", fontWeight: 700 }}>
+                            <span style={{ fontSize: "12px", color: "#1e293b", background: "rgba(30,41,59,0.05)", padding: "2px 8px", borderRadius: "6px", fontWeight: 600 }}>
                               {post.categoria}
                             </span>
                           </div>
@@ -288,7 +288,7 @@ export default function PostsPage() {
                     </td>
                     <td style={{ padding: "24px" }}>
                       <div style={{ display: "flex", flexDirection: "column", gap: "4px" }}>
-                        <span style={{ fontSize: "14px", fontWeight: 700, color: "#0B1E2D" }}>
+                        <span style={{ fontSize: "14px", fontWeight: 700, color: "#1e293b" }}>
                           {(post.visualizacoes || 0).toLocaleString()}
                         </span>
                         <span style={{ fontSize: "11px", color: "#64748b", fontWeight: 500 }}>Visualizações</span>
@@ -327,11 +327,11 @@ export default function PostsPage() {
           }}
         >
           <p style={{ fontSize: "14px", color: "#64748b", fontWeight: 600 }}>
-            Exibindo <span style={{ color: "#0B1E2D" }}>{filteredPosts.length}</span> de <span style={{ color: "#0B1E2D" }}>{posts.length}</span> resultados
+            Exibindo <span style={{ color: "#1e293b" }}>{filteredPosts.length}</span> de <span style={{ color: "#1e293b" }}>{posts.length}</span> resultados
           </p>
           <div style={{ display: "flex", gap: "10px" }}>
             <button style={paginationButtonStyle}><ChevronLeft size={20} /></button>
-            <button style={{ ...paginationButtonStyle, background: "#0B1E2D", color: "#ffffff", borderColor: "#0B1E2D" }}>1</button>
+            <button style={{ ...paginationButtonStyle, background: "#1e293b", color: "#ffffff", borderColor: "#1e293b" }}>1</button>
             <button style={paginationButtonStyle}>2</button>
             <button style={paginationButtonStyle}>3</button>
             <button style={paginationButtonStyle}><ChevronRight size={20} /></button>

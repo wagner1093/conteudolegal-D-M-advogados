@@ -104,7 +104,7 @@ export default function IntegrationsPage() {
         }}
       >
         <div>
-          <h1 style={{ fontSize: "28px", fontWeight: 700, color: "#0B1E2D", margin: 0, display: "flex", alignItems: "center", gap: "12px" }}>
+          <h1 style={{ fontSize: "28px", fontWeight: 700, color: "#1e293b", margin: 0, display: "flex", alignItems: "center", gap: "12px" }}>
             <span style={{ color: "#8b5cf6" }}><Code2 size={28} strokeWidth={2.5} /></span>
             Pixels & Integrações
           </h1>
@@ -140,12 +140,12 @@ export default function IntegrationsPage() {
       {/* ── Integrations Grid ── */}
       {loading ? (
         <div style={{ display: "flex", justifyContent: "center", padding: "100px" }}>
-          <Loader2 className="animate-spin" size={40} color="#0B1E2D" />
+          <Loader2 className="animate-spin" size={40} color="#1e293b" />
         </div>
       ) : integrations.length === 0 ? (
         <div style={{ textAlign: "center", padding: "80px", background: "#ffffff", borderRadius: "24px", border: "1px dashed #e2e8f0" }}>
           <Code2 size={48} color="#94a3b8" style={{ marginBottom: "20px" }} />
-          <h3 style={{ fontSize: "18px", fontWeight: 700, color: "#0B1E2D" }}>Nenhuma integração configurada</h3>
+          <h3 style={{ fontSize: "18px", fontWeight: 700, color: "#1e293b" }}>Nenhuma integração configurada</h3>
           <p style={{ fontSize: "14px", color: "#64748b", marginTop: "8px" }}>Comece adicionando um script do Google Analytics ou Pixel do Facebook.</p>
         </div>
       ) : (

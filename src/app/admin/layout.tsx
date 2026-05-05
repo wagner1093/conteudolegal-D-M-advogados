@@ -1,10 +1,13 @@
 import AdminSidebar from "@/components/admin/Sidebar";
 import AdminHeader from "@/components/admin/AdminHeader";
 import { ReactNode } from "react";
+import { Inter } from "next/font/google";
+
+const inter = Inter({ subsets: ["latin"] });
 
 export default function AdminLayout({ children }: { children: ReactNode }) {
   return (
-    <>
+    <div className={inter.className}>
       <div
         suppressHydrationWarning
         style={{
@@ -72,6 +75,6 @@ export default function AdminLayout({ children }: { children: ReactNode }) {
           </footer>
         </div>
       </div>
-    </>
+    </div>
   );
 }

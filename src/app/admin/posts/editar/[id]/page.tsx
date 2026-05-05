@@ -5,15 +5,17 @@ import {
   ArrowLeft, 
   Save, 
   Eye, 
-  Image as ImageIcon, 
+  ImageIcon, 
   Loader2, 
   CheckCircle2,
-  AlertCircle
+  AlertCircle,
+  Plus
 } from 'lucide-react';
-import { motion } from 'framer-motion';
+import { motion, AnimatePresence } from 'framer-motion';
 import Link from 'next/link';
 import { useRouter, useParams } from 'next/navigation';
 import { supabase } from "@/lib/supabaseClient";
+import RichTextEditor from '@/components/RichTextEditor';
 
 export default function EditPostPage() {
   const router = useRouter();
@@ -22,6 +24,8 @@ export default function EditPostPage() {
   
   const [loading, setLoading] = useState(true);
   const [saving, setSaving] = useState(false);
+  const [uploading, setUploading] = useState(false);
+  const fileInputRef = React.useRef<HTMLInputElement>(null);
   const [success, setSuccess] = useState(false);
   const [error, setError] = useState<string | null>(null);
 
@@ -31,13 +35,61 @@ export default function EditPostPage() {
     categoria: '',
     status: '',
     conteudo: '',
-    imagem_url: '',
-    resumo: ''
+    imagem_url: ''
   });
 
+  const [categories, setCategories] = useState<string[]>([]);
+  const [isAddingCategory, setIsAddingCategory] = useState(false);
+  const [newCategoryName, setNewCategoryName] = useState('');
+  const [loadingCategories, setLoadingCategories] = useState(true);
+
   useEffect(() => {
-    if (id) fetchPost();
+    if (id) {
+      fetchPost();
+      fetchCategories();
+    }
   }, [id]);
+
+  const fetchCategories = async () => {
+    try {
+      const { data, error } = await supabase
+        .from('site_dm_advogados_categorias')
+        .select('nome')
+        .order('nome');
+
+      if (error) throw error;
+      if (data) {
+        setCategories(data.map(c => c.nome));
+      }
+    } catch (err) {
+      console.error('Erro ao buscar categorias:', err);
+    } finally {
+      setLoadingCategories(false);
+    }
+  };
+
+  const handleAddCategory = async () => {
+    if (!newCategoryName.trim()) return;
+    
+    setSaving(true);
+    try {
+      const { error } = await supabase
+        .from('site_dm_advogados_categorias')
+        .insert([{ nome: newCategoryName.trim() }]);
+
+      if (error) throw error;
+
+      setCategories(prev => [...prev, newCategoryName.trim()].sort());
+      setFormData(prev => ({ ...prev, categoria: newCategoryName.trim() }));
+      setNewCategoryName('');
+      setIsAddingCategory(false);
+    } catch (err) {
+      console.error('Erro ao adicionar categoria:', err);
+      alert('Erro ao adicionar categoria. Talvez ela já exista?');
+    } finally {
+      setSaving(false);
+    }
+  };
 
   const fetchPost = async () => {
     const client = supabase;
@@ -57,8 +109,7 @@ export default function EditPostPage() {
           categoria: data.categoria || '',
           status: data.status || '',
           conteudo: data.conteudo || '',
-          imagem_url: data.imagem_url || '',
-          resumo: data.resumo || ''
+          imagem_url: data.imagem_url || ''
         });
       }
     } catch (err: any) {
@@ -66,6 +117,35 @@ export default function EditPostPage() {
       setError('Não foi possível carregar o artigo.');
     } finally {
       setLoading(false);
+    }
+  };
+
+  const handleImageUpload = async (e: React.ChangeEvent<HTMLInputElement>) => {
+    const file = e.target.files?.[0];
+    if (!file) return;
+
+    setUploading(true);
+    try {
+      const fileExt = file.name.split('.').pop();
+      const fileName = `${Math.random().toString(36).substring(2)}.${fileExt}`;
+      const filePath = `${fileName}`;
+
+      const { data, error: uploadError } = await supabase.storage
+        .from('blog_covers')
+        .upload(filePath, file);
+
+      if (uploadError) throw uploadError;
+
+      const { data: { publicUrl } } = supabase.storage
+        .from('blog_covers')
+        .getPublicUrl(filePath);
+
+      setFormData(prev => ({ ...prev, imagem_url: publicUrl }));
+    } catch (err) {
+      console.error('Erro no upload:', err);
+      alert('Erro ao fazer upload da imagem.');
+    } finally {
+      setUploading(false);
     }
   };
 
@@ -102,7 +182,7 @@ export default function EditPostPage() {
   if (loading) {
     return (
       <div style={{ height: '70vh', display: 'flex', alignItems: 'center', justifyContent: 'center' }}>
-        <Loader2 size={40} className="animate-spin" color="#0B1E2D" />
+        <Loader2 size={40} className="animate-spin" color="#1e293b" />
       </div>
     );
   }
@@ -129,7 +209,7 @@ export default function EditPostPage() {
         }}>
           <CheckCircle2 size={40} color="#22c55e" />
         </div>
-        <h2 style={{ fontSize: '24px', color: '#0B1E2D', fontWeight: 700, marginBottom: '12px' }}>
+        <h2 style={{ fontSize: '24px', color: '#1e293b', fontWeight: 700, marginBottom: '12px' }}>
           Artigo Atualizado!
         </h2>
         <p style={{ color: '#64748b' }}>Redirecionando para a listagem...</p>
@@ -157,36 +237,19 @@ export default function EditPostPage() {
           >
             <ArrowLeft size={16} /> Voltar para Artigos
           </Link>
-          <h1 style={{ fontSize: '28px', color: '#0B1E2D', fontWeight: 800, letterSpacing: '-0.5px' }}>
+          <h1 style={{ fontSize: '28px', color: '#1e293b', fontWeight: 800, letterSpacing: '-0.5px' }}>
             Editar Artigo
           </h1>
         </div>
 
         <div style={{ display: 'flex', gap: '12px' }}>
           <button 
-            type="button"
-            style={{
-              padding: '10px 20px',
-              borderRadius: '10px',
-              background: '#fff',
-              border: '1px solid #e2e8f0',
-              color: '#64748b',
-              fontWeight: 600,
-              display: 'flex',
-              alignItems: 'center',
-              gap: '8px',
-              cursor: 'pointer'
-            }}
-          >
-            <Eye size={18} /> Visualizar
-          </button>
-          <button 
             onClick={handleSubmit}
             disabled={saving}
             style={{
               padding: '10px 24px',
               borderRadius: '10px',
-              background: '#0B1E2D',
+              background: '#1e293b',
               color: '#fff',
               border: 'none',
               fontWeight: 600,
@@ -236,23 +299,11 @@ export default function EditPostPage() {
               />
             </Field>
 
-            <Field label="Resumo (Opcional)">
-              <textarea 
-                placeholder="Uma breve descrição para a listagem..."
-                rows={3}
-                value={formData.resumo}
-                onChange={(e) => setFormData({...formData, resumo: e.target.value})}
-                style={{...inputStyle, resize: 'vertical'}}
-              />
-            </Field>
-
             <Field label="Conteúdo do Artigo">
-              <textarea 
-                placeholder="Escreva seu artigo aqui..."
-                rows={15}
+              <RichTextEditor 
                 value={formData.conteudo}
-                onChange={(e) => setFormData({...formData, conteudo: e.target.value})}
-                style={{...inputStyle, resize: 'vertical', fontFamily: 'inherit'}}
+                onChange={(content) => setFormData({...formData, conteudo: content})}
+                placeholder="Escreva seu artigo aqui..."
               />
             </Field>
           </Card>
@@ -262,29 +313,126 @@ export default function EditPostPage() {
         <div style={{ display: 'flex', flexDirection: 'column', gap: '24px' }}>
           <Card title="Configurações">
             <Field label="Autor">
-              <select 
+              <input 
+                type="text"
+                placeholder="Ex: Dr. Roberto Matta"
                 value={formData.autor}
                 onChange={(e) => setFormData({...formData, autor: e.target.value})}
                 style={inputStyle}
-              >
-                <option>Dr. Roberto Matta</option>
-                <option>Dra. Ana Dohmen</option>
-                <option>Equipe DMA</option>
-              </select>
+              />
             </Field>
 
             <Field label="Categoria">
-              <select 
-                value={formData.categoria}
-                onChange={(e) => setFormData({...formData, categoria: e.target.value})}
-                style={inputStyle}
-              >
-                <option>Direito da Saúde</option>
-                <option>Erro Médico</option>
-                <option>Planos de Saúde</option>
-                <option>Regulatório</option>
-                <option>Tecnologia</option>
-              </select>
+              <div style={{ position: 'relative' }}>
+                <div style={{ display: 'flex', gap: '8px' }}>
+                  <select 
+                    value={formData.categoria}
+                    onChange={(e) => setFormData({...formData, categoria: e.target.value})}
+                    style={{ ...inputStyle, flex: 1 }}
+                    disabled={loadingCategories}
+                  >
+                    {loadingCategories ? (
+                      <option>Carregando...</option>
+                    ) : (
+                      categories.map(cat => (
+                        <option key={cat} value={cat}>{cat}</option>
+                      ))
+                    )}
+                  </select>
+                  <button
+                    type="button"
+                    onClick={() => setIsAddingCategory(!isAddingCategory)}
+                    style={{
+                      padding: '0 12px',
+                      borderRadius: '10px',
+                      border: '1px solid #e2e8f0',
+                      background: isAddingCategory ? '#1e293b' : '#fff',
+                      color: isAddingCategory ? '#fff' : '#1e293b',
+                      cursor: 'pointer',
+                      display: 'flex',
+                      alignItems: 'center',
+                      justifyContent: 'center',
+                      transition: 'all 0.2s ease'
+                    }}
+                    title="Adicionar Nova Categoria"
+                  >
+                    <Plus size={20} style={{ transform: isAddingCategory ? 'rotate(45deg)' : 'none', transition: 'transform 0.2s' }} />
+                  </button>
+                </div>
+
+                <AnimatePresence>
+                  {isAddingCategory && (
+                    <motion.div 
+                      initial={{ opacity: 0, y: -10, scale: 0.95 }}
+                      animate={{ opacity: 1, y: 0, scale: 1 }}
+                      exit={{ opacity: 0, y: -10, scale: 0.95 }}
+                      style={{ 
+                        marginTop: '12px',
+                        padding: '16px',
+                        background: '#fff',
+                        borderRadius: '12px',
+                        border: '1px solid #e2e8f0',
+                        boxShadow: '0 10px 25px -5px rgba(0, 0, 0, 0.1), 0 8px 10px -6px rgba(0, 0, 0, 0.1)',
+                        zIndex: 10
+                      }}
+                    >
+                      <label style={{ display: 'block', fontSize: '11px', fontWeight: 700, color: '#94a3b8', textTransform: 'uppercase', marginBottom: '8px' }}>
+                        Nova Categoria
+                      </label>
+                      <div style={{ display: 'flex', flexDirection: 'column', gap: '10px' }}>
+                        <input 
+                          type="text"
+                          placeholder="Digite o nome..."
+                          value={newCategoryName}
+                          onChange={(e) => setNewCategoryName(e.target.value)}
+                          autoFocus
+                          style={{
+                            ...inputStyle,
+                            background: '#f8fafc',
+                            borderColor: '#cbd5e1'
+                          }}
+                        />
+                        <div style={{ display: 'flex', gap: '8px' }}>
+                          <button
+                            type="button"
+                            onClick={handleAddCategory}
+                            style={{
+                              flex: 1,
+                              padding: '10px',
+                              borderRadius: '8px',
+                              background: '#1e293b',
+                              color: '#fff',
+                              border: 'none',
+                              fontWeight: 700,
+                              fontSize: '13px',
+                              cursor: 'pointer',
+                              boxShadow: '0 4px 6px -1px rgba(30, 41, 59, 0.2)'
+                            }}
+                          >
+                            Criar Categoria
+                          </button>
+                          <button
+                            type="button"
+                            onClick={() => setIsAddingCategory(false)}
+                            style={{
+                              padding: '10px 16px',
+                              borderRadius: '8px',
+                              background: '#f1f5f9',
+                              color: '#64748b',
+                              border: 'none',
+                              fontWeight: 600,
+                              fontSize: '13px',
+                              cursor: 'pointer'
+                            }}
+                          >
+                            Cancelar
+                          </button>
+                        </div>
+                      </div>
+                    </motion.div>
+                  )}
+                </AnimatePresence>
+              </div>
             </Field>
 
             <Field label="Status">
@@ -301,35 +449,58 @@ export default function EditPostPage() {
           </Card>
 
           <Card title="Imagem de Capa">
-            <div style={{
-              width: '100%',
-              height: '160px',
-              borderRadius: '12px',
-              border: '2px dashed #e2e8f0',
-              display: 'flex',
-              flexDirection: 'column',
-              alignItems: 'center',
-              justifyContent: 'center',
-              color: '#94a3b8',
-              cursor: 'pointer',
-              overflow: 'hidden',
-              position: 'relative',
-              background: formData.imagem_url ? `url(${formData.imagem_url}) center/cover` : '#f8fafc'
-            }}>
-              {!formData.imagem_url && (
+            <input 
+              type="file"
+              ref={fileInputRef}
+              onChange={handleImageUpload}
+              accept="image/*"
+              style={{ display: 'none' }}
+            />
+            <div 
+              onClick={() => fileInputRef.current?.click()}
+              style={{
+                width: '100%',
+                height: '160px',
+                borderRadius: '12px',
+                border: '2px dashed #e2e8f0',
+                display: 'flex',
+                flexDirection: 'column',
+                alignItems: 'center',
+                justifyContent: 'center',
+                color: '#94a3b8',
+                cursor: 'pointer',
+                overflow: 'hidden',
+                position: 'relative',
+                background: formData.imagem_url ? `url(${formData.imagem_url}) center/cover` : '#f8fafc',
+                transition: 'all 0.2s ease'
+              }}
+              onMouseOver={(e) => e.currentTarget.style.borderColor = '#1e293b'}
+              onMouseOut={(e) => e.currentTarget.style.borderColor = '#e2e8f0'}
+            >
+              {uploading ? (
+                <Loader2 size={32} className="animate-spin" />
+              ) : !formData.imagem_url ? (
                 <>
                   <ImageIcon size={32} style={{ marginBottom: '8px' }} />
-                  <span style={{ fontSize: '12px', fontWeight: 600 }}>URL da Imagem</span>
+                  <span style={{ fontSize: '12px', fontWeight: 600 }}>Clique para Upload</span>
                 </>
+              ) : (
+                <div style={{
+                  position: 'absolute',
+                  bottom: 0,
+                  left: 0,
+                  right: 0,
+                  background: 'rgba(30, 41, 59, 0.7)',
+                  color: '#fff',
+                  padding: '8px',
+                  fontSize: '11px',
+                  textAlign: 'center',
+                  fontWeight: 600
+                }}>
+                  Alterar Imagem
+                </div>
               )}
             </div>
-            <input 
-              type="text"
-              placeholder="https://..."
-              value={formData.imagem_url}
-              onChange={(e) => setFormData({...formData, imagem_url: e.target.value})}
-              style={{ ...inputStyle, marginTop: '12px', fontSize: '12px' }}
-            />
           </Card>
         </div>
       </form>
@@ -346,7 +517,7 @@ function Card({ children, title }: { children: React.ReactNode; title?: string }
       boxShadow: '0 4px 20px rgba(0,0,0,0.03)',
       border: '1px solid #f1f5f9'
     }}>
-      {title && <h3 style={{ fontSize: '14px', color: '#0B1E2D', fontWeight: 700, textTransform: 'uppercase', letterSpacing: '1px', marginBottom: '20px' }}>{title}</h3>}
+      {title && <h3 style={{ fontSize: '14px', color: '#1e293b', fontWeight: 700, textTransform: 'uppercase', letterSpacing: '1px', marginBottom: '20px' }}>{title}</h3>}
       {children}
     </div>
   );
@@ -367,7 +538,7 @@ const inputStyle = {
   borderRadius: '10px',
   border: '1px solid #e2e8f0',
   fontSize: '14px',
-  color: '#0B1E2D',
+  color: '#1e293b',
   outline: 'none',
   transition: 'border-color 0.2s',
   background: '#f8fafc'
