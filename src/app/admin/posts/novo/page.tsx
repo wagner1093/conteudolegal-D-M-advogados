@@ -37,8 +37,9 @@ export default function NewPostPage() {
     setError(null);
 
     try {
-      if (!supabase) throw new Error("Database client not initialized");
-      const { error: insertError } = await supabase
+      const client = supabase;
+      if (!client) throw new Error("Database client not initialized");
+      const { error: insertError } = await client
         .from('site_dm_advogados_posts')
         .insert([{
           ...formData,

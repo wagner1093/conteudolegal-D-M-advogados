@@ -40,9 +40,10 @@ export default function EditPostPage() {
   }, [id]);
 
   const fetchPost = async () => {
+    const client = supabase;
+    if (!client) return;
     try {
-      if (!supabase) return;
-      const { data, error: fetchError } = await supabase
+      const { data, error: fetchError } = await client
         .from('site_dm_advogados_posts')
         .select('*')
         .eq('id', id)
@@ -70,12 +71,16 @@ export default function EditPostPage() {
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
+    const client = supabase;
+    if (!client) {
+      console.error("Database client not initialized");
+      return;
+    }
     setSaving(true);
     setError(null);
 
     try {
-      if (!supabase) throw new Error("Database client not initialized");
-      const { error: updateError } = await supabase
+      const { error: updateError } = await client
         .from('site_dm_advogados_posts')
         .update(formData)
         .eq('id', id);

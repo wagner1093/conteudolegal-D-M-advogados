@@ -36,9 +36,10 @@ export default function PostsPage() {
   }, []);
 
   const fetchPosts = async () => {
+    const client = supabase;
+    if (!client) return;
     try {
-      if (!supabase) return;
-      const { data, error } = await supabase
+      const { data, error } = await client
         .from("site_dm_advogados_posts")
         .select("*")
         .order("created_at", { ascending: false });
@@ -63,9 +64,13 @@ export default function PostsPage() {
 
   const handleDelete = async (id: string) => {
     if (!confirm("Tem certeza que deseja excluir este artigo?")) return;
+    const client = supabase;
+    if (!client) {
+      console.error("Database client not initialized");
+      return;
+    }
     try {
-      if (!supabase) throw new Error("Database client not initialized");
-      const { error } = await supabase
+      const { error } = await client
         .from("site_dm_advogados_posts")
         .delete()
         .eq("id", id);

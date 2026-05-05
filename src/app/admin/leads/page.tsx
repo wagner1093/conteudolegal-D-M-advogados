@@ -29,9 +29,10 @@ export default function LeadsPage() {
   }, []);
 
   const fetchLeads = async () => {
+    const client = supabase;
+    if (!client) return;
     try {
-      if (!supabase) return;
-      const { data, error } = await supabase
+      const { data, error } = await client
         .from("site_dm_advogados_leads")
         .select("*")
         .order("created_at", { ascending: false });
@@ -47,9 +48,13 @@ export default function LeadsPage() {
 
   const handleDelete = async (id: string) => {
     if (!confirm("Deseja realmente excluir este lead?")) return;
+    const client = supabase;
+    if (!client) {
+      console.error("Database client not initialized");
+      return;
+    }
     try {
-      if (!supabase) throw new Error("Database client not initialized");
-      const { error } = await supabase
+      const { error } = await client
         .from("site_dm_advogados_leads")
         .delete()
         .eq("id", id);
@@ -61,9 +66,13 @@ export default function LeadsPage() {
   };
 
   const updateStatus = async (id: string, newStatus: string) => {
+    const client = supabase;
+    if (!client) {
+      console.error("Database client not initialized");
+      return;
+    }
     try {
-      if (!supabase) throw new Error("Database client not initialized");
-      const { error } = await supabase
+      const { error } = await client
         .from("site_dm_advogados_leads")
         .update({ status: newStatus })
         .eq("id", id);

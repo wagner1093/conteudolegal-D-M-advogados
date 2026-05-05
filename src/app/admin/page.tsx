@@ -127,11 +127,12 @@ export default function AdminDashboard() {
   }, []);
 
   const fetchCounts = async () => {
+    const client = supabase;
+    if (!client) return;
     try {
-      if (!supabase) return;
       const [{ count: postCount }, { count: leadCount }] = await Promise.all([
-        supabase.from("site_dm_advogados_posts").select("*", { count: "exact", head: true }),
-        supabase.from("site_dm_advogados_leads").select("*", { count: "exact", head: true })
+        client.from("site_dm_advogados_posts").select("*", { count: "exact", head: true }),
+        client.from("site_dm_advogados_leads").select("*", { count: "exact", head: true })
       ]);
 
       setCounts({

@@ -25,9 +25,10 @@ export default function IntegrationsPage() {
   }, []);
 
   const fetchIntegrations = async () => {
+    const client = supabase;
+    if (!client) return;
     try {
-      if (!supabase) return;
-      const { data, error } = await supabase
+      const { data, error } = await client
         .from("site_dm_advogados_integracoes")
         .select("*")
         .order("created_at", { ascending: false });
@@ -42,10 +43,14 @@ export default function IntegrationsPage() {
   };
 
   const handleToggleStatus = async (id: string, currentStatus: string) => {
+    const client = supabase;
+    if (!client) {
+      console.error("Database client not initialized");
+      return;
+    }
     const newStatus = currentStatus === "ativo" ? "inativo" : "ativo";
     try {
-      if (!supabase) throw new Error("Database client not initialized");
-      const { error } = await supabase
+      const { error } = await client
         .from("site_dm_advogados_integracoes")
         .update({ status: newStatus })
         .eq("id", id);
@@ -59,9 +64,13 @@ export default function IntegrationsPage() {
 
   const handleDelete = async (id: string) => {
     if (!confirm("Tem certeza que deseja excluir esta integração?")) return;
+    const client = supabase;
+    if (!client) {
+      console.error("Database client not initialized");
+      return;
+    }
     try {
-      if (!supabase) throw new Error("Database client not initialized");
-      const { error } = await supabase
+      const { error } = await client
         .from("site_dm_advogados_integracoes")
         .delete()
         .eq("id", id);
@@ -280,10 +289,15 @@ function IntegrationModal({ onClose, onSave, editingItem }: { onClose: () => voi
   const handleSave = async () => {
     if (!nome) return alert("Por favor, dê um nome para a integração.");
     
+    const client = supabase;
+    if (!client) {
+      console.error("Database client not initialized");
+      return;
+    }
+
     setIsSaving(true);
     try {
-      if (!supabase) throw new Error("Database client not initialized");
-      const { data: { user } } = await supabase.auth.getUser();
+      const { data: { user } } = await client.auth.getUser();
       if (!user) throw new Error("Não autenticado");
 
       const payload = {
@@ -296,13 +310,13 @@ function IntegrationModal({ onClose, onSave, editingItem }: { onClose: () => voi
       };
 
       if (editingItem) {
-        const { error } = await supabase
+        const { error } = await client
           .from("site_dm_advogados_integracoes")
           .update(payload)
           .eq("id", editingItem.id);
         if (error) throw error;
       } else {
-        const { error } = await supabase
+        const { error } = await client
           .from("site_dm_advogados_integracoes")
           .insert([payload]);
         if (error) throw error;

@@ -77,11 +77,12 @@ export default function SettingsPage() {
   }, []);
 
   const fetchSettings = async () => {
+    const client = supabase;
+    if (!client) return;
     try {
-      if (!supabase) return;
-      const { data: { user } } = await supabase.auth.getUser();
+      const { data: { user } } = await client.auth.getUser();
       
-      let query = supabase.from("site_dm_advogados_configuracoes").select("*");
+      let query = client.from("site_dm_advogados_configuracoes").select("*");
       
       if (user) {
         query = query.eq("user_id", user.id);
@@ -100,11 +101,14 @@ export default function SettingsPage() {
   };
 
   const handleSave = async () => {
-    setIsSaving(true);
+    const client = supabase;
+    if (!client) {
+      console.error("Database client not initialized");
+      return;
+    }
     setIsSaving(true);
     try {
-      if (!supabase) throw new Error("Database client not initialized");
-      const { data: { user } } = await supabase.auth.getUser();
+      const { data: { user } } = await client.auth.getUser();
       
       const saveData: any = {
         ...settings,
@@ -115,7 +119,7 @@ export default function SettingsPage() {
         saveData.user_id = user.id;
       }
 
-      const { error } = await supabase
+      const { error } = await client
         .from("site_dm_advogados_configuracoes")
         .upsert(saveData);
 
@@ -137,25 +141,25 @@ export default function SettingsPage() {
     const file = e.target.files?.[0];
     if (!file) return;
 
+    const client = supabase;
+    if (!client) {
+      console.error("Database client not initialized");
+      return;
+    }
+
     setIsUploadingFavicon(true);
     try {
-      // Garantir que o bucket exista ou apenas tentar o upload
       const fileExt = file.name.split('.').pop();
       const fileName = `favicon-${Date.now()}.${fileExt}`;
       const filePath = `branding/${fileName}`;
-      if (!supabase) throw new Error("Database client not initialized");
-      const { error: uploadError } = await supabase.storage
+
+      const { error: uploadError } = await client.storage
         .from('site_dm_advogados')
         .upload(filePath, file);
 
-      if (uploadError) {
-        // Se o erro for que o bucket não existe, poderíamos tentar criar, 
-        // mas em produção o bucket já deve estar configurado.
-        throw uploadError;
-      }
+      if (uploadError) throw uploadError;
 
-      if (!supabase) throw new Error("Database client not initialized");
-      const { data: { publicUrl } } = supabase.storage
+      const { data: { publicUrl } } = client.storage
         .from('site_dm_advogados')
         .getPublicUrl(filePath);
 
