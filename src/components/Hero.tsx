@@ -12,6 +12,7 @@ const Hero = () => {
 
   React.useEffect(() => {
     async function loadConfig() {
+      if (!supabase) return;
       const { data } = await supabase
         .from('site_dm_advogados_configuracoes')
         .select('contact_phone')

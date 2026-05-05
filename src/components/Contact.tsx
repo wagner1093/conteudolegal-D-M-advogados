@@ -22,6 +22,7 @@ const Contact = () => {
 
   React.useEffect(() => {
     async function loadConfig() {
+      if (!supabase) return;
       const { data } = await supabase
         .from('site_dm_advogados_configuracoes')
         .select('*')
@@ -48,6 +49,7 @@ const Contact = () => {
     setError(null);
 
     try {
+      if (!supabase) throw new Error("Database client not initialized");
       const { error: insertError } = await supabase
         .from('site_dm_advogados_leads')
         .insert([{
