@@ -110,7 +110,7 @@ const BlogPage = () => {
               fontFamily: 'var(--font-headings)',
               letterSpacing: '-1px'
             }}>
-              Blog <span style={{ color: 'var(--accent)', fontFamily: "'Playfair Display', serif", fontStyle: 'italic', fontWeight: 700 }}>Jurídico.</span>
+              Blog <span style={{ color: 'var(--accent)', fontFamily: "'Outfit', sans-serif", fontStyle: 'italic', fontWeight: 700 }}>Jurídico.</span>
             </h1>
 
             <p style={{ 
@@ -238,7 +238,7 @@ const BlogPage = () => {
                     {post.title.split(' ').slice(0, -1).join(' ')} {' '}
                     <span style={{ 
                       color: 'var(--accent)', 
-                      fontFamily: "'Playfair Display', serif", 
+                      fontFamily: "'Outfit', sans-serif", 
                       fontStyle: 'italic', 
                       fontWeight: 700 
                     }}>

@@ -1,4 +1,44 @@
-@import url('https://fonts.googleapis.com/css2?family=Montserrat:ital,wght@0,300;0,400;0,500;0,600;0,700;0,800;0,900;1,400;1,700&family=Raleway:ital,wght@0,300;0,400;0,500;0,600;0,700;0,800;1,400&family=Playfair+Display:ital,wght@0,400;0,600;0,700;1,400&display=swap');
+@import url('https://fonts.googleapis.com/css2?family=Outfit:wght@300;400;500;600;700;800&display=swap');
+
+@import "tailwindcss";
+
+
+@theme {
+  --color-legal-navy: #0f2c41;
+  --color-legal-navy-light: #163d5a;
+  --color-legal-gold: #c5a059;
+  --color-legal-gold-light: #d4b886;
+  --color-legal-slate: #1e293b;
+  
+  --font-sans: "Outfit", "Inter", sans-serif;
+  --font-serif: "Outfit", serif;
+  
+  --spacing-64: 16rem;
+  
+  --shadow-premium: 0 10px 40px -10px rgba(15, 44, 65, 0.1);
+  --shadow-gold: 0 10px 30px -5px rgba(197, 160, 89, 0.2);
+}
+
+@layer components {
+  .glass-card {
+    @apply bg-white/80 backdrop-blur-md border border-white/20 shadow-premium rounded-2xl;
+  }
+  
+  .navy-gradient {
+    @apply bg-gradient-to-br from-legal-navy to-legal-navy-light;
+  }
+}
+
+@keyframes fadeIn {
+  from { opacity: 0; transform: translateY(10px); }
+  to { opacity: 1; transform: translateY(0); }
+}
+
+.animate-fade-in {
+  animation: fadeIn 0.5s ease-out forwards;
+}
+
+@source "../**/*.{js,ts,jsx,tsx,mdx}";
 
 :root {
   --primary: #0f2c41;
@@ -17,8 +57,8 @@
   --border: rgba(0,0,0,0.08);
   --border-light: rgba(255,255,255,0.1);
 
-  --font-headings: 'Montserrat', system-ui, sans-serif;
-  --font-body: 'Raleway', system-ui, sans-serif;
+  --font-headings: 'Outfit', system-ui, sans-serif;
+  --font-body: 'Outfit', system-ui, sans-serif;
 
   --container-max-width: 1200px;
   --section-pad: 120px 24px;
@@ -384,7 +424,7 @@ section { padding: var(--section-pad); }
   font-style: italic;
   color: var(--primary);
   line-height: 1.5;
-  font-family: 'Playfair Display', serif;
+  font-family: 'Outfit', serif;
   border-radius: 0 16px 16px 0;
 }
 

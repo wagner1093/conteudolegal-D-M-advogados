@@ -15,14 +15,26 @@ const links = [
 ];
 
 
+import { supabase } from "@/lib/supabaseClient";
+
 const spring = { type: 'spring' as const, stiffness: 300, damping: 30 };
 
 const Navbar = () => {
   const [scrolled, setScrolled] = useState(false);
   const [active, setActive] = useState('');
   const [menuOpen, setMenuOpen] = useState(false);
+  const [config, setConfig] = useState<any>(null);
 
   useEffect(() => {
+    async function loadConfig() {
+      const { data } = await supabase
+        .from('site_dm_advogados_configuracoes')
+        .select('*')
+        .single();
+      if (data) setConfig(data);
+    }
+    loadConfig();
+
     const onScroll = () => {
       setScrolled(window.scrollY > 40);
       const sections = links.map(l => l.href.replace('#', ''));
@@ -37,6 +49,10 @@ const Navbar = () => {
     window.addEventListener('scroll', onScroll, { passive: true });
     return () => window.removeEventListener('scroll', onScroll);
   }, []);
+
+  const whatsappLink = config?.contact_phone 
+    ? `https://wa.me/${config.contact_phone.replace(/\D/g, '')}` 
+    : 'https://wa.me/5511987795023';
 
   return (
     <>
@@ -67,7 +83,7 @@ const Navbar = () => {
         <a href="#" style={{ textDecoration: 'none', display: 'flex', alignItems: 'center' }}>
           <img 
             src="/images/logo.png" 
-            alt="Dohmen & Matta Advogados" 
+            alt={config?.site_name || "Dohmen & Matta Advogados"} 
             style={{ 
               height: '50px', 
               width: 'auto', 
@@ -101,7 +117,7 @@ const Navbar = () => {
         {/* Desktop CTA */}
         <div className="desktop-nav">
           <a
-            href="https://wa.me/5511987795023"
+            href={whatsappLink}
             style={{
               display: 'inline-flex',
               alignItems: 'center',
@@ -204,7 +220,7 @@ const Navbar = () => {
               ))}
               
               <motion.a
-                href="https://wa.me/5511987795023"
+                href={whatsappLink}
                 initial={{ opacity: 0, y: 20 }}
                 animate={{ opacity: 1, y: 0 }}
                 transition={{ duration: 0.3, delay: 0.1 + links.length * 0.05 }}

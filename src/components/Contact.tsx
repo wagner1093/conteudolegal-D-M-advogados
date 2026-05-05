@@ -1,17 +1,73 @@
 'use client';
 
 import React, { useState } from 'react';
-import { motion } from 'framer-motion';
-import { MapPin, Mail, ArrowRight, MessageSquare, Phone } from 'lucide-react';
-
-const whatsAppContacts = [
-  { name: 'Atendimento Especializado', role: 'Direito da saúde', number: '(11) 98779-5023', raw: '11987795023' },
-  { name: 'Lucas Dohmen', role: 'Sócio Fundador', number: '(11) 94862-2339', raw: '11948622339' },
-  { name: 'Alexandre Matta', role: 'Diretor Operacional', number: '(11) 98338-0371', raw: '11983380371' },
-];
+import { motion, AnimatePresence } from 'framer-motion';
+import { MapPin, Mail, ArrowRight, MessageSquare, Phone, CheckCircle2, Loader2 } from 'lucide-react';
+import { supabase } from "@/lib/supabaseClient";
 
 const Contact = () => {
   const [focusedInput, setFocusedInput] = useState<string | null>(null);
+  const [isSubmitting, setIsSubmitting] = useState(false);
+  const [submitted, setSubmitted] = useState(false);
+  const [error, setError] = useState<string | null>(null);
+  const [config, setConfig] = useState<any>(null);
+
+  const [formData, setFormData] = useState({
+    nome: '',
+    email: '',
+    telefone: '',
+    area: '',
+    mensagem: ''
+  });
+
+  React.useEffect(() => {
+    async function loadConfig() {
+      const { data } = await supabase
+        .from('site_dm_advogados_configuracoes')
+        .select('*')
+        .single();
+      if (data) setConfig(data);
+    }
+    loadConfig();
+  }, []);
+
+  const whatsAppContacts = [
+    { 
+      name: 'Atendimento Especializado', 
+      role: 'Geral', 
+      number: config?.contact_phone || '(11) 98779-5023', 
+      raw: config?.contact_phone?.replace(/\D/g, '') || '11987795023' 
+    },
+    { name: 'Dr. Lucas Dohmen', role: 'Sócio Fundador', number: '(11) 94862-2339', raw: '11948622339' },
+    { name: 'Dr. Alexandre Matta', role: 'Sócio Fundador', number: '(11) 98338-0371', raw: '11983380371' },
+  ];
+
+  const handleSubmit = async (e: React.FormEvent) => {
+    e.preventDefault();
+    setIsSubmitting(true);
+    setError(null);
+
+    try {
+      const { error: insertError } = await supabase
+        .from('site_dm_advogados_leads')
+        .insert([{
+          name: formData.nome,
+          email: formData.email,
+          phone: formData.telefone,
+          area: formData.area,
+          message: formData.mensagem,
+          status: 'novo'
+        }]);
+
+      if (insertError) throw insertError;
+      setSubmitted(true);
+    } catch (err: any) {
+      console.error('Erro ao enviar lead:', err);
+      setError('Ocorreu um erro ao enviar sua mensagem. Por favor, tente novamente.');
+    } finally {
+      setIsSubmitting(false);
+    }
+  };
 
   return (
     <section id="contato" style={{
@@ -48,155 +104,233 @@ const Contact = () => {
           position: 'relative'
         }} className="form-panel">
           
-          <motion.div
-            initial={{ opacity: 0, y: 20 }}
-            whileInView={{ opacity: 1, y: 0 }}
-            viewport={{ once: true }}
-            transition={{ duration: 0.6 }}
-          >
-
-            <h2 style={{ 
-              fontSize: 'clamp(1.75rem, 2.5vw, 2.2rem)', 
-              color: 'var(--primary-deep)', 
-              fontFamily: 'var(--font-headings)',
-              fontWeight: 700,
-              lineHeight: 1.1,
-              marginBottom: '12px'
-            }}>
-              Conte-nos sobre o seu caso.
-            </h2>
-            <p style={{ color: '#6b7280', fontSize: '0.95rem', lineHeight: 1.5, marginBottom: '32px', maxWidth: '400px' }}>
-              Nossa equipe jurídica analisará as informações com total sigilo e retornará o mais breve possível.
-            </p>
-          </motion.div>
-
-          <form style={{ display: 'flex', flexDirection: 'column', gap: '20px' }}>
-            {/* Input Row 1 */}
-            <div className="input-grid" style={{ display: 'grid', gap: '20px' }}>
-              <div style={{ position: 'relative' }}>
-                <label style={{ display: 'block', fontSize: '0.85rem', fontWeight: 600, color: focusedInput === 'nome' ? 'var(--accent)' : '#4b5563', marginBottom: '8px', transition: 'color 0.3s' }}>Nome Completo</label>
-                <input 
-                  type="text" 
-                  onFocus={() => setFocusedInput('nome')}
-                  onBlur={() => setFocusedInput(null)}
-                  required 
-                  style={{
-                    width: '100%', padding: '10px 14px', backgroundColor: '#f9fafb', border: '1px solid', borderColor: focusedInput === 'nome' ? 'var(--accent)' : '#e5e7eb',
-                    borderRadius: '8px', fontSize: '0.95rem', color: '#111827', outline: 'none', transition: 'all 0.3s',
-                    boxShadow: focusedInput === 'nome' ? '0 0 0 4px rgba(102, 178, 142, 0.1)' : 'none'
-                  }} 
-                  placeholder="Como devemos chamá-lo?" 
-                />
-              </div>
-
-              <div style={{ position: 'relative' }}>
-                <label style={{ display: 'block', fontSize: '0.85rem', fontWeight: 600, color: focusedInput === 'telefone' ? 'var(--accent)' : '#4b5563', marginBottom: '8px', transition: 'color 0.3s' }}>Telefone / WhatsApp</label>
-                <input 
-                  type="tel" 
-                  onFocus={() => setFocusedInput('telefone')}
-                  onBlur={() => setFocusedInput(null)}
-                  required 
-                  style={{
-                    width: '100%', padding: '10px 14px', backgroundColor: '#f9fafb', border: '1px solid', borderColor: focusedInput === 'telefone' ? 'var(--accent)' : '#e5e7eb',
-                    borderRadius: '8px', fontSize: '0.95rem', color: '#111827', outline: 'none', transition: 'all 0.3s',
-                    boxShadow: focusedInput === 'telefone' ? '0 0 0 4px rgba(102, 178, 142, 0.1)' : 'none'
-                  }} 
-                  placeholder="(00) 00000-0000" 
-                />
-              </div>
-            </div>
-
-            {/* Input Row 2 */}
-            <div style={{ position: 'relative' }}>
-              <label style={{ display: 'block', fontSize: '0.85rem', fontWeight: 600, color: focusedInput === 'email' ? 'var(--accent)' : '#4b5563', marginBottom: '8px', transition: 'color 0.3s' }}>E-mail</label>
-              <input 
-                type="email" 
-                onFocus={() => setFocusedInput('email')}
-                onBlur={() => setFocusedInput(null)}
-                required 
+          <AnimatePresence mode="wait">
+            {submitted ? (
+              <motion.div
+                initial={{ opacity: 0, scale: 0.95 }}
+                animate={{ opacity: 1, scale: 1 }}
                 style={{
-                  width: '100%', padding: '10px 14px', backgroundColor: '#f9fafb', border: '1px solid', borderColor: focusedInput === 'email' ? 'var(--accent)' : '#e5e7eb',
-                  borderRadius: '8px', fontSize: '0.95rem', color: '#111827', outline: 'none', transition: 'all 0.3s',
-                  boxShadow: focusedInput === 'email' ? '0 0 0 4px rgba(102, 178, 142, 0.1)' : 'none'
-                }} 
-                placeholder="seu@email.com" 
-              />
-            </div>
-
-            {/* Input Row 3 */}
-            <div style={{ position: 'relative' }}>
-              <label style={{ display: 'block', fontSize: '0.85rem', fontWeight: 600, color: focusedInput === 'area' ? 'var(--accent)' : '#4b5563', marginBottom: '8px', transition: 'color 0.3s' }}>Área de Interesse</label>
-              <div style={{ position: 'relative' }}>
-                <select 
-                  onFocus={() => setFocusedInput('area')}
-                  onBlur={() => setFocusedInput(null)}
-                  required 
+                  height: '100%',
+                  display: 'flex',
+                  flexDirection: 'column',
+                  alignItems: 'center',
+                  justifyContent: 'center',
+                  textAlign: 'center',
+                  padding: '40px 0'
+                }}
+              >
+                <div style={{ 
+                  width: '80px', 
+                  height: '80px', 
+                  borderRadius: '50%', 
+                  backgroundColor: 'rgba(102, 178, 142, 0.1)', 
+                  display: 'flex', 
+                  alignItems: 'center', 
+                  justifyContent: 'center',
+                  marginBottom: '24px'
+                }}>
+                  <CheckCircle2 size={40} color="var(--accent)" />
+                </div>
+                <h3 style={{ fontSize: '1.5rem', color: 'var(--primary-deep)', fontWeight: 700, marginBottom: '12px' }}>
+                  Mensagem Enviada!
+                </h3>
+                <p style={{ color: '#6b7280', lineHeight: 1.6, maxWidth: '300px', marginBottom: '32px' }}>
+                  Agradecemos o seu contato. Nossa equipe analisará seu caso e retornará em breve.
+                </p>
+                <button 
+                  onClick={() => setSubmitted(false)}
                   style={{
-                    width: '100%', padding: '10px 14px', backgroundColor: '#f9fafb', border: '1px solid', borderColor: focusedInput === 'area' ? 'var(--accent)' : '#e5e7eb',
-                    borderRadius: '8px', fontSize: '0.95rem', color: '#111827', outline: 'none', transition: 'all 0.3s',
-                    boxShadow: focusedInput === 'area' ? '0 0 0 4px rgba(102, 178, 142, 0.1)' : 'none',
-                    appearance: 'none', cursor: 'pointer'
+                    padding: '12px 24px',
+                    border: '1px solid #e5e7eb',
+                    borderRadius: '8px',
+                    backgroundColor: 'transparent',
+                    color: '#6b7280',
+                    fontWeight: 600,
+                    cursor: 'pointer'
                   }}
                 >
-                  <option value="" disabled selected hidden>Selecione uma área...</option>
-                  <option>Direito da saúde</option>
-                  <option>Erro Médico</option>
-                  <option>Cumprimento de Decisões</option>
-                  <option>Visão Estratégica (Clínicas/Profissionais)</option>
-                </select>
-                <div style={{ position: 'absolute', right: '16px', top: '50%', transform: 'translateY(-50%)', pointerEvents: 'none' }}>
-                  <svg width="12" height="8" viewBox="0 0 12 8" fill="none" xmlns="http://www.w3.org/2000/svg">
-                    <path d="M1 1.5L6 6.5L11 1.5" stroke={focusedInput === 'area' ? "var(--accent)" : "#9ca3af"} strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" style={{ transition: 'stroke 0.3s' }}/>
-                  </svg>
-                </div>
-              </div>
-            </div>
+                  Enviar outra mensagem
+                </button>
+              </motion.div>
+            ) : (
+              <motion.div
+                initial={{ opacity: 0 }}
+                animate={{ opacity: 1 }}
+                exit={{ opacity: 0 }}
+              >
+                <motion.div
+                  initial={{ opacity: 0, y: 20 }}
+                  whileInView={{ opacity: 1, y: 0 }}
+                  viewport={{ once: true }}
+                  transition={{ duration: 0.6 }}
+                >
+                  <h2 style={{ 
+                    fontSize: 'clamp(1.75rem, 2.5vw, 2.2rem)', 
+                    color: 'var(--primary-deep)', 
+                    fontFamily: 'var(--font-headings)',
+                    fontWeight: 700,
+                    lineHeight: 1.1,
+                    marginBottom: '12px'
+                  }}>
+                    Conte-nos sobre o seu caso.
+                  </h2>
+                  <p style={{ color: '#6b7280', fontSize: '0.95rem', lineHeight: 1.5, marginBottom: '32px', maxWidth: '400px' }}>
+                    Nossa equipe jurídica analisará as informações com total sigilo e retornará o mais breve possível.
+                  </p>
+                </motion.div>
 
-            {/* Input Row 4 */}
-            <div style={{ position: 'relative' }}>
-              <label style={{ display: 'block', fontSize: '0.85rem', fontWeight: 600, color: focusedInput === 'mensagem' ? 'var(--accent)' : '#4b5563', marginBottom: '8px', transition: 'color 0.3s' }}>Mensagem (Opcional)</label>
-              <textarea 
-                onFocus={() => setFocusedInput('mensagem')}
-                onBlur={() => setFocusedInput(null)}
-                rows={2}
-                style={{
-                  width: '100%', padding: '10px 14px', backgroundColor: '#f9fafb', border: '1px solid', borderColor: focusedInput === 'mensagem' ? 'var(--accent)' : '#e5e7eb',
-                  borderRadius: '8px', fontSize: '0.95rem', color: '#111827', outline: 'none', transition: 'all 0.3s',
-                  boxShadow: focusedInput === 'mensagem' ? '0 0 0 4px rgba(102, 178, 142, 0.1)' : 'none',
-                  resize: 'vertical', minHeight: '80px'
-                }} 
-                placeholder="Descreva brevemente o motivo do contato..." 
-              />
-            </div>
+                <form onSubmit={handleSubmit} style={{ display: 'flex', flexDirection: 'column', gap: '20px' }}>
+                  <div className="input-grid" style={{ display: 'grid', gap: '20px' }}>
+                    <div style={{ position: 'relative' }}>
+                      <label style={{ display: 'block', fontSize: '0.85rem', fontWeight: 600, color: focusedInput === 'nome' ? 'var(--accent)' : '#4b5563', marginBottom: '8px', transition: 'color 0.3s' }}>Nome Completo</label>
+                      <input 
+                        type="text" 
+                        value={formData.nome}
+                        onChange={(e) => setFormData({ ...formData, nome: e.target.value })}
+                        onFocus={() => setFocusedInput('nome')}
+                        onBlur={() => setFocusedInput(null)}
+                        required 
+                        style={{
+                          width: '100%', padding: '10px 14px', backgroundColor: '#f9fafb', border: '1px solid', borderColor: focusedInput === 'nome' ? 'var(--accent)' : '#e5e7eb',
+                          borderRadius: '8px', fontSize: '0.95rem', color: '#111827', outline: 'none', transition: 'all 0.3s',
+                          boxShadow: focusedInput === 'nome' ? '0 0 0 4px rgba(102, 178, 142, 0.1)' : 'none'
+                        }} 
+                        placeholder="Como devemos chamá-lo?" 
+                      />
+                    </div>
 
-            {/* Submit Button */}
-            <motion.button 
-              whileHover={{ scale: 1.02, backgroundColor: '#1d3557' }}
-              whileTap={{ scale: 0.98 }}
-              type="submit" 
-              style={{ 
-                marginTop: '8px',
-                padding: '14px 32px', 
-                backgroundColor: 'var(--primary)', 
-                color: '#fff', 
-                border: 'none', 
-                borderRadius: '8px',
-                cursor: 'pointer', 
-                fontSize: '1rem', 
-                fontWeight: 600, 
-                display: 'flex', 
-                alignItems: 'center', 
-                justifyContent: 'center',
-                gap: '12px', 
-                width: '100%',
-                transition: 'background-color 0.3s'
-              }}
-              className="submit-btn"
-            >
-              Enviar Mensagem
-              <ArrowRight size={20} />
-            </motion.button>
-          </form>
+                    <div style={{ position: 'relative' }}>
+                      <label style={{ display: 'block', fontSize: '0.85rem', fontWeight: 600, color: focusedInput === 'telefone' ? 'var(--accent)' : '#4b5563', marginBottom: '8px', transition: 'color 0.3s' }}>Telefone / WhatsApp</label>
+                      <input 
+                        type="tel" 
+                        value={formData.telefone}
+                        onChange={(e) => setFormData({ ...formData, telefone: e.target.value })}
+                        onFocus={() => setFocusedInput('telefone')}
+                        onBlur={() => setFocusedInput(null)}
+                        required 
+                        style={{
+                          width: '100%', padding: '10px 14px', backgroundColor: '#f9fafb', border: '1px solid', borderColor: focusedInput === 'telefone' ? 'var(--accent)' : '#e5e7eb',
+                          borderRadius: '8px', fontSize: '0.95rem', color: '#111827', outline: 'none', transition: 'all 0.3s',
+                          boxShadow: focusedInput === 'telefone' ? '0 0 0 4px rgba(102, 178, 142, 0.1)' : 'none'
+                        }} 
+                        placeholder="(00) 00000-0000" 
+                      />
+                    </div>
+                  </div>
+
+                  <div style={{ position: 'relative' }}>
+                    <label style={{ display: 'block', fontSize: '0.85rem', fontWeight: 600, color: focusedInput === 'email' ? 'var(--accent)' : '#4b5563', marginBottom: '8px', transition: 'color 0.3s' }}>E-mail</label>
+                    <input 
+                      type="email" 
+                      value={formData.email}
+                      onChange={(e) => setFormData({ ...formData, email: e.target.value })}
+                      onFocus={() => setFocusedInput('email')}
+                      onBlur={() => setFocusedInput(null)}
+                      required 
+                      style={{
+                        width: '100%', padding: '10px 14px', backgroundColor: '#f9fafb', border: '1px solid', borderColor: focusedInput === 'email' ? 'var(--accent)' : '#e5e7eb',
+                        borderRadius: '8px', fontSize: '0.95rem', color: '#111827', outline: 'none', transition: 'all 0.3s',
+                        boxShadow: focusedInput === 'email' ? '0 0 0 4px rgba(102, 178, 142, 0.1)' : 'none'
+                      }} 
+                      placeholder="seu@email.com" 
+                    />
+                  </div>
+
+                  <div style={{ position: 'relative' }}>
+                    <label style={{ display: 'block', fontSize: '0.85rem', fontWeight: 600, color: focusedInput === 'area' ? 'var(--accent)' : '#4b5563', marginBottom: '8px', transition: 'color 0.3s' }}>Área de Interesse</label>
+                    <div style={{ position: 'relative' }}>
+                      <select 
+                        value={formData.area}
+                        onChange={(e) => setFormData({ ...formData, area: e.target.value })}
+                        onFocus={() => setFocusedInput('area')}
+                        onBlur={() => setFocusedInput(null)}
+                        required 
+                        style={{
+                          width: '100%', padding: '10px 14px', backgroundColor: '#f9fafb', border: '1px solid', borderColor: focusedInput === 'area' ? 'var(--accent)' : '#e5e7eb',
+                          borderRadius: '8px', fontSize: '0.95rem', color: '#111827', outline: 'none', transition: 'all 0.3s',
+                          boxShadow: focusedInput === 'area' ? '0 0 0 4px rgba(102, 178, 142, 0.1)' : 'none',
+                          appearance: 'none', cursor: 'pointer'
+                        }}
+                      >
+                        <option value="" disabled hidden>Selecione uma área...</option>
+                        <option>Direito da saúde</option>
+                        <option>Erro Médico</option>
+                        <option>Cumprimento de Decisões</option>
+                        <option>Visão Estratégica (Clínicas/Profissionais)</option>
+                      </select>
+                      <div style={{ position: 'absolute', right: '16px', top: '50%', transform: 'translateY(-50%)', pointerEvents: 'none' }}>
+                        <svg width="12" height="8" viewBox="0 0 12 8" fill="none" xmlns="http://www.w3.org/2000/svg">
+                          <path d="M1 1.5L6 6.5L11 1.5" stroke={focusedInput === 'area' ? "var(--accent)" : "#9ca3af"} strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" style={{ transition: 'stroke 0.3s' }}/>
+                        </svg>
+                      </div>
+                    </div>
+                  </div>
+
+                  <div style={{ position: 'relative' }}>
+                    <label style={{ display: 'block', fontSize: '0.85rem', fontWeight: 600, color: focusedInput === 'mensagem' ? 'var(--accent)' : '#4b5563', marginBottom: '8px', transition: 'color 0.3s' }}>Mensagem (Opcional)</label>
+                    <textarea 
+                      value={formData.mensagem}
+                      onChange={(e) => setFormData({ ...formData, mensagem: e.target.value })}
+                      onFocus={() => setFocusedInput('mensagem')}
+                      onBlur={() => setFocusedInput(null)}
+                      rows={2}
+                      style={{
+                        width: '100%', padding: '10px 14px', backgroundColor: '#f9fafb', border: '1px solid', borderColor: focusedInput === 'mensagem' ? 'var(--accent)' : '#e5e7eb',
+                        borderRadius: '8px', fontSize: '0.95rem', color: '#111827', outline: 'none', transition: 'all 0.3s',
+                        boxShadow: focusedInput === 'mensagem' ? '0 0 0 4px rgba(102, 178, 142, 0.1)' : 'none',
+                        resize: 'vertical', minHeight: '80px'
+                      }} 
+                      placeholder="Descreva brevemente o motivo do contato..." 
+                    />
+                  </div>
+
+                  {error && (
+                    <div style={{ color: '#ef4444', fontSize: '0.85rem', fontWeight: 500 }}>
+                      {error}
+                    </div>
+                  )}
+
+                  <motion.button 
+                    disabled={isSubmitting}
+                    whileHover={{ scale: isSubmitting ? 1 : 1.02, backgroundColor: isSubmitting ? 'var(--primary)' : '#1d3557' }}
+                    whileTap={{ scale: isSubmitting ? 1 : 0.98 }}
+                    type="submit" 
+                    style={{ 
+                      marginTop: '8px',
+                      padding: '14px 32px', 
+                      backgroundColor: 'var(--primary)', 
+                      color: '#fff', 
+                      border: 'none', 
+                      borderRadius: '8px',
+                      cursor: isSubmitting ? 'not-allowed' : 'pointer', 
+                      fontSize: '1rem', 
+                      fontWeight: 600, 
+                      display: 'flex', 
+                      alignItems: 'center', 
+                      justifyContent: 'center',
+                      gap: '12px', 
+                      width: '100%',
+                      transition: 'background-color 0.3s',
+                      opacity: isSubmitting ? 0.7 : 1
+                    }}
+                    className="submit-btn"
+                  >
+                    {isSubmitting ? (
+                      <>
+                        <Loader2 size={20} className="animate-spin" />
+                        Enviando...
+                      </>
+                    ) : (
+                      <>
+                        Enviar Mensagem
+                        <ArrowRight size={20} />
+                      </>
+                    )}
+                  </motion.button>
+                </form>
+              </motion.div>
+            )}
+          </AnimatePresence>
         </div>
 
         {/* RIGHT COLUMN: DIRECT CONTACTS (DARK) */}
@@ -321,21 +455,54 @@ const Contact = () => {
               <div style={{ display: 'flex', gap: '12px' }}>
                 <MapPin size={20} color="var(--accent)" style={{ flexShrink: 0, marginTop: '2px' }} />
                 <div>
-                  <span style={{ display: 'block', color: '#fff', fontWeight: 600, fontSize: '0.9rem', marginBottom: '2px' }}>Sede São Paulo</span>
-                  <span style={{ display: 'block', color: '#94a3b8', fontSize: '0.85rem', lineHeight: 1.5 }}>
-                    Av. Paulista, 1439, 1º Andar, Conj. 12<br />Bela Vista, São Paulo/SP
+                  <span style={{ display: "block", color: "#fff", fontWeight: 600, fontSize: "0.9rem", marginBottom: "2px" }}>Sede São Paulo</span>
+                  <span style={{ display: "block", color: "#94a3b8", fontSize: "0.85rem", lineHeight: 1.5 }}>
+                    {config?.address || (
+                      <>Av. Paulista, 1439, 1º Andar, Conj. 12<br />Bela Vista, São Paulo/SP</>
+                    )}
                   </span>
                 </div>
               </div>
 
-              <div style={{ display: 'flex', gap: '12px' }}>
-                <Mail size={20} color="var(--accent)" style={{ flexShrink: 0, marginTop: '2px' }} />
+              <div style={{ display: "flex", gap: "12px" }}>
+                <Mail size={20} color="var(--accent)" style={{ flexShrink: 0, marginTop: "2px" }} />
                 <div>
-                  <span style={{ display: 'block', color: '#fff', fontWeight: 600, fontSize: '0.9rem', marginBottom: '2px' }}>E-mail Institucional</span>
-                  <span style={{ display: 'block', color: '#94a3b8', fontSize: '0.85rem' }}>
-                    alexandre@dmaadvs.com.br
+                  <span style={{ display: "block", color: "#fff", fontWeight: 600, fontSize: "0.9rem", marginBottom: "2px" }}>E-mail Institucional</span>
+                  <span style={{ display: "block", color: "#94a3b8", fontSize: "0.85rem" }}>
+                    {config?.contact_email || "contato@dmatta.com.br"}
                   </span>
                 </div>
+              </div>
+
+              {/* Social Media Links */}
+              <div style={{ display: 'flex', gap: '12px', marginTop: '12px' }}>
+                {config?.facebook_url && (
+                  <motion.a 
+                    whileHover={{ y: -3 }}
+                    href={config.facebook_url} target="_blank" rel="noopener noreferrer"
+                    style={{ width: '36px', height: '36px', borderRadius: '8px', backgroundColor: 'rgba(255,255,255,0.05)', display: 'flex', alignItems: 'center', justifyContent: 'center', color: '#fff', border: '1px solid rgba(255,255,255,0.1)' }}
+                  >
+                    <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><path d="M18 2h-3a5 5 0 0 0-5 5v3H7v4h3v8h4v-8h3l1-4h-4V7a1 1 0 0 1 1-1h3z"/></svg>
+                  </motion.a>
+                )}
+                {config?.instagram_url && (
+                  <motion.a 
+                    whileHover={{ y: -3 }}
+                    href={config.instagram_url} target="_blank" rel="noopener noreferrer"
+                    style={{ width: '36px', height: '36px', borderRadius: '8px', backgroundColor: 'rgba(255,255,255,0.05)', display: 'flex', alignItems: 'center', justifyContent: 'center', color: '#fff', border: '1px solid rgba(255,255,255,0.1)' }}
+                  >
+                    <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><rect x="2" y="2" width="20" height="20" rx="5" ry="5"/><path d="M16 11.37A4 4 0 1 1 12.63 8 4 4 0 0 1 16 11.37z"/><line x1="17.5" y1="6.5" x2="17.51" y2="6.5"/></svg>
+                  </motion.a>
+                )}
+                {config?.linkedin_url && (
+                  <motion.a 
+                    whileHover={{ y: -3 }}
+                    href={config.linkedin_url} target="_blank" rel="noopener noreferrer"
+                    style={{ width: '36px', height: '36px', borderRadius: '8px', backgroundColor: 'rgba(255,255,255,0.05)', display: 'flex', alignItems: 'center', justifyContent: 'center', color: '#fff', border: '1px solid rgba(255,255,255,0.1)' }}
+                  >
+                    <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><path d="M16 8a6 6 0 0 1 6 6v7h-4v-7a2 2 0 0 0-2-2 2 2 0 0 0-2 2v7h-4v-7a6 6 0 0 1 6-6z"/><rect x="2" y="9" width="4" height="12"/><circle cx="4" cy="4" r="2"/></svg>
+                  </motion.a>
+                )}
               </div>
             </div>
 

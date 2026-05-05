@@ -58,7 +58,7 @@ const BlogSection = () => {
               fontWeight: 600,
               letterSpacing: '-1px'
             }}>
-              Conhecimento <span style={{ color: 'var(--accent)', fontFamily: "'Playfair Display', serif", fontStyle: 'italic', fontWeight: 700 }}>Jurídico</span> <br />em Atualização
+              Conhecimento <span style={{ color: 'var(--accent)', fontFamily: "'Outfit', sans-serif", fontStyle: 'italic', fontWeight: 700 }}>Jurídico</span> <br />em Atualização
             </h2>
 
           </motion.div>
@@ -151,7 +151,7 @@ const BlogSection = () => {
                   {post.title.split(' ').slice(0, -1).join(' ')} {' '}
                   <span style={{ 
                     color: 'var(--accent)', 
-                    fontFamily: "'Playfair Display', serif", 
+                    fontFamily: "'Outfit', sans-serif", 
                     fontStyle: 'italic', 
                     fontWeight: 700 
                   }}>

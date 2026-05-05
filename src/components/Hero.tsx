@@ -3,12 +3,26 @@
 import React from 'react';
 import { motion } from 'framer-motion';
 import { ArrowRight } from 'lucide-react';
+import { supabase } from "@/lib/supabaseClient";
 
 const spring = { type: 'spring' as const, stiffness: 200, damping: 24 };
 
-
-
 const Hero = () => {
+  const [config, setConfig] = React.useState<any>(null);
+
+  React.useEffect(() => {
+    async function loadConfig() {
+      const { data } = await supabase
+        .from('site_dm_advogados_configuracoes')
+        .select('contact_phone')
+        .single();
+      if (data) setConfig(data);
+    }
+    loadConfig();
+  }, []);
+
+  const whatsappRaw = config?.contact_phone?.replace(/\D/g, '') || '11987795023';
+
   return (
     <section
       id="hero"
@@ -81,7 +95,7 @@ const Hero = () => {
             willChange: 'transform',
           }}
         >
-          Cuidar da saúde também é <span style={{ whiteSpace: 'nowrap' }}>uma <span style={{ color: 'var(--accent)', fontFamily: "'Playfair Display', serif", fontStyle: 'italic', fontWeight: 700 }}>decisão jurídica.</span></span>
+          Cuidar da saúde também é <span style={{ whiteSpace: 'nowrap' }}>uma <span style={{ color: 'var(--accent)', fontFamily: "'Outfit', sans-serif", fontStyle: 'italic', fontWeight: 600 }}>decisão jurídica.</span></span>
         </motion.h1>
 
         {/* Subtext */}
@@ -109,7 +123,7 @@ const Hero = () => {
           style={{ display: 'flex', gap: 16, willChange: 'transform' }}
         >
           <a
-            href="https://wa.me/5511987795023"
+            href={`https://wa.me/55${whatsappRaw}`}
             style={{
               display: 'inline-flex',
               alignItems: 'center',

@@ -272,7 +272,7 @@ const About = () => {
             }}
           >
             <p style={{ 
-              fontFamily: "'Playfair Display', serif", 
+              fontFamily: "'Outfit', sans-serif", 
               fontSize: 'clamp(1.2rem, 2.5vw, 1.8rem)', 
               color: 'var(--primary)', 
               fontStyle: 'italic',
