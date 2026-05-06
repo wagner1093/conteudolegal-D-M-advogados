@@ -269,7 +269,10 @@ export default function SettingsPage() {
 
     setIsUpdatingPassword(true);
     try {
-      const { error } = await supabase.auth.updateUser({
+      const client = supabase;
+      if (!client) throw new Error("Cliente de banco de dados não inicializado");
+
+      const { error } = await client.auth.updateUser({
         password: passwords.new
       });
 
