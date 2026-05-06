@@ -55,12 +55,15 @@ const allTabs = [
 export default function SettingsPage() {
   const [activeTab, setActiveTab] = useState("Geral");
   const [isSaving, setIsSaving] = useState(false);
+  const [showSuccess, setShowSuccess] = useState(false);
   const [loading, setLoading] = useState(true);
-    const [isUploadingFavicon, setIsUploadingFavicon] = useState(false);
+  const [isUploadingFavicon, setIsUploadingFavicon] = useState(false);
   const [isAdmin, setIsAdmin] = useState(false);
   const [teamMembers, setTeamMembers] = useState<any[]>([]);
   const [showAddUserModal, setShowAddUserModal] = useState(false);
   const [newUser, setNewUser] = useState({ nome: "", email: "", funcao: "suporte" });
+  const [passwords, setPasswords] = useState({ current: "", new: "", confirm: "" });
+  const [isUpdatingPassword, setIsUpdatingPassword] = useState(false);
 
   // Form States
   const [settings, setSettings] = useState({
@@ -133,8 +136,6 @@ export default function SettingsPage() {
         .order("created_at", { ascending: false });
       
       if (data) {
-        // Garantir que não mostramos superadmins mesmo se estiverem marcados como admin
-        // Filtramos por email ou qualquer outra regra de sistema
         const filtered = data.filter(u => 
           !u.email.includes("admin@") && 
           u.funcao !== "superadmin"
@@ -196,20 +197,39 @@ export default function SettingsPage() {
     }
   };
 
-  const handleSave = async () => {
+   const handleSave = async () => {
     const client = supabase;
-    if (!client) {
-      console.error("Database client not initialized");
-      return;
-    }
+    if (!client) return;
+    
     setIsSaving(true);
+    setShowSuccess(false);
+    
     try {
       const { data: { user } } = await client.auth.getUser();
       
+      // Garantir que estamos atualizando o registro correto (singleton)
+      let targetId = settings.id;
+      
+      if (!targetId) {
+        const { data: existing } = await client
+          .from("site_dm_advogados_configuracoes")
+          .select("id")
+          .maybeSingle();
+        if (existing) targetId = existing.id;
+      }
+
       const saveData: any = {
         ...settings,
         updated_at: new Date().toISOString()
       };
+
+      if (targetId) {
+        saveData.id = targetId;
+      } else {
+        // Se realmente não existe (primeira vez), removemos a chave id 
+        // para o banco gerar o UUID default
+        delete saveData.id;
+      }
 
       if (user) {
         saveData.user_id = user.id;
@@ -221,11 +241,47 @@ export default function SettingsPage() {
 
       if (error) throw error;
       
-      setTimeout(() => setIsSaving(false), 2000);
-    } catch (err) {
-      console.error("Erro ao salvar:", err);
-      alert("Erro ao salvar as configurações.");
       setIsSaving(false);
+      setShowSuccess(true);
+      setTimeout(() => setShowSuccess(false), 4000);
+    } catch (err: any) {
+      console.error("Erro ao salvar:", err);
+      alert(`Erro ao salvar: ${err.message}`);
+      setIsSaving(false);
+    }
+  };
+
+  const handlePasswordChange = async () => {
+    if (!passwords.new || !passwords.confirm) {
+      alert("Por favor, preencha a nova senha e a confirmação.");
+      return;
+    }
+
+    if (passwords.new !== passwords.confirm) {
+      alert("A nova senha e a confirmação não coincidem.");
+      return;
+    }
+
+    if (passwords.new.length < 6) {
+      alert("A senha deve ter pelo menos 6 caracteres.");
+      return;
+    }
+
+    setIsUpdatingPassword(true);
+    try {
+      const { error } = await supabase.auth.updateUser({
+        password: passwords.new
+      });
+
+      if (error) throw error;
+
+      alert("Senha atualizada com sucesso!");
+      setPasswords({ current: "", new: "", confirm: "" });
+    } catch (err: any) {
+      console.error("Erro ao atualizar senha:", err);
+      alert(`Erro ao atualizar senha: ${err.message}`);
+    } finally {
+      setIsUpdatingPassword(false);
     }
   };
 
@@ -237,11 +293,13 @@ export default function SettingsPage() {
     const file = e.target.files?.[0];
     if (!file) return;
 
-    const client = supabase;
-    if (!client) {
-      console.error("Database client not initialized");
+    if (file.size > 1 * 1024 * 1024) {
+      alert("O arquivo é muito grande. O limite é 1MB.");
       return;
     }
+
+    const client = supabase;
+    if (!client) return;
 
     setIsUploadingFavicon(true);
     try {
@@ -251,18 +309,17 @@ export default function SettingsPage() {
 
       const { error: uploadError } = await client.storage
         .from('site_dm_advogados')
-        .upload(filePath, file);
+        .upload(filePath, file, { cacheControl: '3600', upsert: false });
 
       if (uploadError) throw uploadError;
 
-      const { data: { publicUrl } } = client.storage
-        .from('site_dm_advogados')
-        .getPublicUrl(filePath);
-
-      updateField("favicon_url", publicUrl);
-    } catch (err) {
-      console.error("Erro no upload do favicon:", err);
-      alert("Erro ao fazer upload do favicon. Verifique se o bucket 'site_dm_advogados' existe no Supabase.");
+      const { data } = client.storage.from('site_dm_advogados').getPublicUrl(filePath);
+      if (data?.publicUrl) {
+        updateField("favicon_url", data.publicUrl);
+        alert("Favicon carregado com sucesso!");
+      }
+    } catch (err: any) {
+      alert(`Erro ao fazer upload: ${err.message}`);
     } finally {
       setIsUploadingFavicon(false);
     }
@@ -292,30 +349,35 @@ export default function SettingsPage() {
 
         <button
           onClick={handleSave}
-          disabled={isSaving}
+          disabled={isSaving || showSuccess}
           style={{
             padding: "12px 28px",
-            background: isSaving ? "#22c55e" : "#1e293b",
+            background: showSuccess ? "#22c55e" : (isSaving ? "#94a3b8" : "#1e293b"),
             color: "#ffffff",
             border: "none",
             borderRadius: "14px",
             fontSize: "14px",
             fontWeight: 700,
-            cursor: "pointer",
+            cursor: (isSaving || showSuccess) ? "not-allowed" : "pointer",
             display: "flex",
             alignItems: "center",
             gap: "10px",
-            boxShadow: "0 10px 25px -5px rgba(11,30,45,0.2)",
+            boxShadow: showSuccess ? "0 10px 20px rgba(34,197,94,0.2)" : "0 10px 25px -5px rgba(11,30,45,0.2)",
             transition: "all 0.3s cubic-bezier(0.4, 0, 0.2, 1)",
           }}
         >
-          {isSaving ? (
+          {showSuccess ? (
             <>
               <CheckCircle2 size={18} /> Salvo com Sucesso
             </>
+          ) : isSaving ? (
+            <>
+              <div className="animate-spin" style={{ width: "16px", height: "16px", border: "2px solid #fff", borderTop: "2px solid transparent", borderRadius: "50%" }} />
+              Salvando...
+            </>
           ) : (
             <>
-              <Save size={18} /> Salvar Alterações
+              <Save size={18} /> SALVAR ALTERAÇÕES
             </>
           )}
         </button>
@@ -545,17 +607,32 @@ export default function SettingsPage() {
                     height: "120px",
                     borderRadius: "24px",
                     background: "#ffffff",
-                    border: "1px solid rgba(0,0,0,0.05)",
+                    border: "2px solid #e2e8f0",
                     display: "flex",
                     alignItems: "center",
                     justifyContent: "center",
                     overflow: "hidden",
-                    boxShadow: "0 10px 25px rgba(0,0,0,0.05)"
+                    boxShadow: "0 10px 25px rgba(0,0,0,0.05)",
+                    position: "relative"
                   }}>
-                    {settings.favicon_url ? (
+                    {isUploadingFavicon ? (
+                      <div style={{ display: "flex", flexDirection: "column", alignItems: "center", gap: "8px" }}>
+                        <div className="animate-spin" style={{ 
+                          width: "24px", 
+                          height: "24px", 
+                          border: "3px solid #f3f3f3", 
+                          borderTop: "3px solid #c5a059", 
+                          borderRadius: "50%" 
+                        }} />
+                        <span style={{ fontSize: "10px", fontWeight: 700, color: "#c5a059" }}>ENVIANDO...</span>
+                      </div>
+                    ) : settings.favicon_url ? (
                       <img src={settings.favicon_url} alt="Favicon Preview" style={{ width: "64px", height: "64px", objectFit: "contain" }} />
                     ) : (
-                      <div style={{ color: "#94a3b8", fontSize: "12px", fontWeight: 500 }}>Sem ícone</div>
+                      <div style={{ textAlign: "center", padding: "10px" }}>
+                        <ImageIcon size={32} color="#94a3b8" style={{ marginBottom: "8px" }} />
+                        <div style={{ color: "#94a3b8", fontSize: "10px", fontWeight: 700, textTransform: "uppercase" }}>Sem ícone</div>
+                      </div>
                     )}
                   </div>
 
@@ -563,26 +640,43 @@ export default function SettingsPage() {
                     <input 
                       type="file" 
                       id="favicon-upload" 
-                      accept=".png,.ico,.jpg,.jpeg" 
+                      accept=".png,.ico,.jpg,.jpeg,.svg" 
                       style={{ display: "none" }} 
                       onChange={handleFaviconUpload}
+                      disabled={isUploadingFavicon}
                     />
                     <label 
                       htmlFor="favicon-upload"
                       style={{
                         padding: "12px 24px",
-                        background: "#ffffff",
+                        background: isUploadingFavicon ? "#f1f5f9" : "#ffffff",
                         border: "1px solid #e2e8f0",
                         borderRadius: "12px",
-                        color: "#1e293b",
+                        color: isUploadingFavicon ? "#94a3b8" : "#1e293b",
                         fontSize: "13px",
                         fontWeight: 700,
-                        cursor: "pointer",
-                        transition: "all 0.2s"
+                        cursor: isUploadingFavicon ? "not-allowed" : "pointer",
+                        transition: "all 0.2s",
+                        boxShadow: "0 2px 4px rgba(0,0,0,0.02)"
+                      }}
+                      onMouseEnter={(e) => {
+                        if (!isUploadingFavicon) {
+                          e.currentTarget.style.background = "#f8fafc";
+                          e.currentTarget.style.borderColor = "#cbd5e1";
+                        }
+                      }}
+                      onMouseLeave={(e) => {
+                        if (!isUploadingFavicon) {
+                          e.currentTarget.style.background = "#ffffff";
+                          e.currentTarget.style.borderColor = "#e2e8f0";
+                        }
                       }}
                     >
-                      {isUploadingFavicon ? "ENVIANDO..." : "ALTERAR FAVICON"}
+                      {isUploadingFavicon ? "AGUARDE..." : "ALTERAR FAVICON"}
                     </label>
+                    <p style={{ fontSize: "11px", color: "#94a3b8", marginTop: "4px" }}>
+                      Recomendado: PNG ou ICO (32x32px)
+                    </p>
                   </div>
                 </div>
 
@@ -807,15 +901,54 @@ export default function SettingsPage() {
                   </div>
                 </div>
 
-                <div style={{ display: "flex", flexDirection: "column", gap: "24px" }}>
-                  <Field label="Senha Atual do Administrador" type="password" placeholder="••••••••" />
-                  <div style={{ display: "grid", gridTemplateColumns: "1fr 1fr", gap: "20px" }}>
-                    <Field label="Nova Senha" type="password" placeholder="••••••••" />
-                    <Field label="Confirmar Nova Senha" type="password" placeholder="••••••••" />
-                  </div>
+                 <div style={{ display: "flex", flexDirection: "column", gap: "24px" }}>
+                  <Field 
+                    label="Nova Senha" 
+                    type="password" 
+                    placeholder="No mínimo 6 caracteres" 
+                    value={passwords.new}
+                    onChange={(val: string) => setPasswords(prev => ({ ...prev, new: val }))}
+                  />
+                  <Field 
+                    label="Confirmar Nova Senha" 
+                    type="password" 
+                    placeholder="Repita a nova senha" 
+                    value={passwords.confirm}
+                    onChange={(val: string) => setPasswords(prev => ({ ...prev, confirm: val }))}
+                  />
                 </div>
                 
-                <div style={{ borderTop: "1px solid #f1f5f9", paddingTop: "24px" }}>
+                <div style={{ borderTop: "1px solid #f1f5f9", paddingTop: "24px", display: "flex", justifyContent: "flex-end" }}>
+                  <button
+                    onClick={handlePasswordChange}
+                    disabled={isUpdatingPassword}
+                    style={{
+                      padding: "12px 24px",
+                      background: "#ef4444",
+                      color: "#ffffff",
+                      border: "none",
+                      borderRadius: "12px",
+                      fontSize: "14px",
+                      fontWeight: 700,
+                      cursor: isUpdatingPassword ? "not-allowed" : "pointer",
+                      display: "flex",
+                      alignItems: "center",
+                      gap: "10px",
+                      opacity: isUpdatingPassword ? 0.7 : 1,
+                      boxShadow: "0 4px 12px rgba(239, 68, 68, 0.2)"
+                    }}
+                  >
+                    {isUpdatingPassword ? (
+                      <>
+                        <div className="animate-spin" style={{ width: "16px", height: "16px", border: "2px solid #fff", borderTop: "2px solid transparent", borderRadius: "50%" }} />
+                        ATUALIZANDO...
+                      </>
+                    ) : (
+                      <>
+                        <Lock size={18} /> ATUALIZAR SENHA
+                      </>
+                    )}
+                  </button>
                 </div>
               </div>
             )}
