@@ -10,6 +10,11 @@ import {
   Bell,
   Palette,
   CheckCircle2,
+  Plus,
+  Trash2,
+  Edit2,
+  User,
+  ShieldAlert,
   Image as ImageIcon
 } from "lucide-react";
 import React, { useState, useEffect } from "react";
@@ -40,9 +45,10 @@ const Youtube = ({ size = 20 }: { size?: number }) => (
   </svg>
 );
 
-const tabs = [
+const allTabs = [
   { id: "Geral", icon: Globe, desc: "Informações básicas" },
   { id: "SEO", icon: Shield, desc: "Otimização de busca" },
+  { id: "Usuários", icon: Shield, desc: "Gestão de equipe", adminOnly: true },
   { id: "Segurança", icon: Lock, desc: "Acesso e conta" },
 ];
 
@@ -50,7 +56,11 @@ export default function SettingsPage() {
   const [activeTab, setActiveTab] = useState("Geral");
   const [isSaving, setIsSaving] = useState(false);
   const [loading, setLoading] = useState(true);
-  const [isUploadingFavicon, setIsUploadingFavicon] = useState(false);
+    const [isUploadingFavicon, setIsUploadingFavicon] = useState(false);
+  const [isAdmin, setIsAdmin] = useState(false);
+  const [teamMembers, setTeamMembers] = useState<any[]>([]);
+  const [showAddUserModal, setShowAddUserModal] = useState(false);
+  const [newUser, setNewUser] = useState({ nome: "", email: "", funcao: "suporte" });
 
   // Form States
   const [settings, setSettings] = useState({
@@ -74,6 +84,7 @@ export default function SettingsPage() {
 
   useEffect(() => {
     fetchSettings();
+    fetchTeamMembers();
   }, []);
 
   const fetchSettings = async () => {
@@ -86,6 +97,18 @@ export default function SettingsPage() {
       
       if (user) {
         query = query.eq("user_id", user.id);
+        
+        // Fetch user role
+        const { data: roleData } = await client
+          .from("user_roles")
+          .select("role")
+          .eq("user_id", user.id)
+          .eq("site_id", "58dc3c31-5fb2-4e6d-9c13-3d0309d85dc3")
+          .maybeSingle();
+        
+        if (roleData?.role === "superadmin" || roleData?.role === "site_admin" || roleData?.role === "admin") {
+          setIsAdmin(true);
+        }
       }
       
       const { data, error } = await query.limit(1).maybeSingle();
@@ -97,6 +120,79 @@ export default function SettingsPage() {
       console.error("Erro ao carregar configurações:", err);
     } finally {
       setLoading(false);
+    }
+  };
+
+  const fetchTeamMembers = async () => {
+    const client = supabase;
+    if (!client) return;
+    try {
+      const { data, error } = await client
+        .from("site_dm_advogados_usuarios")
+        .select("*")
+        .order("created_at", { ascending: false });
+      
+      if (data) {
+        // Garantir que não mostramos superadmins mesmo se estiverem marcados como admin
+        // Filtramos por email ou qualquer outra regra de sistema
+        const filtered = data.filter(u => 
+          !u.email.includes("admin@") && 
+          u.funcao !== "superadmin"
+        );
+        setTeamMembers(filtered);
+      }
+      if (error) throw error;
+    } catch (err) {
+      console.error("Erro ao buscar membros:", err);
+    }
+  };
+
+  const handleAddUser = async () => {
+    const client = supabase;
+    if (!client) return;
+    
+    if (!newUser.nome || !newUser.email) {
+      alert("Preencha todos os campos obrigatórios.");
+      return;
+    }
+
+    try {
+      const { error } = await client
+        .from("site_dm_advogados_usuarios")
+        .insert([{
+          nome: newUser.nome,
+          email: newUser.email,
+          funcao: newUser.funcao,
+          status: "ativo"
+        }]);
+
+      if (error) throw error;
+      
+      alert("Usuário adicionado com sucesso!");
+      setShowAddUserModal(false);
+      setNewUser({ nome: "", email: "", funcao: "suporte" });
+      fetchTeamMembers();
+    } catch (err: any) {
+      console.error("Erro ao adicionar usuário:", err);
+      alert("Erro ao adicionar usuário: " + err.message);
+    }
+  };
+
+  const handleDeleteUser = async (id: string) => {
+    if (!confirm("Tem certeza que deseja remover este usuário?")) return;
+    
+    const client = supabase;
+    if (!client) return;
+    try {
+      const { error } = await client
+        .from("site_dm_advogados_usuarios")
+        .delete()
+        .eq("id", id);
+      
+      if (error) throw error;
+      fetchTeamMembers();
+    } catch (err) {
+      console.error("Erro ao excluir usuário:", err);
     }
   };
 
@@ -172,6 +268,8 @@ export default function SettingsPage() {
     }
   };
 
+  const activeTabs = allTabs.filter(tab => !tab.adminOnly || isAdmin);
+
   return (
     <div style={{ maxWidth: "1100px", margin: "0 auto", paddingBottom: "40px" }}>
       {/* ── Header ── */}
@@ -238,7 +336,7 @@ export default function SettingsPage() {
               gap: "6px",
             }}
           >
-            {tabs.map((tab) => {
+            {activeTabs.map((tab) => {
               const isActive = activeTab === tab.id;
               return (
                 <button
@@ -543,6 +641,140 @@ export default function SettingsPage() {
               </div>
             )}
 
+            {activeTab === "Usuários" && (
+              <div style={{ display: "flex", flexDirection: "column", gap: "32px" }}>
+                <div style={{ display: "flex", justifyContent: "space-between", alignItems: "center" }}>
+                  <div>
+                    <h4 style={{ fontSize: "16px", fontWeight: 700, color: "#1e293b", margin: 0 }}>Membros da Equipe</h4>
+                    <p style={{ fontSize: "13px", color: "#64748b", marginTop: "4px" }}>Gerencie quem tem acesso ao painel e seus níveis de permissão.</p>
+                  </div>
+                  <button 
+                    onClick={() => setShowAddUserModal(true)}
+                    style={{
+                      padding: "10px 20px",
+                      background: "#c5a059",
+                      color: "#ffffff",
+                      border: "none",
+                      borderRadius: "12px",
+                      fontSize: "13px",
+                      fontWeight: 700,
+                      cursor: "pointer",
+                      display: "flex",
+                      alignItems: "center",
+                      gap: "8px",
+                      boxShadow: "0 4px 12px rgba(197, 160, 89, 0.2)"
+                    }}
+                  >
+                    <Plus size={16} /> Adicionar Usuário
+                  </button>
+                </div>
+
+                <div style={{ display: "flex", flexDirection: "column", gap: "16px" }}>
+                  {teamMembers.length === 0 ? (
+                    <div style={{ padding: "40px", textAlign: "center", color: "#64748b" }}>
+                      Nenhum membro encontrado.
+                    </div>
+                  ) : teamMembers.map((user, idx) => (
+                    <div key={user.id} style={{
+                      padding: "20px",
+                      background: "#f8fafc",
+                      borderRadius: "20px",
+                      border: "1px solid #e2e8f0",
+                      display: "flex",
+                      alignItems: "center",
+                      justifyContent: "space-between"
+                    }}>
+                      <div style={{ display: "flex", alignItems: "center", gap: "16px" }}>
+                        <div style={{
+                          width: "48px",
+                          height: "48px",
+                          borderRadius: "14px",
+                          background: "#ffffff",
+                          border: "1px solid #e2e8f0",
+                          display: "flex",
+                          alignItems: "center",
+                          justifyContent: "center",
+                          color: "#1e293b"
+                        }}>
+                          <User size={24} />
+                        </div>
+                        <div>
+                          <p style={{ fontSize: "14px", fontWeight: 700, color: "#1e293b", margin: 0 }}>{user.nome}</p>
+                          <p style={{ fontSize: "12px", color: "#64748b", margin: 0 }}>{user.email}</p>
+                        </div>
+                      </div>
+
+                      <div style={{ display: "flex", alignItems: "center", gap: "40px" }}>
+                        <div style={{ textAlign: "right" }}>
+                          <span style={{
+                            padding: "4px 12px",
+                            background: user.funcao === 'admin' ? "#fef3c7" : user.funcao === 'editor' ? "#dcfce7" : "#f1f5f9",
+                            color: user.funcao === 'admin' ? "#92400e" : user.funcao === 'editor' ? "#166534" : "#475569",
+                            borderRadius: "8px",
+                            fontSize: "11px",
+                            fontWeight: 700,
+                            textTransform: "uppercase"
+                          }}>
+                             {user.funcao === 'admin' ? 'Administrador' : user.funcao === 'editor' ? 'Editor' : 'Suporte'}
+                           </span>
+                         </div>
+                        <div style={{ display: "flex", gap: "8px" }}>
+                          <button style={{
+                            width: "36px",
+                            height: "36px",
+                            borderRadius: "10px",
+                            background: "#ffffff",
+                            border: "1px solid #e2e8f0",
+                            display: "flex",
+                            alignItems: "center",
+                            justifyContent: "center",
+                            color: "#64748b",
+                            cursor: "pointer"
+                          }}>
+                            <Edit2 size={16} />
+                          </button>
+                          <button 
+                            onClick={() => handleDeleteUser(user.id)}
+                            style={{
+                              width: "36px",
+                              height: "36px",
+                              borderRadius: "10px",
+                              background: "#ffffff",
+                              border: "1px solid #fee2e2",
+                              display: "flex",
+                              alignItems: "center",
+                              justifyContent: "center",
+                              color: "#ef4444",
+                              cursor: "pointer"
+                            }}
+                          >
+                            <Trash2 size={16} />
+                          </button>
+                        </div>
+                      </div>
+                    </div>
+                  ))}
+                </div>
+
+                <div style={{
+                  padding: "24px",
+                  background: "#fffbeb",
+                  border: "1px solid #fef3c7",
+                  borderRadius: "20px",
+                  display: "flex",
+                  gap: "16px"
+                }}>
+                  <ShieldAlert size={24} color="#b45309" />
+                  <div>
+                    <p style={{ fontSize: "14px", fontWeight: 700, color: "#92400e", margin: 0 }}>Dica de Segurança</p>
+                    <p style={{ fontSize: "13px", color: "#b45309", marginTop: "4px", lineHeight: "1.5" }}>
+                      Usuários com cargo **Admin** podem alterar todas as configurações do site. Atribua esse poder apenas a pessoas de confiança.
+                    </p>
+                  </div>
+                </div>
+              </div>
+            )}
+
             {activeTab === "Segurança" && (
               <div style={{ display: "flex", flexDirection: "column", gap: "32px" }}>
                 <div style={{ 
@@ -587,9 +819,134 @@ export default function SettingsPage() {
                 </div>
               </div>
             )}
+
           </div>
         </div>
       </div>
+
+      {/* ── Add User Modal ── */}
+      {showAddUserModal && (
+        <div style={{
+          position: "fixed",
+          inset: 0,
+          background: "rgba(15, 23, 42, 0.6)",
+          backdropFilter: "blur(8px)",
+          display: "flex",
+          alignItems: "center",
+          justifyContent: "center",
+          zIndex: 1000,
+          padding: "20px"
+        }}>
+          <div style={{
+            background: "#ffffff",
+            width: "100%",
+            maxWidth: "500px",
+            borderRadius: "24px",
+            padding: "32px",
+            boxShadow: "0 25px 50px -12px rgba(0, 0, 0, 0.25)"
+          }}>
+            <h3 style={{ fontSize: "20px", fontWeight: 700, color: "#1e293b", margin: "0 0 8px 0" }}>Adicionar Novo Membro</h3>
+            <p style={{ fontSize: "14px", color: "#64748b", margin: "0 0 24px 0" }}>Convide um novo usuário para gerenciar o painel da Dohmen & Matta.</p>
+            
+            <div style={{ display: "flex", flexDirection: "column", gap: "20px" }}>
+              <div>
+                <label style={{ display: "block", fontSize: "13px", fontWeight: 700, color: "#475569", marginBottom: "8px" }}>Nome Completo</label>
+                <input 
+                  type="text" 
+                  value={newUser.nome}
+                  onChange={(e) => setNewUser(prev => ({ ...prev, nome: e.target.value }))}
+                  placeholder="Ex: João Silva"
+                  style={{
+                    width: "100%",
+                    padding: "12px 16px",
+                    borderRadius: "12px",
+                    border: "1px solid #e2e8f0",
+                    background: "#f8fafc",
+                    fontSize: "14px",
+                    outline: "none"
+                  }}
+                />
+              </div>
+
+              <div>
+                <label style={{ display: "block", fontSize: "13px", fontWeight: 700, color: "#475569", marginBottom: "8px" }}>E-mail</label>
+                <input 
+                  type="email" 
+                  value={newUser.email}
+                  onChange={(e) => setNewUser(prev => ({ ...prev, email: e.target.value }))}
+                  placeholder="email@exemplo.com"
+                  style={{
+                    width: "100%",
+                    padding: "12px 16px",
+                    borderRadius: "12px",
+                    border: "1px solid #e2e8f0",
+                    background: "#f8fafc",
+                    fontSize: "14px",
+                    outline: "none"
+                  }}
+                />
+              </div>
+
+              <div>
+                <label style={{ display: "block", fontSize: "13px", fontWeight: 700, color: "#475569", marginBottom: "8px" }}>Cargo / Nível de Acesso</label>
+                <select 
+                  value={newUser.funcao}
+                  onChange={(e) => setNewUser(prev => ({ ...prev, funcao: e.target.value }))}
+                  style={{
+                    width: "100%",
+                    padding: "12px 16px",
+                    borderRadius: "12px",
+                    border: "1px solid #e2e8f0",
+                    background: "#f8fafc",
+                    fontSize: "14px",
+                    outline: "none",
+                    cursor: "pointer"
+                  }}
+                >
+                  <option value="admin">Administrador (Acesso Total)</option>
+                  <option value="editor">Editor (Conteúdo)</option>
+                  <option value="suporte">Suporte (Leads e Atendimento)</option>
+                </select>
+              </div>
+            </div>
+
+            <div style={{ display: "flex", gap: "12px", marginTop: "32px" }}>
+              <button 
+                onClick={() => setShowAddUserModal(false)}
+                style={{
+                  flex: 1,
+                  padding: "12px",
+                  borderRadius: "12px",
+                  border: "1px solid #e2e8f0",
+                  background: "#ffffff",
+                  color: "#64748b",
+                  fontSize: "14px",
+                  fontWeight: 600,
+                  cursor: "pointer"
+                }}
+              >
+                Cancelar
+              </button>
+              <button 
+                onClick={handleAddUser}
+                style={{
+                  flex: 1,
+                  padding: "12px",
+                  borderRadius: "12px",
+                  border: "none",
+                  background: "#1e293b",
+                  color: "#ffffff",
+                  fontSize: "14px",
+                  fontWeight: 600,
+                  cursor: "pointer"
+                }}
+              >
+                Adicionar Membro
+              </button>
+            </div>
+          </div>
+        </div>
+      )}
     </div>
   );
 }
