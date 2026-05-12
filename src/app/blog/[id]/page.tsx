@@ -275,7 +275,7 @@ const BlogPostPage = () => {
                     <User size={30} color="white" />
                   </div>
                   <div>
-                    <span style={{ block: 'block', fontWeight: 700, color: 'var(--primary)', fontFamily: "'Inter', sans-serif" }}>Equipe</span>
+                    <span style={{ display: 'block', fontWeight: 700, color: 'var(--primary)', fontFamily: "'Inter', sans-serif" }}>Equipe</span>
                     <span style={{ fontSize: '0.8rem', color: 'var(--text-light)', fontFamily: "'Inter', sans-serif" }}>Advogado Especialista</span>
                   </div>
                 </div>
