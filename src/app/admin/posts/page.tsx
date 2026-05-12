@@ -16,11 +16,10 @@ import {
   ArrowUpRight,
   Loader2,
 } from "lucide-react";
-import React, { useState, useEffect } from "react";
-import { supabase } from "@/lib/supabaseClient";
-import Link from "next/link";
+import { useSite } from "@/context/SiteContext";
 
 export default function PostsPage() {
+  const { selectedSiteId } = useSite();
   const [searchTerm, setSearchTerm] = useState("");
   const [posts, setPosts] = useState<any[]>([]);
   const [loading, setLoading] = useState(true);
@@ -32,16 +31,21 @@ export default function PostsPage() {
   });
 
   useEffect(() => {
-    fetchPosts();
-  }, []);
+    if (selectedSiteId) {
+      fetchPosts();
+    }
+  }, [selectedSiteId]);
 
   const fetchPosts = async () => {
     const client = supabase;
-    if (!client) return;
+    if (!client || !selectedSiteId) return;
+    
     try {
+      setLoading(true);
       const { data, error } = await client
-        .from("site_dm_advogados_posts")
-        .select("*")
+        .from("painel_posts")
+        .select("*, painel_categorias(name)")
+        .eq("site_id", selectedSiteId)
         .order("created_at", { ascending: false });
 
       if (error) throw error;
@@ -51,9 +55,9 @@ export default function PostsPage() {
       
       setStats({
         total: p.length,
-        publicados: p.filter(x => x.status === "Publicado").length,
-        rascunhos: p.filter(x => x.status === "Rascunho").length,
-        views: p.reduce((acc, curr) => acc + (curr.visualizacoes || 0), 0)
+        publicados: p.filter(x => x.status === "published" || x.status === "Publicado").length,
+        rascunhos: p.filter(x => x.status === "draft" || x.status === "Rascunho").length,
+        views: p.reduce((acc, curr) => acc + (curr.views || 0), 0)
       });
     } catch (err) {
       console.error("Erro ao buscar posts:", err);
@@ -65,13 +69,11 @@ export default function PostsPage() {
   const handleDelete = async (id: string) => {
     if (!confirm("Tem certeza que deseja excluir este artigo?")) return;
     const client = supabase;
-    if (!client) {
-      console.error("Database client not initialized");
-      return;
-    }
+    if (!client) return;
+    
     try {
       const { error } = await client
-        .from("site_dm_advogados_posts")
+        .from("painel_posts")
         .delete()
         .eq("id", id);
       if (error) throw error;
@@ -82,9 +84,8 @@ export default function PostsPage() {
   };
 
   const filteredPosts = posts.filter(post => 
-    post.titulo?.toLowerCase().includes(searchTerm.toLowerCase()) ||
-    post.autor?.toLowerCase().includes(searchTerm.toLowerCase()) ||
-    post.categoria?.toLowerCase().includes(searchTerm.toLowerCase())
+    post.title?.toLowerCase().includes(searchTerm.toLowerCase()) ||
+    post.painel_categorias?.name?.toLowerCase().includes(searchTerm.toLowerCase())
   );
 
   return (
@@ -262,22 +263,22 @@ export default function PostsPage() {
                       <div style={{ display: "flex", gap: "18px", alignItems: "center" }}>
                         <div style={{ position: "relative" }}>
                           <img
-                            src={post.imagem_url || "https://images.unsplash.com/photo-1505751172107-573225a912b7?w=400&h=400&fit=crop"}
+                            src={post.image_url || "https://images.unsplash.com/photo-1505751172107-573225a912b7?w=400&h=400&fit=crop"}
                             alt=""
                             style={{ width: "56px", height: "56px", borderRadius: "14px", objectFit: "cover", boxShadow: "0 4px 12px rgba(0,0,0,0.08)" }}
                           />
-                          <div style={{ position: "absolute", bottom: "-4px", right: "-4px", width: "12px", height: "12px", borderRadius: "50%", background: post.status === "Publicado" ? "#22c55e" : "#94a3b8", border: "2px solid #ffffff" }} />
+                          <div style={{ position: "absolute", bottom: "-4px", right: "-4px", width: "12px", height: "12px", borderRadius: "50%", background: (post.status === "published" || post.status === "Publicado") ? "#22c55e" : "#94a3b8", border: "2px solid #ffffff" }} />
                         </div>
                         <div>
                           <div style={{ fontWeight: 600, color: "#1e293b", fontSize: "15px", marginBottom: "6px", lineHeight: "1.4" }}>
-                            {post.titulo}
+                            {post.title}
                           </div>
                           <div style={{ display: "flex", gap: "14px", alignItems: "center" }}>
                             <span style={{ fontSize: "12px", color: "#64748b", display: "flex", alignItems: "center", gap: "5px", fontWeight: 600 }}>
-                              <User size={13} strokeWidth={2.5} /> {post.autor}
+                              <User size={13} strokeWidth={2.5} /> {post.author_id ? "Autor" : "Admin"}
                             </span>
                             <span style={{ fontSize: "12px", color: "#1e293b", background: "rgba(30,41,59,0.05)", padding: "2px 8px", borderRadius: "6px", fontWeight: 600 }}>
-                              {post.categoria}
+                              {post.painel_categorias?.name || "Sem Categoria"}
                             </span>
                           </div>
                         </div>
@@ -289,7 +290,7 @@ export default function PostsPage() {
                     <td style={{ padding: "24px" }}>
                       <div style={{ display: "flex", flexDirection: "column", gap: "4px" }}>
                         <span style={{ fontSize: "14px", fontWeight: 700, color: "#1e293b" }}>
-                          {(post.visualizacoes || 0).toLocaleString()}
+                          {(post.views || 0).toLocaleString()}
                         </span>
                         <span style={{ fontSize: "11px", color: "#64748b", fontWeight: 500 }}>Visualizações</span>
                       </div>
@@ -378,8 +379,11 @@ function MiniStat({ label, value, color }: { label: string; value: string; color
 function StatusBadge({ status }: { status: string }) {
   const colors: Record<string, string> = {
     Publicado: "#22c55e",
+    published: "#22c55e",
     Rascunho: "#94a3b8",
+    draft: "#94a3b8",
     Agendado: "#6366f1",
+    scheduled: "#6366f1",
   };
   const color = colors[status] || "#94a3b8";
 

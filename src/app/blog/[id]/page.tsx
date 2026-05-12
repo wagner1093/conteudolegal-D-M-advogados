@@ -44,16 +44,18 @@ const BlogPostPage = () => {
 
   const fetchPost = async () => {
     const client = supabase;
-    if (!client) {
+    const siteId = process.env.NEXT_PUBLIC_SITE_ID;
+    if (!client || !siteId) {
       setLoading(false);
       return;
     }
 
     try {
       const { data, error } = await client
-        .from('site_dm_advogados_posts')
-        .select('*')
+        .from('painel_posts')
+        .select('*, painel_categorias(name)')
         .eq('id', id)
+        .eq('site_id', siteId)
         .single();
 
       if (error) throw error;
@@ -135,7 +137,7 @@ const BlogPostPage = () => {
                 border: '1px solid var(--accent)',
                 textTransform: 'uppercase'
               }}>
-                {post.category}
+                {post.painel_categorias?.name || 'Geral'}
               </span>
             </div>
 
@@ -153,7 +155,7 @@ const BlogPostPage = () => {
                 letterSpacing: '-0.02em'
               }}
             >
-              {post.titulo}
+              {post.title}
             </motion.h1>
 
             <div style={{ 
@@ -169,7 +171,7 @@ const BlogPostPage = () => {
                 <Calendar size={18} color="var(--accent)" /> {new Date(post.created_at).toLocaleDateString('pt-BR')}
               </span>
               <span style={{ display: 'flex', alignItems: 'center', gap: '10px' }}>
-                <User size={18} color="var(--accent)" /> {post.autor}
+                <User size={18} color="var(--accent)" /> Equipe
               </span>
               <span style={{ display: 'flex', alignItems: 'center', gap: '10px' }}>
                 <Clock size={18} color="var(--accent)" /> {post.tempo_leitura || '5 min'} de leitura
@@ -194,8 +196,8 @@ const BlogPostPage = () => {
             }}
           >
             <img 
-              src={post.imagem_url || '/images/blog/health-law.png'} 
-              alt={post.titulo} 
+              src={post.image_url || '/images/blog/health-law.png'} 
+              alt={post.title} 
               style={{ width: '100%', height: '100%', objectFit: 'cover' }}
             />
           </motion.div>
@@ -221,7 +223,7 @@ const BlogPostPage = () => {
                 color: '#374151' 
               }}
               className="blog-content"
-              dangerouslySetInnerHTML={{ __html: post.conteudo }}
+              dangerouslySetInnerHTML={{ __html: post.content }}
             />
 
             {/* Social Share */}
@@ -273,7 +275,7 @@ const BlogPostPage = () => {
                     <User size={30} color="white" />
                   </div>
                   <div>
-                    <span style={{ display: 'block', fontWeight: 700, color: 'var(--primary)', fontFamily: "'Inter', sans-serif" }}>{post.autor}</span>
+                    <span style={{ block: 'block', fontWeight: 700, color: 'var(--primary)', fontFamily: "'Inter', sans-serif" }}>Equipe</span>
                     <span style={{ fontSize: '0.8rem', color: 'var(--text-light)', fontFamily: "'Inter', sans-serif" }}>Advogado Especialista</span>
                   </div>
                 </div>

@@ -14,23 +14,30 @@ import {
   Loader2,
 } from "lucide-react";
 
+import { useSite } from "@/context/SiteContext";
+
 export default function IntegrationsPage() {
   const [isModalOpen, setIsModalOpen] = useState(false);
   const [integrations, setIntegrations] = useState<any[]>([]);
   const [loading, setLoading] = useState(true);
   const [editingItem, setEditingItem] = useState<any>(null);
+  const { selectedSiteId } = useSite();
 
   useEffect(() => {
-    fetchIntegrations();
-  }, []);
+    if (selectedSiteId) {
+      fetchIntegrations();
+    }
+  }, [selectedSiteId]);
 
   const fetchIntegrations = async () => {
     const client = supabase;
-    if (!client) return;
+    if (!client || !selectedSiteId) return;
+    setLoading(true);
     try {
       const { data, error } = await client
-        .from("site_dm_advogados_integracoes")
+        .from("painel_integracoes")
         .select("*")
+        .eq('site_id', selectedSiteId)
         .order("created_at", { ascending: false });
 
       if (error) throw error;
@@ -51,7 +58,7 @@ export default function IntegrationsPage() {
     const newStatus = currentStatus === "ativo" ? "inativo" : "ativo";
     try {
       const { error } = await client
-        .from("site_dm_advogados_integracoes")
+        .from("painel_integracoes")
         .update({ status: newStatus })
         .eq("id", id);
 
@@ -71,7 +78,7 @@ export default function IntegrationsPage() {
     }
     try {
       const { error } = await client
-        .from("site_dm_advogados_integracoes")
+        .from("painel_integracoes")
         .delete()
         .eq("id", id);
 
@@ -285,9 +292,11 @@ function IntegrationModal({ onClose, onSave, editingItem }: { onClose: () => voi
   const [bodyScript, setBodyScript] = useState(editingItem?.body_script || "");
   const [status, setStatus] = useState(editingItem?.status || "ativo");
   const [isSaving, setIsSaving] = useState(false);
+  const { selectedSiteId } = useSite();
 
   const handleSave = async () => {
     if (!nome) return alert("Por favor, dê um nome para a integração.");
+    if (!selectedSiteId) return alert("Site não selecionado.");
     
     const client = supabase;
     if (!client) {
@@ -301,6 +310,7 @@ function IntegrationModal({ onClose, onSave, editingItem }: { onClose: () => voi
       if (!user) throw new Error("Não autenticado");
 
       const payload = {
+        site_id: selectedSiteId,
         user_id: user.id,
         nome,
         head_script: headScript,
@@ -311,13 +321,13 @@ function IntegrationModal({ onClose, onSave, editingItem }: { onClose: () => voi
 
       if (editingItem) {
         const { error } = await client
-          .from("site_dm_advogados_integracoes")
+          .from("painel_integracoes")
           .update(payload)
           .eq("id", editingItem.id);
         if (error) throw error;
       } else {
         const { error } = await client
-          .from("site_dm_advogados_integracoes")
+          .from("painel_integracoes")
           .insert([payload]);
         if (error) throw error;
       }

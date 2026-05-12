@@ -19,6 +19,8 @@ import Link from "next/link";
 import React, { useState, useEffect } from "react";
 import { supabase } from "@/lib/supabaseClient";
 
+import { useSite } from "@/context/SiteContext";
+
 // ─────────────────────────────────────────────
 // Stat Card Component
 // ─────────────────────────────────────────────
@@ -115,30 +117,37 @@ function StatCard({ title, value, desc, icon: Icon, accent }: StatProps) {
 // Main Dashboard
 // ─────────────────────────────────────────────
 export default function AdminDashboard() {
+  const { selectedSiteId } = useSite();
   const [counts, setCounts] = useState({
     posts: 0,
     leads: 0,
-    views: "4.8k" // Keeping mock views for now as they are harder to track
+    views: "0" 
   });
   const [loading, setLoading] = useState(true);
 
   useEffect(() => {
-    fetchCounts();
-  }, []);
+    if (selectedSiteId) {
+      fetchCounts();
+    }
+  }, [selectedSiteId]);
 
   const fetchCounts = async () => {
     const client = supabase;
-    if (!client) return;
+    if (!client || !selectedSiteId) return;
+    setLoading(true);
     try {
-      const [{ count: postCount }, { count: leadCount }] = await Promise.all([
-        client.from("site_dm_advogados_posts").select("*", { count: "exact", head: true }),
-        client.from("site_dm_advogados_leads").select("*", { count: "exact", head: true })
+      const [{ count: postCount }, { count: leadCount }, { data: viewsData }] = await Promise.all([
+        client.from("painel_posts").select("*", { count: "exact", head: true }).eq('site_id', selectedSiteId),
+        client.from("painel_leads").select("*", { count: "exact", head: true }).eq('site_id', selectedSiteId),
+        client.from("painel_posts").select("views").eq('site_id', selectedSiteId)
       ]);
+
+      const totalViews = viewsData?.reduce((acc, curr) => acc + (curr.views || 0), 0) || 0;
 
       setCounts({
         posts: postCount || 0,
         leads: leadCount || 0,
-        views: "4.8k"
+        views: totalViews > 1000 ? (totalViews / 1000).toFixed(1) + 'k' : totalViews.toString()
       });
     } catch (err) {
       console.error("Erro ao buscar contagens:", err);
@@ -153,6 +162,8 @@ export default function AdminDashboard() {
     month: "long",
     year: "numeric",
   });
+
+  const selectedSite = sites.find(s => s.id === selectedSiteId);
 
   return (
     <div style={{ maxWidth: "1200px", width: "100%", margin: "0 auto" }}>
@@ -179,7 +190,7 @@ export default function AdminDashboard() {
             Olá, Administrador
           </h1>
           <p style={{ fontSize: "15px", color: "#6b7280", marginTop: "6px", fontWeight: 500 }}>
-            Bem-vindo de volta ao portal de gestão D&M Advogados.
+            Bem-vindo de volta ao portal de gestão {selectedSite?.name || "do seu site"}.
           </p>
         </div>
 

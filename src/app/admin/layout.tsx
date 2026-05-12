@@ -9,6 +9,8 @@ import { usePathname } from "next/navigation";
 
 const inter = Inter({ subsets: ["latin"] });
 
+import { SiteProvider } from "@/context/SiteContext";
+
 export default function AdminLayout({ children }: { children: ReactNode }) {
   const pathname = usePathname();
   const isLoginPage = pathname === "/admin/login";
@@ -26,9 +28,10 @@ export default function AdminLayout({ children }: { children: ReactNode }) {
   return (
     <div className={inter.className}>
       <AuthGuard>
-        <div
-          suppressHydrationWarning
-          style={{
+        <SiteProvider>
+          <div
+            suppressHydrationWarning
+            style={{
             display: "flex",
             width: "100vw",
             height: "100vh",
@@ -93,6 +96,7 @@ export default function AdminLayout({ children }: { children: ReactNode }) {
             </footer>
           </div>
         </div>
+        </SiteProvider>
       </AuthGuard>
     </div>
   );

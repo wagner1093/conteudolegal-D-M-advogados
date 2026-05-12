@@ -27,12 +27,24 @@ const Navbar = () => {
 
   useEffect(() => {
     async function loadConfig() {
-      if (!supabase) return;
+      const siteId = process.env.NEXT_PUBLIC_SITE_ID;
+      if (!supabase || !siteId) return;
+      
       const { data } = await supabase
-        .from('site_dm_advogados_configuracoes')
-        .select('*')
+        .from('painel_sites')
+        .select('*, painel_configuracoes(*)')
+        .eq('id', siteId)
         .single();
-      if (data) setConfig(data);
+      
+      if (data) {
+        const configData = data.painel_configuracoes && data.painel_configuracoes[0] ? data.painel_configuracoes[0] : {};
+        setConfig({
+          ...data,
+          ...configData,
+          site_name: data.name,
+          contact_phone: configData.whatsapp_telefone
+        });
+      }
     }
     loadConfig();
 

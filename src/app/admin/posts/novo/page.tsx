@@ -15,10 +15,14 @@ import { motion, AnimatePresence } from 'framer-motion';
 import Link from 'next/link';
 import { useRouter } from 'next/navigation';
 import { supabase } from "@/lib/supabaseClient";
+import { validateFileSignature, logAudit } from "@/lib/security";
 import RichTextEditor from '@/components/RichTextEditor';
+
+import { useSite } from "@/context/SiteContext";
 
 export default function NewPostPage() {
   const router = useRouter();
+  const { selectedSiteId } = useSite();
   const [loading, setLoading] = useState(false);
   const [success, setSuccess] = useState(false);
   const [error, setError] = useState<string | null>(null);
@@ -27,38 +31,41 @@ export default function NewPostPage() {
   const fileInputRef = React.useRef<HTMLInputElement>(null);
 
   const [formData, setFormData] = useState({
-    titulo: '',
-    autor: '',
-    categoria: '',
-    status: 'Publicado',
-    conteudo: '',
-    imagem_url: ''
+    title: '',
+    author_id: '', // Seria o ID do usuário, mas podemos deixar opcional
+    category_id: '',
+    status: 'published',
+    content: '',
+    image_url: '',
+    slug: ''
   });
 
-  const [categories, setCategories] = useState<string[]>([]);
+  const [categories, setCategories] = useState<any[]>([]);
   const [isAddingCategory, setIsAddingCategory] = useState(false);
   const [newCategoryName, setNewCategoryName] = useState('');
   const [loadingCategories, setLoadingCategories] = useState(true);
 
   React.useEffect(() => {
-    fetchCategories();
-  }, []);
+    if (selectedSiteId) {
+      fetchCategories();
+    }
+  }, [selectedSiteId]);
 
   const fetchCategories = async () => {
     const client = supabase;
-    if (!client) return;
+    if (!client || !selectedSiteId) return;
     try {
       const { data, error } = await client
-        .from('site_dm_advogados_categorias')
-        .select('nome')
-        .order('nome');
+        .from('painel_categorias')
+        .select('id, name')
+        .eq('site_id', selectedSiteId)
+        .order('name');
 
       if (error) throw error;
       if (data) {
-        const catList = data.map(c => c.nome);
-        setCategories(catList);
-        if (catList.length > 0 && !formData.categoria) {
-          setFormData(prev => ({ ...prev, categoria: catList[0] }));
+        setCategories(data);
+        if (data.length > 0 && !formData.category_id) {
+          setFormData(prev => ({ ...prev, category_id: data[0].id }));
         }
       }
     } catch (err) {
@@ -69,21 +76,30 @@ export default function NewPostPage() {
   };
 
   const handleAddCategory = async () => {
-    if (!newCategoryName.trim()) return;
+    if (!newCategoryName.trim() || !selectedSiteId) return;
     
     const client = supabase;
     if (!client) return;
 
     setLoading(true);
     try {
-      const { error } = await client
-        .from('site_dm_advogados_categorias')
-        .insert([{ nome: newCategoryName.trim() }]);
+      const slug = newCategoryName.trim().toLowerCase().replace(/ /g, '-');
+      const { data, error } = await client
+        .from('painel_categorias')
+        .insert([{ 
+          name: newCategoryName.trim(), 
+          slug: slug,
+          site_id: selectedSiteId 
+        }])
+        .select()
+        .single();
 
       if (error) throw error;
 
-      setCategories(prev => [...prev, newCategoryName.trim()].sort());
-      setFormData(prev => ({ ...prev, categoria: newCategoryName.trim() }));
+      if (data) {
+        setCategories(prev => [...prev, data].sort((a, b) => a.name.localeCompare(b.name)));
+        setFormData(prev => ({ ...prev, category_id: data.id }));
+      }
       setNewCategoryName('');
       setIsAddingCategory(false);
     } catch (err) {
@@ -96,17 +112,24 @@ export default function NewPostPage() {
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
+    if (!selectedSiteId) return;
+
     setLoading(true);
     setError(null);
 
     try {
       const client = supabase;
       if (!client) throw new Error("Database client not initialized");
+      
+      const slug = formData.title.toLowerCase().replace(/ /g, '-').replace(/[^\w-]+/g, '');
+      
       const { error: insertError } = await client
-        .from('site_dm_advogados_posts')
+        .from('painel_posts')
         .insert([{
           ...formData,
-          visualizacoes: 0
+          slug: slug,
+          site_id: selectedSiteId,
+          views: 0
         }]);
 
       if (insertError) throw insertError;
@@ -127,6 +150,14 @@ export default function NewPostPage() {
     const file = e.target.files?.[0];
     if (!file) return;
 
+    // 1. Upload Hardening: Magic Byte Validation
+    const isValid = await validateFileSignature(file);
+    if (!isValid) {
+      alert("Arquivo inválido. Por favor, envie uma imagem real (JPG, PNG, GIF ou WebP).");
+      await logAudit("UPLOAD_REJECTED", "storage", file.name, null, { reason: "invalid_signature", type: file.type });
+      return;
+    }
+
     setUploading(true);
     try {
       const client = supabase;
@@ -146,10 +177,12 @@ export default function NewPostPage() {
         .from('blog_covers')
         .getPublicUrl(filePath);
 
-      setFormData(prev => ({ ...prev, imagem_url: publicUrl }));
-    } catch (err) {
+      setFormData(prev => ({ ...prev, image_url: publicUrl }));
+      await logAudit("UPLOAD_SUCCESS", "storage", filePath, null, { bucket: "blog_covers" });
+    } catch (err: any) {
       console.error('Erro no upload:', err);
       alert('Erro ao fazer upload da imagem.');
+      await logAudit("UPLOAD_ERROR", "storage", file.name, null, { error: err.message });
     } finally {
       setUploading(false);
     }
@@ -261,16 +294,16 @@ export default function NewPostPage() {
               <input 
                 type="text"
                 placeholder="Ex: Novos Direitos do Paciente em 2026"
-                value={formData.titulo}
-                onChange={(e) => setFormData({...formData, titulo: e.target.value})}
+                value={formData.title}
+                onChange={(e) => setFormData({...formData, title: e.target.value})}
                 style={inputStyle}
               />
             </Field>
 
             <Field label="Conteúdo do Artigo">
               <RichTextEditor 
-                value={formData.conteudo}
-                onChange={(content) => setFormData({...formData, conteudo: content})}
+                value={formData.content}
+                onChange={(content) => setFormData({...formData, content: content})}
                 placeholder="Escreva seu artigo aqui..."
               />
             </Field>
@@ -280,12 +313,12 @@ export default function NewPostPage() {
         {/* Sidebar Settings */}
         <div style={{ display: 'flex', flexDirection: 'column', gap: '24px' }}>
           <Card title="Configurações">
-            <Field label="Autor">
+            <Field label="ID do Autor (Opcional)">
               <input 
                 type="text"
-                placeholder="Ex: Dr. Roberto Matta"
-                value={formData.autor}
-                onChange={(e) => setFormData({...formData, autor: e.target.value})}
+                placeholder="ID do Usuário ou deixe em branco"
+                value={formData.author_id}
+                onChange={(e) => setFormData({...formData, author_id: e.target.value})}
                 style={inputStyle}
               />
             </Field>
@@ -294,8 +327,8 @@ export default function NewPostPage() {
               <div style={{ position: 'relative' }}>
                 <div style={{ display: 'flex', gap: '8px' }}>
                   <select 
-                    value={formData.categoria}
-                    onChange={(e) => setFormData({...formData, categoria: e.target.value})}
+                    value={formData.category_id}
+                    onChange={(e) => setFormData({...formData, category_id: e.target.value})}
                     style={{ ...inputStyle, flex: 1 }}
                     disabled={loadingCategories}
                   >
@@ -303,7 +336,7 @@ export default function NewPostPage() {
                       <option>Carregando...</option>
                     ) : (
                       categories.map(cat => (
-                        <option key={cat} value={cat}>{cat}</option>
+                        <option key={cat.id} value={cat.id}>{cat.name}</option>
                       ))
                     )}
                   </select>
@@ -409,9 +442,9 @@ export default function NewPostPage() {
                 onChange={(e) => setFormData({...formData, status: e.target.value})}
                 style={inputStyle}
               >
-                <option>Publicado</option>
-                <option>Rascunho</option>
-                <option>Agendado</option>
+                <option value="published">Publicado</option>
+                <option value="draft">Rascunho</option>
+                <option value="scheduled">Agendado</option>
               </select>
             </Field>
           </Card>
@@ -439,7 +472,7 @@ export default function NewPostPage() {
                 cursor: 'pointer',
                 overflow: 'hidden',
                 position: 'relative',
-                background: formData.imagem_url ? `url(${formData.imagem_url}) center/cover` : '#f8fafc',
+                background: formData.image_url ? `url(${formData.image_url}) center/cover` : '#f8fafc',
                 transition: 'all 0.2s ease'
               }}
               onMouseOver={(e) => e.currentTarget.style.borderColor = '#1e293b'}
@@ -447,7 +480,7 @@ export default function NewPostPage() {
             >
               {uploading ? (
                 <Loader2 size={32} className="animate-spin" />
-              ) : !formData.imagem_url ? (
+              ) : !formData.image_url ? (
                 <>
                   <ImageIcon size={32} style={{ marginBottom: '8px' }} />
                   <span style={{ fontSize: '12px', fontWeight: 600 }}>Clique para Upload</span>

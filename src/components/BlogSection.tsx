@@ -19,16 +19,19 @@ const BlogSection = () => {
 
   const fetchLatestPosts = async () => {
     const client = supabase;
-    if (!client) {
+    const siteId = process.env.NEXT_PUBLIC_SITE_ID;
+    
+    if (!client || !siteId) {
       setLoading(false);
       return;
     }
 
     try {
       const { data, error } = await client
-        .from('site_dm_advogados_posts')
-        .select('*')
-        .eq('status', 'Publicado')
+        .from('painel_posts')
+        .select('*, painel_categorias(name)')
+        .eq('site_id', siteId)
+        .or('status.eq.published,status.eq.Publicado')
         .order('created_at', { ascending: false })
         .limit(3);
 
@@ -122,8 +125,8 @@ const BlogSection = () => {
                 {/* Image Container */}
                 <div style={{ position: 'relative', height: '240px', overflow: 'hidden' }}>
                   <img 
-                    src={post.imagem_url || '/images/blog/health-law.png'} 
-                    alt={post.titulo} 
+                    src={post.image_url || '/images/blog/health-law.png'} 
+                    alt={post.title} 
                     style={{ width: '100%', height: '100%', objectFit: 'cover', transition: 'transform 0.5s ease' }}
                     onMouseEnter={(e) => (e.currentTarget.style.transform = 'scale(1.05)')}
                     onMouseLeave={(e) => (e.currentTarget.style.transform = 'scale(1)')}
@@ -141,7 +144,7 @@ const BlogSection = () => {
                     textTransform: 'uppercase',
                     letterSpacing: '0.5px'
                   }}>
-                    {post.categoria}
+                    {post.painel_categorias?.name || 'Geral'}
                   </div>
                 </div>
 
@@ -152,7 +155,7 @@ const BlogSection = () => {
                       <Calendar size={14} color="var(--accent)" /> {new Date(post.created_at).toLocaleDateString('pt-BR')}
                     </span>
                     <span style={{ display: 'flex', alignItems: 'center', gap: '6px' }}>
-                      <User size={14} color="var(--accent)" /> {post.autor}
+                      <User size={14} color="var(--accent)" /> {post.author_name || 'Equipe D&M'}
                     </span>
                   </div>
                   
@@ -165,7 +168,7 @@ const BlogSection = () => {
                     fontFamily: "'Inter', sans-serif",
                     letterSpacing: '-0.01em'
                   }}>
-                    {post.titulo}
+                    {post.title}
                   </h3>
                   
                   <p style={{ 
@@ -173,13 +176,17 @@ const BlogSection = () => {
                     fontSize: '0.95rem', 
                     lineHeight: 1.6,
                     marginBottom: '25px',
-                    flex: 1
+                    flex: 1,
+                    display: '-webkit-box',
+                    WebkitLineClamp: 3,
+                    WebkitBoxOrient: 'vertical',
+                    overflow: 'hidden'
                   }}>
-                    {post.resumo}
+                    {post.summary || post.content?.replace(/<[^>]*>/g, '').substring(0, 150) + '...'}
                   </p>
 
                   <Link 
-                    href={`/blog/${post.id}`} 
+                    href={`/blog/${post.slug || post.id}`} 
                     style={{ 
                       display: 'flex', 
                       alignItems: 'center', 

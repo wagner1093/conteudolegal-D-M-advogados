@@ -19,6 +19,9 @@ import {
 } from "lucide-react";
 import React, { useState, useEffect } from "react";
 import { supabase } from "@/lib/supabaseClient";
+import { validateFileSignature, logAudit } from "@/lib/security";
+
+import { useSite } from "@/context/SiteContext";
 
 // Social Icons components for Lucide v1 compatibility
 const Facebook = ({ size = 20 }: { size?: number }) => (
@@ -53,6 +56,7 @@ const allTabs = [
 ];
 
 export default function SettingsPage() {
+  const { selectedSiteId } = useSite();
   const [activeTab, setActiveTab] = useState("Geral");
   const [isSaving, setIsSaving] = useState(false);
   const [showSuccess, setShowSuccess] = useState(false);
@@ -86,38 +90,59 @@ export default function SettingsPage() {
   });
 
   useEffect(() => {
-    fetchSettings();
-    fetchTeamMembers();
-  }, []);
+    if (selectedSiteId) {
+      fetchSettings();
+      fetchTeamMembers();
+    }
+  }, [selectedSiteId]);
 
   const fetchSettings = async () => {
     const client = supabase;
-    if (!client) return;
+    if (!client || !selectedSiteId) return;
     try {
       const { data: { user } } = await client.auth.getUser();
       
-      let query = client.from("site_dm_advogados_configuracoes").select("*");
-      
+      // Fetch user role for current site
       if (user) {
-        query = query.eq("user_id", user.id);
-        
-        // Fetch user role
         const { data: roleData } = await client
-          .from("user_roles")
+          .from("painel_user_access")
           .select("role")
           .eq("user_id", user.id)
-          .eq("site_id", "58dc3c31-5fb2-4e6d-9c13-3d0309d85dc3")
+          .eq("site_id", selectedSiteId)
           .maybeSingle();
         
-        if (roleData?.role === "superadmin" || roleData?.role === "site_admin" || roleData?.role === "admin") {
+        if (roleData?.role === "owner" || roleData?.role === "admin") {
           setIsAdmin(true);
         }
       }
       
-      const { data, error } = await query.limit(1).maybeSingle();
+      const { data, error } = await client
+        .from("painel_sites")
+        .select("*, painel_configuracoes(*)")
+        .eq("id", selectedSiteId)
+        .maybeSingle();
 
       if (data) {
-        setSettings(data);
+        // Map PAINEL_sites fields to the settings state expected by the component
+        const config = data.painel_configuracoes && data.painel_configuracoes[0] ? data.painel_configuracoes[0] : {};
+        setSettings({
+          id: data.id,
+          site_name: data.name || "",
+          site_description: data.description || "",
+          contact_email: config.email_contato || data.contact_email || "",
+          contact_phone: config.whatsapp_telefone || data.contact_phone || "",
+          address: config.endereco_completo || data.address || "",
+          seo_title: data.seo_title || "",
+          seo_description: data.seo_description || "",
+          seo_keywords: config.seo_keywords || data.seo_keywords || "",
+          google_verify_id: config.google_verify_id || data.google_verify_id || "",
+          two_factor_enabled: config.two_factor_enabled || data.two_factor_enabled || false,
+          favicon_url: config.favicon_url || data.favicon_url || "",
+          facebook_url: config.facebook_url || data.facebook_url || "",
+          instagram_url: config.instagram_url || data.instagram_url || "",
+          linkedin_url: config.linkedin_url || data.linkedin_url || "",
+          youtube_url: config.youtube_url || data.youtube_url || ""
+        });
       }
     } catch (err) {
       console.error("Erro ao carregar configurações:", err);
@@ -128,19 +153,16 @@ export default function SettingsPage() {
 
   const fetchTeamMembers = async () => {
     const client = supabase;
-    if (!client) return;
+    if (!client || !selectedSiteId) return;
     try {
       const { data, error } = await client
-        .from("site_dm_advogados_usuarios")
+        .from("painel_equipe")
         .select("*")
+        .eq("site_id", selectedSiteId)
         .order("created_at", { ascending: false });
       
       if (data) {
-        const filtered = data.filter(u => 
-          !u.email.includes("admin@") && 
-          u.funcao !== "superadmin"
-        );
-        setTeamMembers(filtered);
+        setTeamMembers(data);
       }
       if (error) throw error;
     } catch (err) {
@@ -150,7 +172,7 @@ export default function SettingsPage() {
 
   const handleAddUser = async () => {
     const client = supabase;
-    if (!client) return;
+    if (!client || !selectedSiteId) return;
     
     if (!newUser.nome || !newUser.email) {
       alert("Preencha todos os campos obrigatórios.");
@@ -159,8 +181,9 @@ export default function SettingsPage() {
 
     try {
       const { error } = await client
-        .from("site_dm_advogados_usuarios")
+        .from("painel_equipe")
         .insert([{
+          site_id: selectedSiteId,
           nome: newUser.nome,
           email: newUser.email,
           funcao: newUser.funcao,
@@ -186,7 +209,7 @@ export default function SettingsPage() {
     if (!client) return;
     try {
       const { error } = await client
-        .from("site_dm_advogados_usuarios")
+        .from("painel_equipe")
         .delete()
         .eq("id", id);
       
@@ -199,54 +222,52 @@ export default function SettingsPage() {
 
    const handleSave = async () => {
     const client = supabase;
-    if (!client) return;
+    if (!client || !selectedSiteId) return;
     
     setIsSaving(true);
     setShowSuccess(false);
     
     try {
-      const { data: { user } } = await client.auth.getUser();
-      
-      // Garantir que estamos atualizando o registro correto (singleton)
-      let targetId = settings.id;
-      
-      if (!targetId) {
-        const { data: existing } = await client
-          .from("site_dm_advogados_configuracoes")
-          .select("id")
-          .maybeSingle();
-        if (existing) targetId = existing.id;
-      }
-
-      const saveData: any = {
-        ...settings,
+      const siteData = {
+        name: settings.site_name,
+        description: settings.site_description,
+        seo_title: settings.seo_title,
+        seo_description: settings.seo_description,
         updated_at: new Date().toISOString()
       };
 
-      if (targetId) {
-        saveData.id = targetId;
-      } else {
-        // Se realmente não existe (primeira vez), removemos a chave id 
-        // para o banco gerar o UUID default
-        delete saveData.id;
-      }
+      const configData = {
+        site_id: selectedSiteId,
+        email_contato: settings.contact_email,
+        whatsapp_telefone: settings.contact_phone,
+        endereco_completo: settings.address,
+        seo_keywords: settings.seo_keywords,
+        google_verify_id: settings.google_verify_id,
+        two_factor_enabled: settings.two_factor_enabled,
+        favicon_url: settings.favicon_url,
+        facebook_url: settings.facebook_url,
+        instagram_url: settings.instagram_url,
+        linkedin_url: settings.linkedin_url,
+        youtube_url: settings.youtube_url,
+        updated_at: new Date().toISOString()
+      };
 
-      if (user) {
-        saveData.user_id = user.id;
-      }
+      const [siteResponse, configResponse] = await Promise.all([
+        client.from("painel_sites").update(siteData).eq("id", selectedSiteId),
+        client.from("painel_configuracoes").upsert(configData, { onConflict: 'site_id' })
+      ]);
 
-      const { error } = await client
-        .from("site_dm_advogados_configuracoes")
-        .upsert(saveData);
-
-      if (error) throw error;
+      if (siteResponse.error) throw siteResponse.error;
+      if (configResponse.error) throw configResponse.error;
       
+      await logAudit("SETTINGS_UPDATE", "site_config", selectedSiteId, { ...siteData, ...configData });
       setIsSaving(false);
       setShowSuccess(true);
       setTimeout(() => setShowSuccess(false), 4000);
     } catch (err: any) {
       console.error("Erro ao salvar:", err);
       alert(`Erro ao salvar: ${err.message}`);
+      await logAudit("SETTINGS_UPDATE_ERROR", "site_config", selectedSiteId, null, { error: err.message });
       setIsSaving(false);
     }
   };
@@ -278,11 +299,13 @@ export default function SettingsPage() {
 
       if (error) throw error;
 
+      await logAudit("PASSWORD_CHANGE_SUCCESS", "user");
       alert("Senha atualizada com sucesso!");
       setPasswords({ current: "", new: "", confirm: "" });
     } catch (err: any) {
       console.error("Erro ao atualizar senha:", err);
       alert(`Erro ao atualizar senha: ${err.message}`);
+      await logAudit("PASSWORD_CHANGE_ERROR", "user", undefined, null, { error: err.message });
     } finally {
       setIsUpdatingPassword(false);
     }
@@ -295,6 +318,14 @@ export default function SettingsPage() {
   const handleFaviconUpload = async (e: React.ChangeEvent<HTMLInputElement>) => {
     const file = e.target.files?.[0];
     if (!file) return;
+
+    // 1. Upload Hardening: Magic Byte Validation
+    const isValid = await validateFileSignature(file);
+    if (!isValid) {
+      alert("Arquivo inválido. Por favor, envie uma imagem real (JPG, PNG, GIF ou WebP).");
+      await logAudit("UPLOAD_REJECTED", "storage", file.name, null, { reason: "invalid_signature", type: file.type });
+      return;
+    }
 
     if (file.size > 1 * 1024 * 1024) {
       alert("O arquivo é muito grande. O limite é 1MB.");
@@ -320,9 +351,11 @@ export default function SettingsPage() {
       if (data?.publicUrl) {
         updateField("favicon_url", data.publicUrl);
         alert("Favicon carregado com sucesso!");
+        await logAudit("UPLOAD_SUCCESS", "storage", filePath, null, { bucket: "site_dm_advogados", type: "favicon" });
       }
     } catch (err: any) {
       alert(`Erro ao fazer upload: ${err.message}`);
+      await logAudit("UPLOAD_ERROR", "storage", file.name, null, { error: err.message, type: "favicon" });
     } finally {
       setIsUploadingFavicon(false);
     }

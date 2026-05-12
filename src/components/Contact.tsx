@@ -22,12 +22,25 @@ const Contact = () => {
 
   React.useEffect(() => {
     async function loadConfig() {
-      if (!supabase) return;
+      const siteId = process.env.NEXT_PUBLIC_SITE_ID;
+      if (!supabase || !siteId) return;
+      
       const { data } = await supabase
-        .from('site_dm_advogados_configuracoes')
-        .select('*')
+        .from('painel_sites')
+        .select('*, painel_configuracoes(*)')
+        .eq('id', siteId)
         .single();
-      if (data) setConfig(data);
+        
+      if (data) {
+        const configData = data.painel_configuracoes && data.painel_configuracoes[0] ? data.painel_configuracoes[0] : {};
+        setConfig({
+          ...data,
+          ...configData,
+          contact_phone: configData.whatsapp_telefone,
+          contact_email: configData.email_contato,
+          address: configData.endereco_completo
+        });
+      }
     }
     loadConfig();
   }, []);
@@ -48,17 +61,22 @@ const Contact = () => {
     setIsSubmitting(true);
     setError(null);
 
+    const siteId = process.env.NEXT_PUBLIC_SITE_ID;
+
     try {
       if (!supabase) throw new Error("Database client not initialized");
+      if (!siteId) throw new Error("Site ID not configured");
+
       const { error: insertError } = await supabase
-        .from('site_dm_advogados_leads')
+        .from('painel_leads')
         .insert([{
+          site_id: siteId,
           name: formData.nome,
           email: formData.email,
           phone: formData.telefone,
-          area: formData.area,
+          source: formData.area,
           message: formData.mensagem,
-          status: 'novo'
+          status: 'new'
         }]);
 
       if (insertError) throw insertError;

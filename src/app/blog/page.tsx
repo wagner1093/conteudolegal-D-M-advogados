@@ -21,16 +21,18 @@ const BlogPage = () => {
 
   const fetchPosts = async () => {
     const client = supabase;
-    if (!client) {
+    const siteId = process.env.NEXT_PUBLIC_SITE_ID;
+    if (!client || !siteId) {
       setLoading(false);
       return;
     }
 
     try {
       const { data, error } = await client
-        .from('site_dm_advogados_posts')
-        .select('*')
-        .eq('status', 'Publicado')
+        .from('painel_posts')
+        .select('*, painel_categorias(name)')
+        .eq('site_id', siteId)
+        .eq('status', 'published')
         .order('created_at', { ascending: false });
 
       if (error) throw error;
@@ -43,9 +45,10 @@ const BlogPage = () => {
   };
 
   const filteredPosts = posts.filter(post => {
-    const matchesCategory = activeCategory === 'Todos' || post.category === activeCategory;
-    const matchesSearch = post.titulo.toLowerCase().includes(searchQuery.toLowerCase()) || 
-                         post.resumo.toLowerCase().includes(searchQuery.toLowerCase());
+    const categoryName = post.painel_categorias?.name || 'Geral';
+    const matchesCategory = activeCategory === 'Todos' || categoryName === activeCategory;
+    const matchesSearch = post.title.toLowerCase().includes(searchQuery.toLowerCase()) || 
+                         post.content?.toLowerCase().includes(searchQuery.toLowerCase());
     return matchesCategory && matchesSearch;
   });
 
@@ -195,8 +198,8 @@ const BlogPage = () => {
               >
                 <div style={{ height: '240px', overflow: 'hidden' }}>
                   <img 
-                    src={post.imagem_url || '/images/blog/health-law.png'} 
-                    alt={post.titulo} 
+                    src={post.image_url || '/images/blog/health-law.png'} 
+                    alt={post.title} 
                     style={{ width: '100%', height: '100%', objectFit: 'cover' }}
                   />
                 </div>
@@ -210,7 +213,7 @@ const BlogPage = () => {
                       textTransform: 'uppercase',
                       letterSpacing: '1px'
                     }}>
-                      {post.categoria}
+                      {post.painel_categorias?.name || 'Geral'}
                     </span>
                   </div>
                   
@@ -223,7 +226,7 @@ const BlogPage = () => {
                     fontFamily: "'Inter', sans-serif",
                     letterSpacing: '-0.01em'
                   }}>
-                    {post.titulo}
+                    {post.title}
                   </h3>
                   
                   <p style={{ 
@@ -233,7 +236,7 @@ const BlogPage = () => {
                     marginBottom: '24px',
                     flex: 1
                   }}>
-                    {post.resumo}
+                    {post.content ? (post.content.replace(/<[^>]*>/g, '').substring(0, 150) + '...') : ''}
                   </p>
                   
                   <div style={{ 
@@ -247,7 +250,7 @@ const BlogPage = () => {
                       <div style={{ width: '32px', height: '32px', borderRadius: '50%', backgroundColor: 'var(--bg-secondary)', display: 'flex', alignItems: 'center', justifyContent: 'center' }}>
                         <User size={16} color="var(--primary)" />
                       </div>
-                      <span style={{ fontSize: '0.85rem', fontWeight: 500, color: 'var(--text)' }}>{post.autor}</span>
+                      <span style={{ fontSize: '0.85rem', fontWeight: 500, color: 'var(--text)' }}>Equipe</span>
                     </div>
                     <Link href={`/blog/${post.id}`} style={{ color: 'var(--primary)', textDecoration: 'none' }}>
                       <motion.div whileHover={{ x: 5 }}>

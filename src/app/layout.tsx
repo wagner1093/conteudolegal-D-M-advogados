@@ -3,6 +3,7 @@ import "./globals.css";
 import { supabase } from "@/lib/supabaseClient";
 
 export async function generateMetadata(): Promise<Metadata> {
+  const siteId = process.env.NEXT_PUBLIC_SITE_ID;
   const defaultMetadata: Metadata = {
     title: "Dohmen & Matta Advogados Associados | Direito da Saúde e Erro Médico",
     description: "Escritório especializado em direito da saúde, com atuação estratégica voltada à resolução de conflitos complexos e suporte a profissionais.",
@@ -10,33 +11,34 @@ export async function generateMetadata(): Promise<Metadata> {
   };
 
   try {
-    if (supabase) {
+    if (supabase && siteId) {
       const { data } = await supabase
-        .from("site_dm_advogados_configuracoes")
-        .select("seo_title, seo_description, seo_keywords, google_verify_id, favicon_url")
-        .limit(1)
+        .from("painel_sites")
+        .select("*, painel_configuracoes(*)")
+        .eq("id", siteId)
         .maybeSingle();
 
       if (data) {
+        const config = data.painel_configuracoes && data.painel_configuracoes[0] ? data.painel_configuracoes[0] : {};
         const title = data.seo_title || defaultMetadata.title;
         const description = data.seo_description || defaultMetadata.description;
 
         return {
           title,
           description,
-          keywords: data.seo_keywords || defaultMetadata.keywords,
+          keywords: config.seo_keywords || data.seo_keywords || defaultMetadata.keywords,
           icons: {
-            icon: data.favicon_url || "/favicon.ico",
+            icon: config.favicon_url || data.favicon_url || "/favicon.ico",
           },
           openGraph: {
             title,
             description,
             type: "website",
             locale: "pt_BR",
-            url: "https://dmatta.com.br", // Could also be dynamic
+            url: "https://dmatta.com.br",
           },
           verification: {
-            google: data.google_verify_id || undefined,
+            google: config.google_verify_id || data.google_verify_id || undefined,
           },
         };
       }
@@ -53,15 +55,17 @@ export default async function RootLayout({
 }: Readonly<{
   children: React.ReactNode;
 }>) {
+  const siteId = process.env.NEXT_PUBLIC_SITE_ID;
   // Fetch active scripts from database
   let headScripts: any[] = [];
   let bodyScripts: any[] = [];
 
   try {
-    if (supabase) {
+    if (supabase && siteId) {
       const { data: scriptsData } = await supabase
-        .from("site_dm_advogados_integracoes")
+        .from("painel_integracoes")
         .select("head_script, body_script")
+        .eq("site_id", siteId)
         .eq("status", "ativo");
 
       if (scriptsData) {

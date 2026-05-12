@@ -17,24 +17,31 @@ import {
   Clock,
   MessageSquare
 } from "lucide-react";
+import { useSite } from "@/context/SiteContext";
 
 export default function LeadsPage() {
+  const { selectedSiteId } = useSite();
   const [leads, setLeads] = useState<any[]>([]);
   const [loading, setLoading] = useState(true);
   const [searchTerm, setSearchTerm] = useState("");
   const [filterStatus, setFilterStatus] = useState("todos");
 
   useEffect(() => {
-    fetchLeads();
-  }, []);
+    if (selectedSiteId) {
+      fetchLeads();
+    }
+  }, [selectedSiteId]);
 
   const fetchLeads = async () => {
     const client = supabase;
-    if (!client) return;
+    if (!client || !selectedSiteId) return;
+    
     try {
+      setLoading(true);
       const { data, error } = await client
-        .from("site_dm_advogados_leads")
+        .from("painel_leads")
         .select("*")
+        .eq("site_id", selectedSiteId)
         .order("created_at", { ascending: false });
 
       if (error) throw error;
@@ -55,7 +62,7 @@ export default function LeadsPage() {
     }
     try {
       const { error } = await client
-        .from("site_dm_advogados_leads")
+        .from("painel_leads")
         .delete()
         .eq("id", id);
       if (error) throw error;
@@ -73,7 +80,7 @@ export default function LeadsPage() {
     }
     try {
       const { error } = await client
-        .from("site_dm_advogados_leads")
+        .from("painel_leads")
         .update({ status: newStatus })
         .eq("id", id);
       if (error) throw error;

@@ -4,6 +4,7 @@ import React, { useState, useEffect } from "react";
 import { supabase } from "@/lib/supabaseClient";
 import { useRouter } from "next/navigation";
 import { Shield, Lock, Mail, Eye, EyeOff, Loader2 } from "lucide-react";
+import { consumeRateLimit, logAudit } from "@/lib/security";
 
 export default function LoginPage() {
   const [email, setEmail] = useState("");
@@ -33,19 +34,34 @@ export default function LoginPage() {
     setError(null);
 
     try {
-      const { error } = await supabase.auth.signInWithPassword({
+      // 1. Check Rate Limit
+      const rlIdentifier = `login:${email}`;
+      const { limited, retry_after_seconds } = await consumeRateLimit(rlIdentifier, 5, 60);
+      
+      if (limited) {
+        setError(`Muitas tentativas. Tente novamente em ${retry_after_seconds} segundos.`);
+        await logAudit("LOGIN_FAILURE", "auth", email, null, { reason: "rate_limited" });
+        return;
+      }
+
+      // 2. Attempt Login
+      const { data, error } = await supabase.auth.signInWithPassword({
         email,
         password,
       });
 
       if (error) {
         setError("Credenciais inválidas. Por favor, tente novamente.");
+        await logAudit("LOGIN_FAILURE", "auth", email, null, { error: error.message });
         return;
       }
 
+      // 3. Success Audit
+      await logAudit("LOGIN_SUCCESS", "auth", data.user?.id);
       router.push("/admin");
     } catch (err: any) {
       setError("Ocorreu um erro ao tentar entrar. Tente novamente mais tarde.");
+      await logAudit("LOGIN_ERROR", "auth", email, null, { error: err.message });
     } finally {
       setLoading(false);
     }
