@@ -16,6 +16,7 @@ import {
   ArrowUpRight,
   Loader2,
 } from "lucide-react";
+import React, { useState, useEffect } from "react";
 import { useSite } from "@/context/SiteContext";
 
 export default function PostsPage() {
