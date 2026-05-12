@@ -17,6 +17,7 @@ import {
   Loader2,
 } from "lucide-react";
 import React, { useState, useEffect } from "react";
+import { supabase } from "@/lib/supabaseClient";
 import { useSite } from "@/context/SiteContext";
 
 export default function PostsPage() {
