@@ -117,7 +117,7 @@ function StatCard({ title, value, desc, icon: Icon, accent }: StatProps) {
 // Main Dashboard
 // ─────────────────────────────────────────────
 export default function AdminDashboard() {
-  const { selectedSiteId } = useSite();
+  const { selectedSiteId, sites } = useSite();
   const [counts, setCounts] = useState({
     posts: 0,
     leads: 0,
