@@ -220,6 +220,11 @@ export default function LeadsPage() {
                           </span>
                         )}
                       </div>
+                      {lead.source && (
+                        <span style={{ fontSize: "11px", color: "#c5a059", fontWeight: 600, marginTop: "6px", textTransform: "uppercase" }}>
+                          {lead.source}
+                        </span>
+                      )}
                     </div>
                   </td>
                   <td style={{ padding: "20px 24px" }}>
