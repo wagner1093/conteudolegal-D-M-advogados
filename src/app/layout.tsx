@@ -1,6 +1,7 @@
 import type { Metadata } from "next";
 import "./globals.css";
 import { supabase } from "@/lib/supabaseClient";
+import { Providers } from "@/components/Providers";
 
 export const dynamic = "force-dynamic";
 

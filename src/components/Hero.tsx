@@ -4,34 +4,13 @@ import React from 'react';
 import { motion } from 'framer-motion';
 import { ArrowRight } from 'lucide-react';
 import { supabase } from "@/lib/supabaseClient";
+import { useConfig } from '@/context/ConfigContext';
 
 const spring = { type: 'spring' as const, stiffness: 200, damping: 24 };
 
 const Hero = () => {
-  const [config, setConfig] = React.useState<any>(null);
+  const { config } = useConfig();
 
-  React.useEffect(() => {
-    async function loadConfig() {
-      const siteId = process.env.NEXT_PUBLIC_SITE_ID;
-      if (!supabase || !siteId) return;
-      
-      const { data } = await supabase
-        .from('painel_sites')
-        .select('*, painel_configuracoes(*)')
-        .eq('id', siteId)
-        .single();
-      
-      if (data) {
-        const configData = data.painel_configuracoes && data.painel_configuracoes[0] ? data.painel_configuracoes[0] : {};
-        setConfig({
-          ...data,
-          ...configData,
-          site_name: configData.nome_fantasia || data.name
-        });
-      }
-    }
-    loadConfig();
-  }, []);
 
   const whatsappRaw = config?.contact_phone?.replace(/\D/g, '') || '11987795023';
 

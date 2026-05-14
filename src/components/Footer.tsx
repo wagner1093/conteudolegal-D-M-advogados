@@ -1,6 +1,6 @@
 'use client';
 
-import { supabase } from '@/lib/supabaseClient';
+import { useConfig } from '@/context/ConfigContext';
 import { MessageCircle, ArrowRight, MapPin, Mail, Phone } from 'lucide-react';
 import React, { useState, useEffect } from 'react';
 import { motion } from 'framer-motion';
@@ -36,55 +36,8 @@ const Youtube = ({ size = 20 }: { size?: number }) => (
 );
 
 const Footer = () => {
-  const [config, setConfig] = useState<any>(null);
+  const { config } = useConfig();
 
-  useEffect(() => {
-    async function loadConfig() {
-      const siteId = process.env.NEXT_PUBLIC_SITE_ID;
-      if (!supabase || !siteId) {
-        console.warn('Footer: Supabase client or Site ID not found');
-        return;
-      }
-      
-      console.log('Footer: Fetching config for site:', siteId);
-      const { data, error } = await supabase
-        .from('painel_sites')
-        .select('*, painel_configuracoes(*)')
-        .eq('id', siteId)
-        .maybeSingle();
-      
-      if (error) {
-        console.error('Footer: Error fetching config:', error);
-        return;
-      }
-
-      if (data) {
-        console.log('Footer: Data received:', data);
-        const configData = Array.isArray(data.painel_configuracoes) 
-          ? data.painel_configuracoes[0] 
-          : data.painel_configuracoes;
-
-        const finalConfig = {
-          ...data,
-          ...(configData || {}),
-          site_name: configData?.nome_fantasia || data.name,
-          site_description: data.description,
-          address: configData?.endereco_completo || data.address,
-          contact_email: configData?.email_contato || data.contact_email,
-          contact_phone: configData?.whatsapp_telefone || data.contact_phone,
-          instagram_url: configData?.instagram_url || data.instagram_url,
-          linkedin_url: configData?.linkedin_url || data.linkedin_url,
-          facebook_url: configData?.facebook_url || data.facebook_url,
-          youtube_url: configData?.youtube_url || data.youtube_url
-        };
-        console.log('Footer: Final config applied:', finalConfig);
-        setConfig(finalConfig);
-      } else {
-        console.warn('Footer: No data found for site:', siteId);
-      }
-    }
-    loadConfig();
-  }, []);
 
   const socialLinks = config ? [
     { href: config.instagram_url, Icon: Instagram, color: '#E4405F', label: 'Instagram' },
