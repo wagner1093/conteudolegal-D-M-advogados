@@ -23,22 +23,21 @@ export default function AdminHeader() {
     >
       <div style={{ display: "flex", alignItems: "center", gap: "24px" }}>
         <div style={{ display: "flex", alignItems: "center", gap: "8px" }}>
-
-        <div style={{ height: "16px", width: "1px", background: "#e2e8f0" }} />
-
-        <div style={{ display: "flex", alignItems: "center", gap: "8px" }}>
-          <div
-            style={{
-              width: "7px",
-              height: "7px",
-              borderRadius: "50%",
-              background: "#22c55e",
-              boxShadow: "0 0 0 3px rgba(34,197,94,0.18)",
-            }}
-          />
-          <span style={{ fontSize: "12px", fontWeight: 600, color: "#6b7280" }}>
-            Sistema operacional
-          </span>
+          <div style={{ height: "16px", width: "1px", background: "#e2e8f0" }} />
+          <div style={{ display: "flex", alignItems: "center", gap: "8px" }}>
+            <div
+              style={{
+                width: "7px",
+                height: "7px",
+                borderRadius: "50%",
+                background: "#22c55e",
+                boxShadow: "0 0 0 3px rgba(34,197,94,0.18)",
+              }}
+            />
+            <span style={{ fontSize: "12px", fontWeight: 600, color: "#6b7280" }}>
+              Sistema operacional
+            </span>
+          </div>
         </div>
       </div>
       

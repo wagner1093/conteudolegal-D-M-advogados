@@ -18,13 +18,11 @@ import { supabase } from "@/lib/supabaseClient";
 import { validateFileSignature, logAudit } from "@/lib/security";
 import RichTextEditor from '@/components/RichTextEditor';
 
-import { useSite } from "@/context/SiteContext";
-
 export default function EditPostPage() {
   const router = useRouter();
   const params = useParams();
   const id = params.id as string;
-  const { selectedSiteId } = useSite();
+  const selectedSiteId = process.env.NEXT_PUBLIC_SITE_ID;
   
   const [loading, setLoading] = useState(true);
   const [saving, setSaving] = useState(false);
@@ -49,21 +47,20 @@ export default function EditPostPage() {
   const [loadingCategories, setLoadingCategories] = useState(true);
 
   useEffect(() => {
-    if (id && selectedSiteId) {
+    if (id) {
       fetchPost();
       fetchCategories();
     }
-  }, [id, selectedSiteId]);
+  }, [id]);
 
   const fetchCategories = async () => {
     const client = supabase;
     if (!client || !selectedSiteId) return;
     try {
       const { data, error } = await client
-        .from('painel_categorias')
-        .select('id, name')
-        .eq('site_id', selectedSiteId)
-        .order('name');
+        .from('site_dm_advogados_categorias')
+        .select('id, nome')
+        .order('nome');
 
       if (error) throw error;
       if (data) {
@@ -86,11 +83,10 @@ export default function EditPostPage() {
     try {
       const slug = newCategoryName.trim().toLowerCase().replace(/ /g, '-');
       const { data, error } = await client
-        .from('painel_categorias')
+        .from('site_dm_advogados_categorias')
         .insert([{ 
-          name: newCategoryName.trim(), 
-          slug: slug,
-          site_id: selectedSiteId 
+          nome: newCategoryName.trim(), 
+          slug: slug
         }])
         .select()
         .single();
@@ -98,7 +94,7 @@ export default function EditPostPage() {
       if (error) throw error;
 
       if (data) {
-        setCategories(prev => [...prev, data].sort((a, b) => a.name.localeCompare(b.name)));
+        setCategories(prev => [...prev, data].sort((a, b) => a.nome.localeCompare(b.nome)));
         setFormData(prev => ({ ...prev, category_id: data.id }));
       }
       setNewCategoryName('');
@@ -116,10 +112,9 @@ export default function EditPostPage() {
     if (!client) return;
     try {
       const { data, error: fetchError } = await client
-        .from('painel_posts')
+        .from('site_dm_advogados_posts')
         .select('*')
         .eq('id', id)
-        .eq('site_id', selectedSiteId)
         .single();
 
       if (fetchError) throw fetchError;
@@ -196,7 +191,7 @@ export default function EditPostPage() {
 
     try {
       const { error: updateError } = await client
-        .from('painel_posts')
+        .from('site_dm_advogados_posts')
         .update(formData)
         .eq('id', id);
 
@@ -370,7 +365,7 @@ export default function EditPostPage() {
                       <option>Carregando...</option>
                     ) : (
                       categories.map(cat => (
-                        <option key={cat.id} value={cat.id}>{cat.name}</option>
+                        <option key={cat.id} value={cat.id}>{cat.nome}</option>
                       ))
                     )}
                   </select>

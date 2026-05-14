@@ -10,6 +10,7 @@ import {
   Shield,
   Globe,
   MessageCircle,
+  Briefcase,
 } from "lucide-react";
 import Link from "next/link";
 import { usePathname, useRouter } from "next/navigation";
@@ -20,6 +21,7 @@ const MENU_ITEMS = [
   { icon: LayoutDashboard, label: "Painel", href: "/admin" },
   { icon: FileText, label: "Posts", href: "/admin/posts" },
   { icon: Users, label: "Leads", href: "/admin/leads" },
+  { icon: Briefcase, label: "Equipe", href: "/admin/equipe" },
   { icon: Share2, label: "Integração", href: "/admin/integracao" },
   { icon: Settings, label: "Configurações", href: "/admin/configuracoes" },
   { icon: Globe, label: "Ver Site", href: "/", target: "_blank" },

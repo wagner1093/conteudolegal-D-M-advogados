@@ -1,24 +1,35 @@
 'use client';
 
-import React from 'react';
+import React, { useEffect, useState } from 'react';
 import { motion } from 'framer-motion';
+import { supabase } from '@/lib/supabaseClient';
 
 const spring = { type: 'spring' as const, stiffness: 180, damping: 25 };
 
-const members = [
-  { name: 'Yarla V. G. Ferreira', role: 'Advogada', image: '/images/team/yarla.png' },
-  { name: 'Felipe Alcântara', role: 'Advogado', image: '/images/team/felipe.jpg' },
-  { name: 'Júlia Simões L. Franco', role: 'Advogada', image: '/images/team/julia.png' },
-  { name: 'Emily Bom de Oliveira', role: 'Advogada', image: '/images/team/emily.png' },
-  { name: 'Aline Franciele Alexandre', role: 'Advogada', image: '/images/team/aline.png' },
-  { name: 'Bruna F. F. Oliveira', role: 'Advogada', image: '/images/team/bruna.png' },
-  { name: 'Jessica Paloma de Paiva', role: 'Controller', image: '/images/team/jessica.png' },
-  { name: 'Giovanna L. M. da Silva', role: 'Estagiária', image: '/images/team/giovanna.png' },
-  { name: 'Rafael Jelezoglo', role: 'Advogado', image: '/images/team/rafael.png' },
-  { name: 'Luiz Gustavo Ricca', role: 'Advogado', image: '/images/team/luiz.png' },
-];
-
 const Team = () => {
+  const [members, setMembers] = useState<any[]>([]);
+
+  useEffect(() => {
+    fetchMembers();
+  }, []);
+
+  const fetchMembers = async () => {
+    try {
+      const { data, error } = await supabase
+        .from('site_dm_advogados_equipe')
+        .select('*')
+        .order('ordem', { ascending: true })
+        .order('nome', { ascending: true });
+
+      if (error) throw error;
+      if (data) {
+        setMembers(data);
+      }
+    } catch (err) {
+      console.error('Erro ao buscar equipe:', err);
+    }
+  };
+
   return (
     <section id="equipe" style={{ padding: '100px 24px', backgroundColor: 'var(--bg-secondary)', borderTop: '1px solid var(--border)' }}>
       <div className="container" style={{ maxWidth: 1100 }}>
@@ -65,7 +76,7 @@ const Team = () => {
         <div className="team-grid">
           {members.map((member, index) => (
             <motion.div
-              key={index}
+              key={member.id || index}
               initial={{ opacity: 0, y: 30 }}
               whileInView={{ opacity: 1, y: 0 }}
               viewport={{ once: true }}
@@ -76,7 +87,7 @@ const Team = () => {
                 <div 
                   className="team-card-image" 
                   style={{ 
-                    backgroundImage: member.image ? `url(${member.image})` : 'linear-gradient(135deg, #d1d5db 0%, #9ca3af 100%)',
+                    backgroundImage: member.imagem_url ? `url(${member.imagem_url})` : 'linear-gradient(135deg, #d1d5db 0%, #9ca3af 100%)',
                     backgroundSize: 'cover',
                     backgroundPosition: 'center',
                     display: 'flex',
@@ -84,7 +95,7 @@ const Team = () => {
                     justifyContent: 'center'
                   }} 
                 >
-                  {!member.image && (
+                  {!member.imagem_url && (
                     <span style={{ color: 'rgba(255,255,255,0.5)', fontSize: '0.8rem', fontWeight: 600, textTransform: 'uppercase', letterSpacing: '1px' }}>
                       Foto Indisponível
                     </span>
@@ -92,8 +103,8 @@ const Team = () => {
                 </div>
 
                 <div className="team-card__content">
-                  <h3 className="team-card__title">{member.name}</h3>
-                  <p className="team-card__role">{member.role}</p>
+                  <h3 className="team-card__title">{member.nome}</h3>
+                  <p className="team-card__role">{member.cargo}</p>
                   <p className="team-card__description">
                     Profissional dedicado à excelência jurídica e ao atendimento estratégico dos nossos clientes.
                   </p>

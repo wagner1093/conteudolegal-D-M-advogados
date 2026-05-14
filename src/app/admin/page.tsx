@@ -137,10 +137,10 @@ export default function AdminDashboard() {
       const [{ count: postCount }, { count: leadCount }, { data: viewsData }] = await Promise.all([
         client.from("site_dm_advogados_posts").select("*", { count: "exact", head: true }),
         client.from("site_dm_advogados_leads").select("*", { count: "exact", head: true }),
-        client.from("site_dm_advogados_posts").select("views")
+        client.from("site_dm_advogados_posts").select("visualizacoes")
       ]);
 
-      const totalViews = viewsData?.reduce((acc, curr) => acc + (curr.views || 0), 0) || 0;
+      const totalViews = viewsData?.reduce((acc: any, curr: any) => acc + (curr.visualizacoes || 0), 0) || 0;
 
       setCounts({
         posts: postCount || 0,

@@ -45,17 +45,16 @@ const BlogPostPage = () => {
   const fetchPost = async () => {
     const client = supabase;
     const siteId = process.env.NEXT_PUBLIC_SITE_ID;
-    if (!client || !siteId) {
+    if (!client) {
       setLoading(false);
       return;
     }
 
     try {
       const { data, error } = await client
-        .from('painel_posts')
-        .select('*, painel_categorias(name)')
+        .from('site_dm_advogados_posts')
+        .select('*, site_dm_advogados_categorias(nome)')
         .eq('id', id)
-        .eq('site_id', siteId)
         .single();
 
       if (error) throw error;
@@ -137,7 +136,7 @@ const BlogPostPage = () => {
                 border: '1px solid var(--accent)',
                 textTransform: 'uppercase'
               }}>
-                {post.painel_categorias?.name || 'Geral'}
+                {post.site_dm_advogados_categorias?.nome || 'Geral'}
               </span>
             </div>
 

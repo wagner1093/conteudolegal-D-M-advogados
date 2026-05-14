@@ -114,11 +114,11 @@ export default function SettingsPage() {
       if (data) {
         setSettings({
           id: data.id,
-          site_name: data.nome_fantasia || "",
-          site_description: data.descricao_curta || "",
-          contact_email: data.email_contato || "",
-          contact_phone: data.whatsapp_telefone || "",
-          address: data.endereco_completo || "",
+          site_name: data.site_name || "",
+          site_description: data.site_description || "",
+          contact_email: data.contact_email || "",
+          contact_phone: data.contact_phone || "",
+          address: data.address || "",
           seo_title: data.seo_title || "",
           seo_description: data.seo_description || "",
           seo_keywords: data.seo_keywords || "",
@@ -217,11 +217,11 @@ export default function SettingsPage() {
     
     try {
       const configData = {
-        nome_fantasia: settings.site_name,
-        descricao_curta: settings.site_description,
-        email_contato: settings.contact_email,
-        whatsapp_telefone: settings.contact_phone,
-        endereco_completo: settings.address,
+        site_name: settings.site_name,
+        site_description: settings.site_description,
+        contact_email: settings.contact_email,
+        contact_phone: settings.contact_phone,
+        address: settings.address,
         seo_title: settings.seo_title,
         seo_description: settings.seo_description,
         seo_keywords: settings.seo_keywords,

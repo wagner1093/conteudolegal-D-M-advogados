@@ -19,10 +19,9 @@ import {
 import React, { useState, useEffect } from "react";
 import Link from "next/link";
 import { supabase } from "@/lib/supabaseClient";
-import { useSite } from "@/context/SiteContext";
 
 export default function PostsPage() {
-  const { selectedSiteId } = useSite();
+  const selectedSiteId = process.env.NEXT_PUBLIC_SITE_ID;
   const [searchTerm, setSearchTerm] = useState("");
   const [posts, setPosts] = useState<any[]>([]);
   const [loading, setLoading] = useState(true);
@@ -34,10 +33,8 @@ export default function PostsPage() {
   });
 
   useEffect(() => {
-    if (selectedSiteId) {
-      fetchPosts();
-    }
-  }, [selectedSiteId]);
+    fetchPosts();
+  }, []);
 
   const fetchPosts = async () => {
     const client = supabase;
@@ -46,9 +43,8 @@ export default function PostsPage() {
     try {
       setLoading(true);
       const { data, error } = await client
-        .from("painel_posts")
-        .select("*, painel_categorias(name)")
-        .eq("site_id", selectedSiteId)
+        .from("site_dm_advogados_posts")
+        .select("*, site_dm_advogados_categorias(nome)")
         .order("created_at", { ascending: false });
 
       if (error) throw error;
@@ -76,7 +72,7 @@ export default function PostsPage() {
     
     try {
       const { error } = await client
-        .from("painel_posts")
+        .from("site_dm_advogados_posts")
         .delete()
         .eq("id", id);
       if (error) throw error;
@@ -88,7 +84,7 @@ export default function PostsPage() {
 
   const filteredPosts = posts.filter(post => 
     post.title?.toLowerCase().includes(searchTerm.toLowerCase()) ||
-    post.painel_categorias?.name?.toLowerCase().includes(searchTerm.toLowerCase())
+    post.site_dm_advogados_categorias?.nome?.toLowerCase().includes(searchTerm.toLowerCase())
   );
 
   return (
@@ -281,7 +277,7 @@ export default function PostsPage() {
                               <User size={13} strokeWidth={2.5} /> {post.author_id ? "Autor" : "Admin"}
                             </span>
                             <span style={{ fontSize: "12px", color: "#1e293b", background: "rgba(30,41,59,0.05)", padding: "2px 8px", borderRadius: "6px", fontWeight: 600 }}>
-                              {post.painel_categorias?.name || "Sem Categoria"}
+                              {post.site_dm_advogados_categorias?.nome || "Sem Categoria"}
                             </span>
                           </div>
                         </div>

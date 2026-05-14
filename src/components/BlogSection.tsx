@@ -21,16 +21,15 @@ const BlogSection = () => {
     const client = supabase;
     const siteId = process.env.NEXT_PUBLIC_SITE_ID;
     
-    if (!client || !siteId) {
+    if (!client) {
       setLoading(false);
       return;
     }
 
     try {
       const { data, error } = await client
-        .from('painel_posts')
-        .select('*, painel_categorias(name)')
-        .eq('site_id', siteId)
+        .from('site_dm_advogados_posts')
+        .select('*, site_dm_advogados_categorias(name)')
         .or('status.eq.published,status.eq.Publicado')
         .order('created_at', { ascending: false })
         .limit(3);
@@ -144,7 +143,7 @@ const BlogSection = () => {
                     textTransform: 'uppercase',
                     letterSpacing: '0.5px'
                   }}>
-                    {post.painel_categorias?.name || 'Geral'}
+                    {post.site_dm_advogados_categorias?.name || 'Geral'}
                   </div>
                 </div>
 

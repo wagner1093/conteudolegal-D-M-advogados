@@ -14,30 +14,25 @@ import {
   Loader2,
 } from "lucide-react";
 
-import { useSite } from "@/context/SiteContext";
-
 export default function IntegrationsPage() {
   const [isModalOpen, setIsModalOpen] = useState(false);
   const [integrations, setIntegrations] = useState<any[]>([]);
   const [loading, setLoading] = useState(true);
   const [editingItem, setEditingItem] = useState<any>(null);
-  const { selectedSiteId } = useSite();
+  const selectedSiteId = process.env.NEXT_PUBLIC_SITE_ID;
 
   useEffect(() => {
-    if (selectedSiteId) {
-      fetchIntegrations();
-    }
-  }, [selectedSiteId]);
+    fetchIntegrations();
+  }, []);
 
   const fetchIntegrations = async () => {
     const client = supabase;
-    if (!client || !selectedSiteId) return;
+    if (!client) return;
     setLoading(true);
     try {
       const { data, error } = await client
-        .from("painel_integracoes")
+        .from("site_dm_advogados_integracoes")
         .select("*")
-        .eq('site_id', selectedSiteId)
         .order("created_at", { ascending: false });
 
       if (error) throw error;
@@ -58,7 +53,7 @@ export default function IntegrationsPage() {
     const newStatus = currentStatus === "ativo" ? "inativo" : "ativo";
     try {
       const { error } = await client
-        .from("painel_integracoes")
+        .from("site_dm_advogados_integracoes")
         .update({ status: newStatus })
         .eq("id", id);
 
@@ -78,7 +73,7 @@ export default function IntegrationsPage() {
     }
     try {
       const { error } = await client
-        .from("painel_integracoes")
+        .from("site_dm_advogados_integracoes")
         .delete()
         .eq("id", id);
 
@@ -292,7 +287,7 @@ function IntegrationModal({ onClose, onSave, editingItem }: { onClose: () => voi
   const [bodyScript, setBodyScript] = useState(editingItem?.body_script || "");
   const [status, setStatus] = useState(editingItem?.status || "ativo");
   const [isSaving, setIsSaving] = useState(false);
-  const { selectedSiteId } = useSite();
+  const selectedSiteId = process.env.NEXT_PUBLIC_SITE_ID;
 
   const handleSave = async () => {
     if (!nome) return alert("Por favor, dê um nome para a integração.");
@@ -310,7 +305,6 @@ function IntegrationModal({ onClose, onSave, editingItem }: { onClose: () => voi
       if (!user) throw new Error("Não autenticado");
 
       const payload = {
-        site_id: selectedSiteId,
         user_id: user.id,
         nome,
         head_script: headScript,
@@ -321,13 +315,13 @@ function IntegrationModal({ onClose, onSave, editingItem }: { onClose: () => voi
 
       if (editingItem) {
         const { error } = await client
-          .from("painel_integracoes")
+          .from("site_dm_advogados_integracoes")
           .update(payload)
           .eq("id", editingItem.id);
         if (error) throw error;
       } else {
         const { error } = await client
-          .from("painel_integracoes")
+          .from("site_dm_advogados_integracoes")
           .insert([payload]);
         if (error) throw error;
       }
