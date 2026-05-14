@@ -30,15 +30,15 @@ const Contact = () => {
         .select('*, painel_configuracoes(*)')
         .eq('id', siteId)
         .single();
-        
+      
       if (data) {
         const configData = data.painel_configuracoes && data.painel_configuracoes[0] ? data.painel_configuracoes[0] : {};
         setConfig({
           ...data,
           ...configData,
-          contact_phone: configData.whatsapp_telefone,
-          contact_email: configData.email_contato,
-          address: configData.endereco_completo
+          contact_email: configData.email_contato || data.contact_email,
+          contact_phone: configData.whatsapp_telefone || data.contact_phone,
+          address: configData.endereco_completo || data.address
         });
       }
     }

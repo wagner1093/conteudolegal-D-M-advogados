@@ -41,8 +41,8 @@ const Navbar = () => {
         setConfig({
           ...data,
           ...configData,
-          site_name: data.name,
-          contact_phone: configData.whatsapp_telefone
+          site_name: configData.nome_fantasia || data.name,
+          contact_phone: configData.whatsapp_telefone || data.contact_phone
         });
       }
     }

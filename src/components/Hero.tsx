@@ -25,7 +25,8 @@ const Hero = () => {
         const configData = data.painel_configuracoes && data.painel_configuracoes[0] ? data.painel_configuracoes[0] : {};
         setConfig({
           ...data,
-          contact_phone: configData.whatsapp_telefone || data.contact_phone
+          ...configData,
+          site_name: configData.nome_fantasia || data.name
         });
       }
     }

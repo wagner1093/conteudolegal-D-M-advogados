@@ -123,25 +123,24 @@ export default function SettingsPage() {
         .maybeSingle();
 
       if (data) {
-        // Map PAINEL_sites fields to the settings state expected by the component
-        const config = data.painel_configuracoes && data.painel_configuracoes[0] ? data.painel_configuracoes[0] : {};
+        const config = data.painel_configuracoes?.[0] || {};
         setSettings({
           id: data.id,
-          site_name: data.name || "",
-          site_description: data.description || "",
+          site_name: config.nome_fantasia || data.name || "",
+          site_description: config.descricao_curta || data.description || "",
           contact_email: config.email_contato || data.contact_email || "",
           contact_phone: config.whatsapp_telefone || data.contact_phone || "",
           address: config.endereco_completo || data.address || "",
-          seo_title: data.seo_title || "",
-          seo_description: data.seo_description || "",
+          seo_title: config.seo_title || data.seo_title || "",
+          seo_description: config.seo_description || data.seo_description || "",
           seo_keywords: config.seo_keywords || data.seo_keywords || "",
           google_verify_id: config.google_verify_id || data.google_verify_id || "",
-          two_factor_enabled: config.two_factor_enabled || data.two_factor_enabled || false,
-          favicon_url: config.favicon_url || data.favicon_url || "",
-          facebook_url: config.facebook_url || data.facebook_url || "",
-          instagram_url: config.instagram_url || data.instagram_url || "",
-          linkedin_url: config.linkedin_url || data.linkedin_url || "",
-          youtube_url: config.youtube_url || data.youtube_url || ""
+          two_factor_enabled: config.two_factor_enabled || false,
+          favicon_url: config.favicon_url || "",
+          facebook_url: config.facebook_url || "",
+          instagram_url: config.instagram_url || "",
+          linkedin_url: config.linkedin_url || "",
+          youtube_url: config.youtube_url || ""
         });
       }
     } catch (err) {
@@ -222,7 +221,14 @@ export default function SettingsPage() {
 
    const handleSave = async () => {
     const client = supabase;
-    if (!client || !selectedSiteId) return;
+    if (!client) {
+      alert("Erro: Cliente Supabase não encontrado.");
+      return;
+    }
+    if (!selectedSiteId) {
+      alert("Erro: Nenhum site selecionado.");
+      return;
+    }
     
     setIsSaving(true);
     setShowSuccess(false);
@@ -231,6 +237,8 @@ export default function SettingsPage() {
       const siteData = {
         name: settings.site_name,
         description: settings.site_description,
+        contact_email: settings.contact_email,
+        contact_phone: settings.contact_phone,
         seo_title: settings.seo_title,
         seo_description: settings.seo_description,
         updated_at: new Date().toISOString()
@@ -238,9 +246,13 @@ export default function SettingsPage() {
 
       const configData = {
         site_id: selectedSiteId,
+        nome_fantasia: settings.site_name,
+        descricao_curta: settings.site_description,
         email_contato: settings.contact_email,
         whatsapp_telefone: settings.contact_phone,
         endereco_completo: settings.address,
+        seo_title: settings.seo_title,
+        seo_description: settings.seo_description,
         seo_keywords: settings.seo_keywords,
         google_verify_id: settings.google_verify_id,
         two_factor_enabled: settings.two_factor_enabled,
@@ -252,15 +264,36 @@ export default function SettingsPage() {
         updated_at: new Date().toISOString()
       };
 
-      const [siteResponse, configResponse] = await Promise.all([
-        client.from("painel_sites").update(siteData).eq("id", selectedSiteId),
-        client.from("painel_configuracoes").upsert(configData, { onConflict: 'site_id' })
-      ]);
+      const { error: siteError } = await client
+        .from("painel_sites")
+        .update(siteData)
+        .eq("id", selectedSiteId);
 
-      if (siteResponse.error) throw siteResponse.error;
-      if (configResponse.error) throw configResponse.error;
+      if (siteError) throw siteError;
+
+      const { data: existingConfig } = await client
+        .from("painel_configuracoes")
+        .select("id")
+        .eq("site_id", selectedSiteId)
+        .maybeSingle();
+
+      let configError;
+      if (existingConfig) {
+        const { error } = await client
+          .from("painel_configuracoes")
+          .update(configData)
+          .eq("id", existingConfig.id);
+        configError = error;
+      } else {
+        const { error } = await client
+          .from("painel_configuracoes")
+          .insert([configData]);
+        configError = error;
+      }
       
-      await logAudit("SETTINGS_UPDATE", "site_config", selectedSiteId, { ...siteData, ...configData });
+      if (configError) throw configError;
+      
+      await logAudit("SETTINGS_UPDATE", "site_config", selectedSiteId, siteData);
       setIsSaving(false);
       setShowSuccess(true);
       setTimeout(() => setShowSuccess(false), 4000);
@@ -343,14 +376,14 @@ export default function SettingsPage() {
 
       const { error: uploadError } = await client.storage
         .from('site_dm_advogados')
-        .upload(filePath, file, { cacheControl: '3600', upsert: false });
+        .upload(filePath, file, { cacheControl: '3600', upsert: true });
 
       if (uploadError) throw uploadError;
 
       const { data } = client.storage.from('site_dm_advogados').getPublicUrl(filePath);
       if (data?.publicUrl) {
         updateField("favicon_url", data.publicUrl);
-        alert("Favicon carregado com sucesso!");
+        alert("Favicon carregado com sucesso! URL: " + data.publicUrl);
         await logAudit("UPLOAD_SUCCESS", "storage", filePath, null, { bucket: "site_dm_advogados", type: "favicon" });
       }
     } catch (err: any) {

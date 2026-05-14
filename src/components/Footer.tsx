@@ -54,11 +54,15 @@ const Footer = () => {
         setConfig({
           ...data,
           ...configData,
-          site_name: data.name,
+          site_name: configData.nome_fantasia || data.name,
           site_description: data.description,
-          contact_email: configData.email_contato,
-          contact_phone: configData.whatsapp_telefone,
-          address: configData.endereco_completo
+          address: configData.endereco_completo || data.address,
+          contact_email: configData.email_contato || data.contact_email,
+          contact_phone: configData.whatsapp_telefone || data.contact_phone,
+          instagram_url: configData.instagram_url || data.instagram_url,
+          linkedin_url: configData.linkedin_url || data.linkedin_url,
+          facebook_url: configData.facebook_url || data.facebook_url,
+          youtube_url: configData.youtube_url || data.youtube_url
         });
       }
     }

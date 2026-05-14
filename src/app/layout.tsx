@@ -2,6 +2,8 @@ import type { Metadata } from "next";
 import "./globals.css";
 import { supabase } from "@/lib/supabaseClient";
 
+export const dynamic = "force-dynamic";
+
 export async function generateMetadata(): Promise<Metadata> {
   const siteId = process.env.NEXT_PUBLIC_SITE_ID;
   const defaultMetadata: Metadata = {
@@ -19,16 +21,16 @@ export async function generateMetadata(): Promise<Metadata> {
         .maybeSingle();
 
       if (data) {
-        const config = data.painel_configuracoes && data.painel_configuracoes[0] ? data.painel_configuracoes[0] : {};
-        const title = data.seo_title || defaultMetadata.title;
-        const description = data.seo_description || defaultMetadata.description;
+        const config = data.painel_configuracoes?.[0] || {};
+        const title = config.seo_title || data.seo_title || defaultMetadata.title;
+        const description = config.seo_description || data.seo_description || defaultMetadata.description;
 
         return {
           title,
           description,
-          keywords: config.seo_keywords || data.seo_keywords || defaultMetadata.keywords,
+          keywords: config.seo_keywords || defaultMetadata.keywords,
           icons: {
-            icon: config.favicon_url || data.favicon_url || "/favicon.ico",
+            icon: config.favicon_url || "/favicon.ico",
           },
           openGraph: {
             title,
@@ -38,7 +40,7 @@ export async function generateMetadata(): Promise<Metadata> {
             url: "https://dmatta.com.br",
           },
           verification: {
-            google: config.google_verify_id || data.google_verify_id || undefined,
+            google: config.google_verify_id || undefined,
           },
         };
       }
