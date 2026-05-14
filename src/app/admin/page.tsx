@@ -19,7 +19,7 @@ import Link from "next/link";
 import React, { useState, useEffect } from "react";
 import { supabase } from "@/lib/supabaseClient";
 
-// import { useSite } from "@/context/SiteContext";
+import { useSite } from "@/context/SiteContext";
 
 // ─────────────────────────────────────────────
 // Stat Card Component
@@ -117,7 +117,7 @@ function StatCard({ title, value, desc, icon: Icon, accent }: StatProps) {
 // Main Dashboard
 // ─────────────────────────────────────────────
 export default function AdminDashboard() {
-  // const { selectedSiteId, sites } = useSite();
+  const { selectedSiteId, sites } = useSite();
   const [counts, setCounts] = useState({
     posts: 0,
     leads: 0,
@@ -127,9 +127,11 @@ export default function AdminDashboard() {
   const [loading, setLoading] = useState(true);
 
   useEffect(() => {
-    fetchCounts();
-    fetchUserName();
-  }, []);
+    if (selectedSiteId) {
+      fetchCounts();
+      fetchUserName();
+    }
+  }, [selectedSiteId]);
 
   const fetchUserName = async () => {
     const client = supabase;
@@ -159,9 +161,17 @@ export default function AdminDashboard() {
     setLoading(true);
     try {
       const [{ count: postCount }, { count: leadCount }, { data: viewsData }] = await Promise.all([
-        client.from("site_dm_advogados_posts").select("*", { count: "exact", head: true }),
-        client.from("site_dm_advogados_leads").select("*", { count: "exact", head: true }),
-        client.from("site_dm_advogados_posts").select("visualizacoes")
+        client
+          .from("site_dm_advogados_posts")
+          .select("*", { count: "exact", head: true })
+          .is("deleted_at", null),
+        client
+          .from("site_dm_advogados_leads")
+          .select("*", { count: "exact", head: true }),
+        client
+          .from("site_dm_advogados_posts")
+          .select("visualizacoes")
+          .is("deleted_at", null)
       ]);
 
       const totalViews = viewsData?.reduce((acc: any, curr: any) => acc + (curr.visualizacoes || 0), 0) || 0;
@@ -185,8 +195,8 @@ export default function AdminDashboard() {
     year: "numeric",
   });
 
-  // const selectedSite = sites.find(s => s.id === selectedSiteId);
-  const selectedSiteName = "Dohmen & Matta Advogados";
+  const selectedSite = sites.find(s => s.id === selectedSiteId);
+  const selectedSiteName = selectedSite?.name || "Dohmen & Matta Advogados";
 
   return (
     <div style={{ maxWidth: "1200px", width: "100%", margin: "0 auto" }}>

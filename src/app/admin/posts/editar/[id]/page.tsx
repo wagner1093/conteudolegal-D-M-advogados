@@ -15,6 +15,7 @@ import { motion, AnimatePresence } from 'framer-motion';
 import Link from 'next/link';
 import { useRouter, useParams } from 'next/navigation';
 import { supabase } from "@/lib/supabaseClient";
+import { useSite } from "@/context/SiteContext";
 import { validateFileSignature, logAudit } from "@/lib/security";
 import RichTextEditor from '@/components/RichTextEditor';
 
@@ -22,7 +23,7 @@ export default function EditPostPage() {
   const router = useRouter();
   const params = useParams();
   const id = params.id as string;
-  const selectedSiteId = process.env.NEXT_PUBLIC_SITE_ID;
+  const { selectedSiteId } = useSite();
 
   const [loading, setLoading] = useState(true);
   const [saving, setSaving] = useState(false);
@@ -55,7 +56,10 @@ export default function EditPostPage() {
 
   const fetchCategories = async () => {
     const client = supabase;
-    if (!client || !selectedSiteId) return;
+    if (!client || !selectedSiteId) {
+      setLoadingCategories(false);
+      return;
+    }
     try {
       const { data, error } = await client
         .from('site_dm_advogados_categorias')
@@ -109,7 +113,10 @@ export default function EditPostPage() {
 
   const fetchPost = async () => {
     const client = supabase;
-    if (!client) return;
+    if (!client) {
+      setLoading(false);
+      return;
+    }
     try {
       const { data, error: fetchError } = await client
         .from('site_dm_advogados_posts')

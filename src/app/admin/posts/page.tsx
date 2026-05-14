@@ -19,12 +19,13 @@ import {
 import React, { useState, useEffect } from "react";
 import Link from "next/link";
 import { supabase } from "@/lib/supabaseClient";
+import { useSite } from "@/context/SiteContext";
 
 export default function PostsPage() {
-  const selectedSiteId = process.env.NEXT_PUBLIC_SITE_ID;
+  const { selectedSiteId } = useSite();
   const [searchTerm, setSearchTerm] = useState("");
   const [posts, setPosts] = useState<any[]>([]);
-  const [loading, setLoading] = useState(true);
+  const [loading, setLoading] = useState(false); // Inicializa como false para evitar loop se o ID demorar
   const [stats, setStats] = useState({
     total: 0,
     publicados: 0,
@@ -33,8 +34,10 @@ export default function PostsPage() {
   });
 
   useEffect(() => {
-    fetchPosts();
-  }, []);
+    if (selectedSiteId) {
+      fetchPosts();
+    }
+  }, [selectedSiteId]);
 
   const fetchPosts = async () => {
     const client = supabase;
@@ -61,25 +64,31 @@ export default function PostsPage() {
       });
     } catch (err) {
       console.error("Erro ao buscar posts:", err);
+      // Opcional: mostrar erro ao usuário
     } finally {
       setLoading(false);
     }
   };
 
   const handleDelete = async (id: string) => {
-    if (!confirm("Tem certeza que deseja excluir este artigo?")) return;
+    if (!confirm("Tem certeza que deseja excluir este artigo permanentemente?")) return;
     const client = supabase;
     if (!client) return;
     
     try {
+      // Tenta exclusão física se o soft-delete estiver falhando ou se o post estiver "bugado"
       const { error } = await client
         .from("site_dm_advogados_posts")
-        .update({ deleted_at: new Date().toISOString() })
+        .delete()
         .eq("id", id);
+        
       if (error) throw error;
+      
+      alert("Artigo excluído com sucesso!");
       fetchPosts();
-    } catch (err) {
+    } catch (err: any) {
       console.error("Erro ao deletar:", err);
+      alert("Erro ao excluir artigo: " + (err.message || "Verifique as permissões."));
     }
   };
 
