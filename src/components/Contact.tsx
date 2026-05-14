@@ -23,23 +23,40 @@ const Contact = () => {
   React.useEffect(() => {
     async function loadConfig() {
       const siteId = process.env.NEXT_PUBLIC_SITE_ID;
-      if (!supabase || !siteId) return;
+      if (!supabase || !siteId) {
+        console.warn('Contact: Supabase client or Site ID not found');
+        return;
+      }
       
-      const { data } = await supabase
+      console.log('Contact: Fetching config for site:', siteId);
+      const { data, error } = await supabase
         .from('painel_sites')
         .select('*, painel_configuracoes(*)')
         .eq('id', siteId)
-        .single();
+        .maybeSingle();
       
+      if (error) {
+        console.error('Contact: Error fetching config:', error);
+        return;
+      }
+
       if (data) {
-        const configData = data.painel_configuracoes && data.painel_configuracoes[0] ? data.painel_configuracoes[0] : {};
-        setConfig({
+        console.log('Contact: Data received:', data);
+        const configData = Array.isArray(data.painel_configuracoes) 
+          ? data.painel_configuracoes[0] 
+          : data.painel_configuracoes;
+
+        const finalConfig = {
           ...data,
-          ...configData,
-          contact_email: configData.email_contato || data.contact_email,
-          contact_phone: configData.whatsapp_telefone || data.contact_phone,
-          address: configData.endereco_completo || data.address
-        });
+          ...(configData || {}),
+          contact_email: configData?.email_contato || data.contact_email,
+          contact_phone: configData?.whatsapp_telefone || data.contact_phone,
+          address: configData?.endereco_completo || data.address
+        };
+        console.log('Contact: Final config applied:', finalConfig);
+        setConfig(finalConfig);
+      } else {
+        console.warn('Contact: No data found for site:', siteId);
       }
     }
     loadConfig();

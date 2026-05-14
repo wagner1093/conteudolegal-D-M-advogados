@@ -28,22 +28,39 @@ const Navbar = () => {
   useEffect(() => {
     async function loadConfig() {
       const siteId = process.env.NEXT_PUBLIC_SITE_ID;
-      if (!supabase || !siteId) return;
+      if (!supabase || !siteId) {
+        console.warn('Navbar: Supabase client or Site ID not found');
+        return;
+      }
       
-      const { data } = await supabase
+      console.log('Navbar: Fetching config for site:', siteId);
+      const { data, error } = await supabase
         .from('painel_sites')
         .select('*, painel_configuracoes(*)')
         .eq('id', siteId)
-        .single();
+        .maybeSingle();
       
+      if (error) {
+        console.error('Navbar: Error fetching config:', error);
+        return;
+      }
+
       if (data) {
-        const configData = data.painel_configuracoes && data.painel_configuracoes[0] ? data.painel_configuracoes[0] : {};
-        setConfig({
+        console.log('Navbar: Data received:', data);
+        const configData = Array.isArray(data.painel_configuracoes) 
+          ? data.painel_configuracoes[0] 
+          : data.painel_configuracoes;
+
+        const finalConfig = {
           ...data,
-          ...configData,
-          site_name: configData.nome_fantasia || data.name,
-          contact_phone: configData.whatsapp_telefone || data.contact_phone
-        });
+          ...(configData || {}),
+          site_name: configData?.nome_fantasia || data.name,
+          contact_phone: configData?.whatsapp_telefone || data.contact_phone
+        };
+        console.log('Navbar: Final config applied:', finalConfig);
+        setConfig(finalConfig);
+      } else {
+        console.warn('Navbar: No data found for site:', siteId);
       }
     }
     loadConfig();

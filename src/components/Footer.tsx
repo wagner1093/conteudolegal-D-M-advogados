@@ -41,29 +41,46 @@ const Footer = () => {
   useEffect(() => {
     async function loadConfig() {
       const siteId = process.env.NEXT_PUBLIC_SITE_ID;
-      if (!supabase || !siteId) return;
+      if (!supabase || !siteId) {
+        console.warn('Footer: Supabase client or Site ID not found');
+        return;
+      }
       
-      const { data } = await supabase
+      console.log('Footer: Fetching config for site:', siteId);
+      const { data, error } = await supabase
         .from('painel_sites')
         .select('*, painel_configuracoes(*)')
         .eq('id', siteId)
-        .single();
+        .maybeSingle();
       
+      if (error) {
+        console.error('Footer: Error fetching config:', error);
+        return;
+      }
+
       if (data) {
-        const configData = data.painel_configuracoes && data.painel_configuracoes[0] ? data.painel_configuracoes[0] : {};
-        setConfig({
+        console.log('Footer: Data received:', data);
+        const configData = Array.isArray(data.painel_configuracoes) 
+          ? data.painel_configuracoes[0] 
+          : data.painel_configuracoes;
+
+        const finalConfig = {
           ...data,
-          ...configData,
-          site_name: configData.nome_fantasia || data.name,
+          ...(configData || {}),
+          site_name: configData?.nome_fantasia || data.name,
           site_description: data.description,
-          address: configData.endereco_completo || data.address,
-          contact_email: configData.email_contato || data.contact_email,
-          contact_phone: configData.whatsapp_telefone || data.contact_phone,
-          instagram_url: configData.instagram_url || data.instagram_url,
-          linkedin_url: configData.linkedin_url || data.linkedin_url,
-          facebook_url: configData.facebook_url || data.facebook_url,
-          youtube_url: configData.youtube_url || data.youtube_url
-        });
+          address: configData?.endereco_completo || data.address,
+          contact_email: configData?.email_contato || data.contact_email,
+          contact_phone: configData?.whatsapp_telefone || data.contact_phone,
+          instagram_url: configData?.instagram_url || data.instagram_url,
+          linkedin_url: configData?.linkedin_url || data.linkedin_url,
+          facebook_url: configData?.facebook_url || data.facebook_url,
+          youtube_url: configData?.youtube_url || data.youtube_url
+        };
+        console.log('Footer: Final config applied:', finalConfig);
+        setConfig(finalConfig);
+      } else {
+        console.warn('Footer: No data found for site:', siteId);
       }
     }
     loadConfig();
