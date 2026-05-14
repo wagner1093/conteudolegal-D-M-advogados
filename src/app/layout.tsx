@@ -14,23 +14,38 @@ export async function generateMetadata(): Promise<Metadata> {
 
   try {
     if (supabase && siteId) {
-      const { data } = await supabase
+      const { data, error } = await supabase
         .from("painel_sites")
         .select("*, painel_configuracoes(*)")
         .eq("id", siteId)
         .maybeSingle();
 
+      console.log("Metadata Fetch - Site ID:", siteId);
+      console.log("Metadata Fetch - Data:", data ? "Found" : "Not Found");
+      if (error) console.error("Metadata Fetch - Error:", error);
+
       if (data) {
-        const config = data.painel_configuracoes?.[0] || {};
-        const title = config.seo_title || data.seo_title || defaultMetadata.title;
-        const description = config.seo_description || data.seo_description || defaultMetadata.description;
+        const config = Array.isArray(data.painel_configuracoes) 
+          ? data.painel_configuracoes[0] 
+          : data.painel_configuracoes;
+        
+        const configData = config || {};
+        const title = configData.seo_title || data.seo_title || defaultMetadata.title;
+        const description = configData.seo_description || data.seo_description || defaultMetadata.description;
+        const favicon = configData.favicon_url ? `${configData.favicon_url}?v=2` : "/favicon.ico";
 
         return {
           title,
           description,
-          keywords: config.seo_keywords || defaultMetadata.keywords,
+          keywords: configData.seo_keywords || defaultMetadata.keywords,
           icons: {
-            icon: config.favicon_url || "/favicon.ico",
+            icon: [
+              { url: favicon, rel: 'icon' },
+              { url: favicon, rel: 'shortcut icon' },
+            ],
+            apple: [
+              { url: favicon, rel: 'apple-touch-icon' },
+            ],
           },
           openGraph: {
             title,
@@ -40,7 +55,7 @@ export async function generateMetadata(): Promise<Metadata> {
             url: "https://dmatta.com.br",
           },
           verification: {
-            google: config.google_verify_id || undefined,
+            google: configData.google_verify_id || undefined,
           },
         };
       }
