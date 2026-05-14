@@ -1,9 +1,9 @@
 'use client';
 
-import { useConfig } from '@/context/ConfigContext';
 import { MessageCircle, ArrowRight, MapPin, Mail, Phone } from 'lucide-react';
 import React, { useState, useEffect } from 'react';
 import { motion } from 'framer-motion';
+import { supabase } from "@/lib/supabaseClient";
 
 const WhatsAppIcon = ({ size = 18 }: { size?: number }) => (
   <svg width={size} height={size} viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
@@ -36,7 +36,20 @@ const Youtube = ({ size = 20 }: { size?: number }) => (
 );
 
 const Footer = () => {
-  const { config } = useConfig();
+  const [config, setConfig] = useState<any>(null);
+
+  useEffect(() => {
+    async function loadConfig() {
+      if (!supabase) return;
+      const { data } = await supabase
+        .from("site_dm_advogados_configuracoes")
+        .select("*")
+        .limit(1)
+        .maybeSingle();
+      if (data) setConfig(data);
+    }
+    loadConfig();
+  }, []);
 
 
   const socialLinks = config ? [

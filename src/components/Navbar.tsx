@@ -15,7 +15,7 @@ const links = [
 ];
 
 
-import { useConfig } from '@/context/ConfigContext';
+import { supabase } from "@/lib/supabaseClient";
 
 const spring = { type: 'spring' as const, stiffness: 300, damping: 30 };
 
@@ -23,9 +23,23 @@ const Navbar = () => {
   const [scrolled, setScrolled] = useState(false);
   const [active, setActive] = useState('');
   const [menuOpen, setMenuOpen] = useState(false);
-  const { config } = useConfig();
+  const [config, setConfig] = useState<any>(null);
 
   useEffect(() => {
+    async function loadConfig() {
+      if (!supabase) return;
+      const { data } = await supabase
+        .from("site_dm_advogados_configuracoes")
+        .select("*")
+        .limit(1)
+        .maybeSingle();
+      
+      if (data) {
+        setConfig(data);
+      }
+    }
+    loadConfig();
+
     const onScroll = () => {
       setScrolled(window.scrollY > 40);
       const sections = links.map(l => l.href.replace('#', ''));

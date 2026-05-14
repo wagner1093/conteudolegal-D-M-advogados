@@ -1,17 +1,29 @@
 'use client';
 
-import React, { useState } from 'react';
+import React, { useState, useEffect } from 'react';
 import { motion, AnimatePresence } from 'framer-motion';
 import { MapPin, Mail, ArrowRight, MessageSquare, Phone, CheckCircle2, Loader2 } from 'lucide-react';
 import { supabase } from "@/lib/supabaseClient";
-import { useConfig } from '@/context/ConfigContext';
 
 const Contact = () => {
   const [focusedInput, setFocusedInput] = useState<string | null>(null);
   const [isSubmitting, setIsSubmitting] = useState(false);
   const [submitted, setSubmitted] = useState(false);
   const [error, setError] = useState<string | null>(null);
-  const { config } = useConfig();
+  const [config, setConfig] = useState<any>(null);
+
+  useEffect(() => {
+    async function loadConfig() {
+      if (!supabase) return;
+      const { data } = await supabase
+        .from("site_dm_advogados_configuracoes")
+        .select("*")
+        .limit(1)
+        .maybeSingle();
+      if (data) setConfig(data);
+    }
+    loadConfig();
+  }, []);
 
   const [formData, setFormData] = useState({
     nome: '',
@@ -38,22 +50,18 @@ const Contact = () => {
     setIsSubmitting(true);
     setError(null);
 
-    const siteId = process.env.NEXT_PUBLIC_SITE_ID;
-
     try {
       if (!supabase) throw new Error("Database client not initialized");
-      if (!siteId) throw new Error("Site ID not configured");
 
       const { error: insertError } = await supabase
-        .from('painel_leads')
+        .from('site_dm_advogados_leads')
         .insert([{
-          site_id: siteId,
-          name: formData.nome,
+          nome: formData.nome,
           email: formData.email,
-          phone: formData.telefone,
-          source: formData.area,
-          message: formData.mensagem,
-          status: 'new'
+          telefone: formData.telefone,
+          origem: formData.area,
+          mensagem: formData.mensagem,
+          site: 'Dohmen & Matta'
         }]);
 
       if (insertError) throw insertError;

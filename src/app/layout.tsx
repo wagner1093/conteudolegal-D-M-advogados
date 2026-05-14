@@ -1,12 +1,8 @@
 import type { Metadata } from "next";
 import "./globals.css";
 import { supabase } from "@/lib/supabaseClient";
-import { Providers } from "@/components/Providers";
-
-export const dynamic = "force-dynamic";
 
 export async function generateMetadata(): Promise<Metadata> {
-  const siteId = process.env.NEXT_PUBLIC_SITE_ID;
   const defaultMetadata: Metadata = {
     title: "Dohmen & Matta Advogados Associados | Direito da Saúde e Erro Médico",
     description: "Escritório especializado em direito da saúde, com atuação estratégica voltada à resolução de conflitos complexos e suporte a profissionais.",
@@ -14,39 +10,24 @@ export async function generateMetadata(): Promise<Metadata> {
   };
 
   try {
-    if (supabase && siteId) {
-      const { data, error } = await supabase
-        .from("painel_sites")
-        .select("*, painel_configuracoes(*)")
-        .eq("id", siteId)
+    if (supabase) {
+      const { data } = await supabase
+        .from("site_dm_advogados_configuracoes")
+        .select("seo_title, seo_description, seo_keywords, google_verify_id, favicon_url")
+        .limit(1)
         .maybeSingle();
 
-      console.log("Metadata Fetch - Site ID:", siteId);
-      console.log("Metadata Fetch - Data:", data ? "Found" : "Not Found");
-      if (error) console.error("Metadata Fetch - Error:", error);
-
       if (data) {
-        const config = Array.isArray(data.painel_configuracoes) 
-          ? data.painel_configuracoes[0] 
-          : data.painel_configuracoes;
-        
-        const configData = config || {};
-        const title = configData.seo_title || data.seo_title || defaultMetadata.title;
-        const description = configData.seo_description || data.seo_description || defaultMetadata.description;
-        const favicon = configData.favicon_url ? `${configData.favicon_url}?v=2` : "/favicon.ico";
+        const title = data.seo_title || defaultMetadata.title;
+        const description = data.seo_description || defaultMetadata.description;
+        const favicon = data.favicon_url || "/favicon.ico";
 
         return {
           title,
           description,
-          keywords: configData.seo_keywords || defaultMetadata.keywords,
+          keywords: data.seo_keywords || defaultMetadata.keywords,
           icons: {
-            icon: [
-              { url: favicon, rel: 'icon' },
-              { url: favicon, rel: 'shortcut icon' },
-            ],
-            apple: [
-              { url: favicon, rel: 'apple-touch-icon' },
-            ],
+            icon: favicon,
           },
           openGraph: {
             title,
@@ -56,7 +37,7 @@ export async function generateMetadata(): Promise<Metadata> {
             url: "https://dmatta.com.br",
           },
           verification: {
-            google: configData.google_verify_id || undefined,
+            google: data.google_verify_id || undefined,
           },
         };
       }
@@ -73,21 +54,19 @@ export default async function RootLayout({
 }: Readonly<{
   children: React.ReactNode;
 }>) {
-  const siteId = process.env.NEXT_PUBLIC_SITE_ID;
   // Fetch active scripts from database
   let headScripts: any[] = [];
   let bodyScripts: any[] = [];
 
   try {
-    if (supabase && siteId) {
+    if (supabase) {
       const { data: scriptsData } = await supabase
-        .from("painel_integracoes")
+        .from("site_dm_advogados_integracoes")
         .select("head_script, body_script")
-        .eq("site_id", siteId)
         .eq("status", "ativo");
 
       if (scriptsData) {
-        scriptsData.forEach((s) => {
+        scriptsData.forEach((s: any) => {
           if (s.head_script) headScripts.push(s.head_script);
           if (s.body_script) bodyScripts.push(s.body_script);
         });
@@ -103,23 +82,15 @@ export default async function RootLayout({
         <link rel="preconnect" href="https://fonts.googleapis.com" />
         <link rel="preconnect" href="https://fonts.gstatic.com" crossOrigin="anonymous" />
         <link href="https://fonts.googleapis.com/css2?family=Outfit:wght@100..900&display=swap" rel="stylesheet" />
-        
-        {headScripts.map((scriptContent, idx) => (
-          <script
-            key={`head-script-${idx}`}
-            dangerouslySetInnerHTML={{ __html: scriptContent }}
-          />
+        {headScripts.map((script, index) => (
+          <script key={`head-script-${index}`} dangerouslySetInnerHTML={{ __html: script }} />
         ))}
       </head>
-      <body>
-        {children}
-
-        {bodyScripts.map((scriptContent, idx) => (
-          <div
-            key={`body-script-${idx}`}
-            dangerouslySetInnerHTML={{ __html: scriptContent }}
-          />
+      <body className="antialiased">
+        {bodyScripts.map((script, index) => (
+          <script key={`body-script-${index}`} dangerouslySetInnerHTML={{ __html: script }} />
         ))}
+        {children}
       </body>
     </html>
   );

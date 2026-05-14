@@ -1,9 +1,4 @@
-import { useSite } from "@/context/SiteContext";
-import { ChevronDown, Globe } from "lucide-react";
-
 export default function AdminHeader() {
-  const { sites, selectedSiteId, setSelectedSiteId } = useSite();
-
   const dateStr = new Date().toLocaleDateString("pt-BR", {
     weekday: "long",
     day: "2-digit",
@@ -27,37 +22,7 @@ export default function AdminHeader() {
       }}
     >
       <div style={{ display: "flex", alignItems: "center", gap: "24px" }}>
-        {/* Site Selector */}
-        <div style={{ position: "relative", display: "flex", alignItems: "center", gap: "10px" }}>
-          <div style={{ 
-            padding: "6px", 
-            background: "rgba(30,41,59,0.05)", 
-            borderRadius: "8px",
-            color: "#1e293b"
-          }}>
-            <Globe size={16} />
-          </div>
-          <select
-            value={selectedSiteId || ""}
-            onChange={(e) => setSelectedSiteId(e.target.value)}
-            style={{
-              appearance: "none",
-              background: "transparent",
-              border: "none",
-              fontSize: "13px",
-              fontWeight: 700,
-              color: "#1e293b",
-              cursor: "pointer",
-              paddingRight: "20px",
-              outline: "none"
-            }}
-          >
-            {sites.map(site => (
-              <option key={site.id} value={site.id}>{site.name}</option>
-            ))}
-          </select>
-          <ChevronDown size={14} style={{ position: "absolute", right: 0, pointerEvents: "none", color: "#64748b" }} />
-        </div>
+        <div style={{ display: "flex", alignItems: "center", gap: "8px" }}>
 
         <div style={{ height: "16px", width: "1px", background: "#e2e8f0" }} />
 

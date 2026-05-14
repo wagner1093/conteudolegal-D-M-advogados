@@ -1,15 +1,27 @@
 'use client';
 
-import React from 'react';
+import React, { useState, useEffect } from 'react';
 import { motion } from 'framer-motion';
 import { ArrowRight } from 'lucide-react';
 import { supabase } from "@/lib/supabaseClient";
-import { useConfig } from '@/context/ConfigContext';
 
 const spring = { type: 'spring' as const, stiffness: 200, damping: 24 };
 
 const Hero = () => {
-  const { config } = useConfig();
+  const [config, setConfig] = useState<any>(null);
+
+  useEffect(() => {
+    async function loadConfig() {
+      if (!supabase) return;
+      const { data } = await supabase
+        .from("site_dm_advogados_configuracoes")
+        .select("*")
+        .limit(1)
+        .maybeSingle();
+      if (data) setConfig(data);
+    }
+    loadConfig();
+  }, []);
 
 
   const whatsappRaw = config?.contact_phone?.replace(/\D/g, '') || '11987795023';

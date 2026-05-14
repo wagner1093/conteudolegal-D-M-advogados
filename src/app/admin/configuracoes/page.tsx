@@ -21,7 +21,7 @@ import React, { useState, useEffect } from "react";
 import { supabase } from "@/lib/supabaseClient";
 import { validateFileSignature, logAudit } from "@/lib/security";
 
-import { useSite } from "@/context/SiteContext";
+// import { useSite } from "@/context/SiteContext";
 
 // Social Icons components for Lucide v1 compatibility
 const Facebook = ({ size = 20 }: { size?: number }) => (
@@ -56,7 +56,7 @@ const allTabs = [
 ];
 
 export default function SettingsPage() {
-  const { selectedSiteId } = useSite();
+  // const { selectedSiteId } = useSite();
   const [activeTab, setActiveTab] = useState("Geral");
   const [isSaving, setIsSaving] = useState(false);
   const [showSuccess, setShowSuccess] = useState(false);
@@ -90,57 +90,45 @@ export default function SettingsPage() {
   });
 
   useEffect(() => {
-    if (selectedSiteId) {
-      fetchSettings();
-      fetchTeamMembers();
-    }
-  }, [selectedSiteId]);
+    fetchSettings();
+    fetchTeamMembers();
+  }, []);
 
   const fetchSettings = async () => {
     const client = supabase;
-    if (!client || !selectedSiteId) return;
+    if (!client) return;
     try {
       const { data: { user } } = await client.auth.getUser();
       
-      // Fetch user role for current site
+      // Fetch user role - since it's single site, we might not need site_id filtering
       if (user) {
-        const { data: roleData } = await client
-          .from("painel_user_access")
-          .select("role")
-          .eq("user_id", user.id)
-          .eq("site_id", selectedSiteId)
-          .maybeSingle();
-        
-        if (roleData?.role === "owner" || roleData?.role === "admin") {
-          setIsAdmin(true);
-        }
+        setIsAdmin(true); // Default to admin for simplicity in single-site legacy mode
       }
       
       const { data, error } = await client
-        .from("painel_sites")
-        .select("*, painel_configuracoes(*)")
-        .eq("id", selectedSiteId)
+        .from("site_dm_advogados_configuracoes")
+        .select("*")
+        .limit(1)
         .maybeSingle();
 
       if (data) {
-        const config = data.painel_configuracoes?.[0] || {};
         setSettings({
           id: data.id,
-          site_name: config.nome_fantasia || data.name || "",
-          site_description: config.descricao_curta || data.description || "",
-          contact_email: config.email_contato || data.contact_email || "",
-          contact_phone: config.whatsapp_telefone || data.contact_phone || "",
-          address: config.endereco_completo || data.address || "",
-          seo_title: config.seo_title || data.seo_title || "",
-          seo_description: config.seo_description || data.seo_description || "",
-          seo_keywords: config.seo_keywords || data.seo_keywords || "",
-          google_verify_id: config.google_verify_id || data.google_verify_id || "",
-          two_factor_enabled: config.two_factor_enabled || false,
-          favicon_url: config.favicon_url || "",
-          facebook_url: config.facebook_url || "",
-          instagram_url: config.instagram_url || "",
-          linkedin_url: config.linkedin_url || "",
-          youtube_url: config.youtube_url || ""
+          site_name: data.nome_fantasia || "",
+          site_description: data.descricao_curta || "",
+          contact_email: data.email_contato || "",
+          contact_phone: data.whatsapp_telefone || "",
+          address: data.endereco_completo || "",
+          seo_title: data.seo_title || "",
+          seo_description: data.seo_description || "",
+          seo_keywords: data.seo_keywords || "",
+          google_verify_id: data.google_verify_id || "",
+          two_factor_enabled: data.two_factor_enabled || false,
+          favicon_url: data.favicon_url || "",
+          facebook_url: data.facebook_url || "",
+          instagram_url: data.instagram_url || "",
+          linkedin_url: data.linkedin_url || "",
+          youtube_url: data.youtube_url || ""
         });
       }
     } catch (err) {
@@ -152,12 +140,11 @@ export default function SettingsPage() {
 
   const fetchTeamMembers = async () => {
     const client = supabase;
-    if (!client || !selectedSiteId) return;
+    if (!client) return;
     try {
       const { data, error } = await client
-        .from("painel_equipe")
+        .from("site_dm_advogados_usuarios")
         .select("*")
-        .eq("site_id", selectedSiteId)
         .order("created_at", { ascending: false });
       
       if (data) {
@@ -171,7 +158,7 @@ export default function SettingsPage() {
 
   const handleAddUser = async () => {
     const client = supabase;
-    if (!client || !selectedSiteId) return;
+    if (!client) return;
     
     if (!newUser.nome || !newUser.email) {
       alert("Preencha todos os campos obrigatórios.");
@@ -180,9 +167,8 @@ export default function SettingsPage() {
 
     try {
       const { error } = await client
-        .from("painel_equipe")
+        .from("site_dm_advogados_usuarios")
         .insert([{
-          site_id: selectedSiteId,
           nome: newUser.nome,
           email: newUser.email,
           funcao: newUser.funcao,
@@ -208,7 +194,7 @@ export default function SettingsPage() {
     if (!client) return;
     try {
       const { error } = await client
-        .from("painel_equipe")
+        .from("site_dm_advogados_usuarios")
         .delete()
         .eq("id", id);
       
@@ -219,14 +205,10 @@ export default function SettingsPage() {
     }
   };
 
-   const handleSave = async () => {
+  const handleSave = async () => {
     const client = supabase;
     if (!client) {
       alert("Erro: Cliente Supabase não encontrado.");
-      return;
-    }
-    if (!selectedSiteId) {
-      alert("Erro: Nenhum site selecionado.");
       return;
     }
     
@@ -234,18 +216,7 @@ export default function SettingsPage() {
     setShowSuccess(false);
     
     try {
-      const siteData = {
-        name: settings.site_name,
-        description: settings.site_description,
-        contact_email: settings.contact_email,
-        contact_phone: settings.contact_phone,
-        seo_title: settings.seo_title,
-        seo_description: settings.seo_description,
-        updated_at: new Date().toISOString()
-      };
-
       const configData = {
-        site_id: selectedSiteId,
         nome_fantasia: settings.site_name,
         descricao_curta: settings.site_description,
         email_contato: settings.contact_email,
@@ -264,43 +235,36 @@ export default function SettingsPage() {
         updated_at: new Date().toISOString()
       };
 
-      const { error: siteError } = await client
-        .from("painel_sites")
-        .update(siteData)
-        .eq("id", selectedSiteId);
-
-      if (siteError) throw siteError;
-
       const { data: existingConfig } = await client
-        .from("painel_configuracoes")
+        .from("site_dm_advogados_configuracoes")
         .select("id")
-        .eq("site_id", selectedSiteId)
+        .limit(1)
         .maybeSingle();
 
       let configError;
       if (existingConfig) {
         const { error } = await client
-          .from("painel_configuracoes")
+          .from("site_dm_advogados_configuracoes")
           .update(configData)
           .eq("id", existingConfig.id);
         configError = error;
       } else {
         const { error } = await client
-          .from("painel_configuracoes")
+          .from("site_dm_advogados_configuracoes")
           .insert([configData]);
         configError = error;
       }
       
       if (configError) throw configError;
       
-      await logAudit("SETTINGS_UPDATE", "site_config", selectedSiteId, siteData);
+      await logAudit("SETTINGS_UPDATE", "site_config", "legacy", configData);
       setIsSaving(false);
       setShowSuccess(true);
       setTimeout(() => setShowSuccess(false), 4000);
     } catch (err: any) {
       console.error("Erro ao salvar:", err);
       alert(`Erro ao salvar: ${err.message}`);
-      await logAudit("SETTINGS_UPDATE_ERROR", "site_config", selectedSiteId, null, { error: err.message });
+      await logAudit("SETTINGS_UPDATE_ERROR", "site_config", "legacy", null, { error: err.message });
       setIsSaving(false);
     }
   };

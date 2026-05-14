@@ -19,7 +19,7 @@ import Link from "next/link";
 import React, { useState, useEffect } from "react";
 import { supabase } from "@/lib/supabaseClient";
 
-import { useSite } from "@/context/SiteContext";
+// import { useSite } from "@/context/SiteContext";
 
 // ─────────────────────────────────────────────
 // Stat Card Component
@@ -117,7 +117,7 @@ function StatCard({ title, value, desc, icon: Icon, accent }: StatProps) {
 // Main Dashboard
 // ─────────────────────────────────────────────
 export default function AdminDashboard() {
-  const { selectedSiteId, sites } = useSite();
+  // const { selectedSiteId, sites } = useSite();
   const [counts, setCounts] = useState({
     posts: 0,
     leads: 0,
@@ -126,20 +126,18 @@ export default function AdminDashboard() {
   const [loading, setLoading] = useState(true);
 
   useEffect(() => {
-    if (selectedSiteId) {
-      fetchCounts();
-    }
-  }, [selectedSiteId]);
+    fetchCounts();
+  }, []);
 
   const fetchCounts = async () => {
     const client = supabase;
-    if (!client || !selectedSiteId) return;
+    if (!client) return;
     setLoading(true);
     try {
       const [{ count: postCount }, { count: leadCount }, { data: viewsData }] = await Promise.all([
-        client.from("painel_posts").select("*", { count: "exact", head: true }).eq('site_id', selectedSiteId),
-        client.from("painel_leads").select("*", { count: "exact", head: true }).eq('site_id', selectedSiteId),
-        client.from("painel_posts").select("views").eq('site_id', selectedSiteId)
+        client.from("site_dm_advogados_posts").select("*", { count: "exact", head: true }),
+        client.from("site_dm_advogados_leads").select("*", { count: "exact", head: true }),
+        client.from("site_dm_advogados_posts").select("views")
       ]);
 
       const totalViews = viewsData?.reduce((acc, curr) => acc + (curr.views || 0), 0) || 0;
@@ -163,7 +161,8 @@ export default function AdminDashboard() {
     year: "numeric",
   });
 
-  const selectedSite = sites.find(s => s.id === selectedSiteId);
+  // const selectedSite = sites.find(s => s.id === selectedSiteId);
+  const selectedSiteName = "Dohmen & Matta Advogados";
 
   return (
     <div style={{ maxWidth: "1200px", width: "100%", margin: "0 auto" }}>
@@ -190,7 +189,7 @@ export default function AdminDashboard() {
             Olá, Administrador
           </h1>
           <p style={{ fontSize: "15px", color: "#6b7280", marginTop: "6px", fontWeight: 500 }}>
-            Bem-vindo de volta ao portal de gestão {selectedSite?.name || "do seu site"}.
+            Bem-vindo de volta ao portal de gestão {selectedSiteName}.
           </p>
         </div>
 
