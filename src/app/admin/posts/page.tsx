@@ -45,6 +45,7 @@ export default function PostsPage() {
       const { data, error } = await client
         .from("site_dm_advogados_posts")
         .select("*, site_dm_advogados_categorias(nome)")
+        .is("deleted_at", null)
         .order("created_at", { ascending: false });
 
       if (error) throw error;
@@ -56,7 +57,7 @@ export default function PostsPage() {
         total: p.length,
         publicados: p.filter(x => x.status === "published" || x.status === "Publicado").length,
         rascunhos: p.filter(x => x.status === "draft" || x.status === "Rascunho").length,
-        views: p.reduce((acc, curr) => acc + (curr.views || 0), 0)
+        views: p.reduce((acc, curr) => acc + (curr.views || curr.visualizacoes || 0), 0)
       });
     } catch (err) {
       console.error("Erro ao buscar posts:", err);
@@ -73,7 +74,7 @@ export default function PostsPage() {
     try {
       const { error } = await client
         .from("site_dm_advogados_posts")
-        .delete()
+        .update({ deleted_at: new Date().toISOString() })
         .eq("id", id);
       if (error) throw error;
       fetchPosts();

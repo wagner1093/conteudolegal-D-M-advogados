@@ -63,9 +63,13 @@ export default function SettingsPage() {
   const [loading, setLoading] = useState(true);
   const [isUploadingFavicon, setIsUploadingFavicon] = useState(false);
   const [isAdmin, setIsAdmin] = useState(false);
+  const [currentUserRole, setCurrentUserRole] = useState<string>("suporte");
+  const [currentUserEmail, setCurrentUserEmail] = useState<string>("");
   const [teamMembers, setTeamMembers] = useState<any[]>([]);
+  const [newUser, setNewUser] = useState({ nome: "", email: "", funcao: "suporte", senha: "" });
   const [showAddUserModal, setShowAddUserModal] = useState(false);
-  const [newUser, setNewUser] = useState({ nome: "", email: "", funcao: "suporte" });
+  const [showEditUserModal, setShowEditUserModal] = useState(false);
+  const [editingUser, setEditingUser] = useState<any>(null);
   const [passwords, setPasswords] = useState({ current: "", new: "", confirm: "" });
   const [isUpdatingPassword, setIsUpdatingPassword] = useState(false);
 
@@ -100,9 +104,20 @@ export default function SettingsPage() {
     try {
       const { data: { user } } = await client.auth.getUser();
       
-      // Fetch user role - since it's single site, we might not need site_id filtering
       if (user) {
-        setIsAdmin(true); // Default to admin for simplicity in single-site legacy mode
+        setIsAdmin(true);
+        setCurrentUserEmail(user.email || "");
+
+        // Buscar o role real do usuário na tabela
+        const { data: profile } = await client
+          .from("site_dm_advogados_usuarios")
+          .select("funcao")
+          .eq("email", user.email || "")
+          .maybeSingle();
+
+        if (profile?.funcao) {
+          setCurrentUserRole(profile.funcao);
+        }
       }
       
       const { data, error } = await client
@@ -160,48 +175,217 @@ export default function SettingsPage() {
     const client = supabase;
     if (!client) return;
     
-    if (!newUser.nome || !newUser.email) {
-      alert("Preencha todos os campos obrigatórios.");
+    if (!newUser.nome || !newUser.email || !newUser.senha) {
+      alert("Erro: Preencha Nome, E-mail e Senha.");
+      return;
+    }
+
+    if (newUser.senha.length < 6) {
+      alert("A senha deve ter pelo menos 6 caracteres.");
       return;
     }
 
     try {
-      const { error } = await client
+      // 1. Verificar se e-mail já existe na tabela
+      const { data: existing } = await client
         .from("site_dm_advogados_usuarios")
-        .insert([{
-          nome: newUser.nome,
-          email: newUser.email,
-          funcao: newUser.funcao,
-          status: "ativo"
-        }]);
+        .select("id")
+        .eq("email", newUser.email)
+        .maybeSingle();
 
-      if (error) throw error;
+      if (existing) {
+        alert("Este e-mail já está cadastrado no sistema.");
+        return;
+      }
+
+      // 2. Criar conta de acesso no Supabase Auth
+      const { createClient } = await import('@supabase/supabase-js');
+      const tempClient = createClient(
+        process.env.NEXT_PUBLIC_SUPABASE_URL!,
+        process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY!,
+        { auth: { persistSession: false } }
+      );
+
+      let authUserId: string | null = null;
+
+      const { data: authData, error: authError } = await tempClient.auth.signUp({
+        email: newUser.email,
+        password: newUser.senha,
+      });
+
+      if (authError) {
+        if (authError.message.includes("already registered")) {
+          // Conta já existe no Auth - tudo bem, vamos só registrar na tabela
+          authUserId = null;
+        } else {
+          throw new Error(`Erro ao criar acesso: ${authError.message}`);
+        }
+      } else {
+        authUserId = authData?.user?.id || null;
+      }
+
+      // 3. Registrar na Tabela (fonte da verdade do sistema)
+      const insertData: any = {
+        nome: newUser.nome,
+        email: newUser.email,
+        funcao: newUser.funcao,
+        status: "ativo"
+      };
+
+      if (authUserId) {
+        insertData.auth_id = authUserId;
+      }
+
+      const { error: dbError } = await client
+        .from("site_dm_advogados_usuarios")
+        .insert([insertData])
+        .select();
+
+      if (dbError) {
+        throw new Error(`Erro ao salvar usuário: ${dbError.message}`);
+      }
       
-      alert("Usuário adicionado com sucesso!");
+      alert(`Usuário "${newUser.nome}" adicionado!\n\nEle já pode acessar o sistema com o e-mail e senha definidos.`);
       setShowAddUserModal(false);
-      setNewUser({ nome: "", email: "", funcao: "suporte" });
+      setNewUser({ nome: "", email: "", funcao: "suporte", senha: "" });
       fetchTeamMembers();
     } catch (err: any) {
-      console.error("Erro ao adicionar usuário:", err);
-      alert("Erro ao adicionar usuário: " + err.message);
+      console.error("Erro completo:", err);
+      alert(err.message);
     }
   };
 
+  // Verifica se o usuário logado pode deletar o usuário alvo
+  const canDelete = (targetUser: any): boolean => {
+    const targetEmail = (targetUser.email || "").toLowerCase();
+    const targetRole = targetUser.funcao || "suporte";
+
+    // Ninguém deleta o super admin (Wagner)
+    if (targetEmail === "wagner.1093@gmail.com") return false;
+    if (targetRole === "super_admin") return false;
+
+    // super_admin pode deletar qualquer um
+    if (currentUserRole === "super_admin") return true;
+
+    // admin pode deletar apenas editor e suporte
+    if (currentUserRole === "admin") {
+      return targetRole === "editor" || targetRole === "suporte";
+    }
+
+    // editor e suporte não podem deletar ninguém
+    return false;
+  };
+
   const handleDeleteUser = async (id: string) => {
-    if (!confirm("Tem certeza que deseja remover este usuário?")) return;
+    const userToDelete = teamMembers.find(u => u.id === id);
+    if (!userToDelete) return;
+
+    // Verificar permissão antes de qualquer coisa
+    if (!canDelete(userToDelete)) {
+      const targetRole = userToDelete.funcao || "suporte";
+      if (targetRole === "super_admin" || userToDelete.email === "wagner.1093@gmail.com") {
+        alert("O Super Administrador não pode ser removido.");
+      } else if (targetRole === "admin") {
+        alert("Você não tem permissão para remover um Administrador. Apenas o Super Admin pode fazer isso.");
+      } else {
+        alert("Você não tem permissão para remover este usuário.");
+      }
+      return;
+    }
+
+    if (!confirm(`Tem certeza que deseja remover o usuário ${userToDelete.email}?`)) return;
     
     const client = supabase;
     if (!client) return;
     try {
-      const { error } = await client
+      const { data, error } = await client
         .from("site_dm_advogados_usuarios")
         .delete()
-        .eq("id", id);
+        .eq("id", id)
+        .select();
       
       if (error) throw error;
+      
+      if (!data || data.length === 0) {
+        alert("Erro: Não foi possível excluir o usuário. Verifique se ele ainda existe.");
+        return;
+      }
+      
       fetchTeamMembers();
-    } catch (err) {
+      alert("Usuário removido com sucesso!");
+    } catch (err: any) {
       console.error("Erro ao excluir usuário:", err);
+      alert("Erro ao excluir usuário: " + err.message);
+    }
+  };
+
+  // Verifica se o usuário logado pode editar o usuário alvo
+  const canEdit = (targetUser: any): boolean => {
+    const targetEmail = (targetUser.email || "").toLowerCase();
+    const targetRole = targetUser.funcao || "suporte";
+
+    // Ninguém edita o super_admin (Wagner)
+    if (targetEmail === "wagner.1093@gmail.com") return false;
+    if (targetRole === "super_admin") return false;
+
+    // super_admin pode editar qualquer um
+    if (currentUserRole === "super_admin") return true;
+
+    // admin pode editar apenas editor e suporte
+    if (currentUserRole === "admin") {
+      return targetRole === "editor" || targetRole === "suporte";
+    }
+
+    // editor e suporte não podem editar ninguém
+    return false;
+  };
+
+  const handleEditUser = (user: any) => {
+    if (!canEdit(user)) {
+      const targetRole = user.funcao || "suporte";
+      if (targetRole === "super_admin" || user.email === "wagner.1093@gmail.com") {
+        alert("O Super Administrador não pode ser editado.");
+      } else if (targetRole === "admin") {
+        alert("Você não tem permissão para editar um Administrador. Apenas o Super Admin pode fazer isso.");
+      } else {
+        alert("Você não tem permissão para editar este usuário.");
+      }
+      return;
+    }
+    setEditingUser({ ...user });
+    setShowEditUserModal(true);
+  };
+
+  const handleUpdateUser = async () => {
+    if (!editingUser) return;
+    
+    const client = supabase;
+    if (!client) return;
+
+    try {
+      const { data, error } = await client
+        .from("site_dm_advogados_usuarios")
+        .update({
+          nome: editingUser.nome,
+          funcao: editingUser.funcao
+        })
+        .eq("id", editingUser.id)
+        .select();
+
+      if (error) throw error;
+
+      if (!data || data.length === 0) {
+        alert("Erro: Não foi possível atualizar os dados.");
+        return;
+      }
+
+      alert("Usuário atualizado com sucesso!");
+      setShowEditUserModal(false);
+      setEditingUser(null);
+      fetchTeamMembers();
+    } catch (err: any) {
+      console.error("Erro ao atualizar usuário:", err);
+      alert("Erro ao atualizar usuário: " + (err.message || "Erro desconhecido"));
     }
   };
 
@@ -842,42 +1026,51 @@ export default function SettingsPage() {
                             fontWeight: 700,
                             textTransform: "uppercase"
                           }}>
-                             {user.funcao === 'admin' ? 'Administrador' : user.funcao === 'editor' ? 'Editor' : 'Suporte'}
+                             {user.funcao === 'super_admin' ? 'Master' : user.funcao === 'admin' ? 'Administrador' : user.funcao === 'editor' ? 'Editor' : 'Suporte'}
                            </span>
                          </div>
-                        <div style={{ display: "flex", gap: "8px" }}>
-                          <button style={{
-                            width: "36px",
-                            height: "36px",
-                            borderRadius: "10px",
-                            background: "#ffffff",
-                            border: "1px solid #e2e8f0",
-                            display: "flex",
-                            alignItems: "center",
-                            justifyContent: "center",
-                            color: "#64748b",
-                            cursor: "pointer"
-                          }}>
-                            <Edit2 size={16} />
-                          </button>
-                          <button 
-                            onClick={() => handleDeleteUser(user.id)}
-                            style={{
-                              width: "36px",
-                              height: "36px",
-                              borderRadius: "10px",
-                              background: "#ffffff",
-                              border: "1px solid #fee2e2",
-                              display: "flex",
-                              alignItems: "center",
-                              justifyContent: "center",
-                              color: "#ef4444",
-                              cursor: "pointer"
-                            }}
-                          >
-                            <Trash2 size={16} />
-                          </button>
-                        </div>
+                         <div style={{ display: "flex", gap: "8px" }}>
+                           {canEdit(user) && (
+                             <button 
+                               onClick={() => handleEditUser(user)}
+                               title="Editar usuário"
+                               style={{
+                                 width: "36px",
+                                 height: "36px",
+                                 borderRadius: "10px",
+                                 background: "#ffffff",
+                                 border: "1px solid #e2e8f0",
+                                 display: "flex",
+                                 alignItems: "center",
+                                 justifyContent: "center",
+                                 color: "#64748b",
+                                 cursor: "pointer"
+                               }}
+                             >
+                               <Edit2 size={16} />
+                             </button>
+                           )}
+                           {canDelete(user) && (
+                             <button 
+                               onClick={() => handleDeleteUser(user.id)}
+                               title="Remover usuário"
+                               style={{
+                                 width: "36px",
+                                 height: "36px",
+                                 borderRadius: "10px",
+                                 background: "#ffffff",
+                                 border: "1px solid #fee2e2",
+                                 display: "flex",
+                                 alignItems: "center",
+                                 justifyContent: "center",
+                                 color: "#ef4444",
+                                 cursor: "pointer"
+                               }}
+                             >
+                               <Trash2 size={16} />
+                             </button>
+                           )}
+                         </div>
                       </div>
                     </div>
                   ))}
@@ -1054,6 +1247,25 @@ export default function SettingsPage() {
               </div>
 
               <div>
+                <label style={{ display: "block", fontSize: "13px", fontWeight: 700, color: "#475569", marginBottom: "8px" }}>Senha de Acesso</label>
+                <input 
+                  type="password" 
+                  value={newUser.senha}
+                  onChange={(e) => setNewUser(prev => ({ ...prev, senha: e.target.value }))}
+                  placeholder="No mínimo 6 caracteres"
+                  style={{
+                    width: "100%",
+                    padding: "12px 16px",
+                    borderRadius: "12px",
+                    border: "1px solid #e2e8f0",
+                    background: "#f8fafc",
+                    fontSize: "14px",
+                    outline: "none"
+                  }}
+                />
+              </div>
+
+              <div>
                 <label style={{ display: "block", fontSize: "13px", fontWeight: 700, color: "#475569", marginBottom: "8px" }}>Cargo / Nível de Acesso</label>
                 <select 
                   value={newUser.funcao}
@@ -1108,6 +1320,133 @@ export default function SettingsPage() {
                 }}
               >
                 Adicionar Membro
+              </button>
+            </div>
+          </div>
+        </div>
+      )}
+
+      {/* ── Edit User Modal ── */}
+      {showEditUserModal && editingUser && (
+        <div style={{
+          position: "fixed",
+          inset: 0,
+          background: "rgba(15, 23, 42, 0.6)",
+          backdropFilter: "blur(8px)",
+          display: "flex",
+          alignItems: "center",
+          justifyContent: "center",
+          zIndex: 1000,
+          padding: "20px"
+        }}>
+          <div style={{
+            background: "#ffffff",
+            width: "100%",
+            maxWidth: "500px",
+            borderRadius: "24px",
+            padding: "32px",
+            boxShadow: "0 25px 50px -12px rgba(0, 0, 0, 0.25)"
+          }}>
+            <h3 style={{ fontSize: "20px", fontWeight: 700, color: "#1e293b", margin: "0 0 8px 0" }}>Editar Usuário</h3>
+            <p style={{ fontSize: "14px", color: "#64748b", margin: "0 0 24px 0" }}>Altere as informações do membro da equipe.</p>
+            
+            <div style={{ display: "flex", flexDirection: "column", gap: "20px" }}>
+              <div>
+                <label style={{ display: "block", fontSize: "13px", fontWeight: 700, color: "#475569", marginBottom: "8px" }}>Nome Completo</label>
+                <input 
+                  type="text" 
+                  value={editingUser.nome}
+                  onChange={(e) => setEditingUser(prev => ({ ...prev, nome: e.target.value }))}
+                  placeholder="Ex: João Silva"
+                  style={{
+                    width: "100%",
+                    padding: "12px 16px",
+                    borderRadius: "12px",
+                    border: "1px solid #e2e8f0",
+                    background: "#f8fafc",
+                    fontSize: "14px",
+                    outline: "none"
+                  }}
+                />
+              </div>
+
+              <div>
+                <label style={{ display: "block", fontSize: "13px", fontWeight: 700, color: "#475569", marginBottom: "8px" }}>E-mail</label>
+                <input 
+                  type="email" 
+                  value={editingUser.email}
+                  onChange={(e) => setEditingUser(prev => ({ ...prev, email: e.target.value }))}
+                  placeholder="email@exemplo.com"
+                  style={{
+                    width: "100%",
+                    padding: "12px 16px",
+                    borderRadius: "12px",
+                    border: "1px solid #e2e8f0",
+                    background: "#f8fafc",
+                    fontSize: "14px",
+                    outline: "none"
+                  }}
+                />
+              </div>
+
+              <div>
+                <label style={{ display: "block", fontSize: "13px", fontWeight: 700, color: "#475569", marginBottom: "8px" }}>Cargo / Nível de Acesso</label>
+                <select 
+                  value={editingUser.funcao}
+                  onChange={(e) => setEditingUser(prev => ({ ...prev, funcao: e.target.value }))}
+                  style={{
+                    width: "100%",
+                    padding: "12px 16px",
+                    borderRadius: "12px",
+                    border: "1px solid #e2e8f0",
+                    background: "#f8fafc",
+                    fontSize: "14px",
+                    outline: "none",
+                    cursor: "pointer"
+                  }}
+                >
+                  <option value="admin">Administrador (Acesso Total)</option>
+                  <option value="editor">Editor (Conteúdo)</option>
+                  <option value="suporte">Suporte (Leads e Atendimento)</option>
+                </select>
+              </div>
+            </div>
+
+            <div style={{ display: "flex", gap: "12px", marginTop: "32px" }}>
+              <button 
+                onClick={() => {
+                  setShowEditUserModal(false);
+                  setEditingUser(null);
+                }}
+                style={{
+                  flex: 1,
+                  padding: "12px",
+                  borderRadius: "12px",
+                  border: "1px solid #e2e8f0",
+                  background: "#ffffff",
+                  color: "#64748b",
+                  fontSize: "14px",
+                  fontWeight: 600,
+                  cursor: "pointer"
+                }}
+              >
+                Cancelar
+              </button>
+              <button 
+                onClick={handleUpdateUser}
+                style={{
+                  flex: 1,
+                  padding: "12px",
+                  borderRadius: "12px",
+                  border: "none",
+                  background: "#1e293b",
+                  color: "#ffffff",
+                  fontSize: "14px",
+                  fontWeight: 600,
+                  cursor: "pointer"
+                }}
+              >
+                Salvar Alterações
               </button>
             </div>
           </div>

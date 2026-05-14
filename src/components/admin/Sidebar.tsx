@@ -24,6 +24,7 @@ const MENU_ITEMS = [
   { icon: Briefcase, label: "Equipe", href: "/admin/equipe" },
   { icon: Share2, label: "Integração", href: "/admin/integracao" },
   { icon: Settings, label: "Configurações", href: "/admin/configuracoes" },
+  { icon: Shield, label: "Logs de Segurança", href: "/admin/logs" },
   { icon: Globe, label: "Ver Site", href: "/", target: "_blank" },
   { icon: MessageCircle, label: "Falar com Suporte", href: "https://wa.me/5547992793347", target: "_blank" },
 ];

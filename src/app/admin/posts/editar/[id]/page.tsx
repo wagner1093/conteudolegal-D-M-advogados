@@ -1,12 +1,12 @@
 'use client';
 
 import React, { useState, useEffect } from 'react';
-import { 
-  ArrowLeft, 
-  Save, 
-  Eye, 
-  ImageIcon, 
-  Loader2, 
+import {
+  ArrowLeft,
+  Save,
+  Eye,
+  ImageIcon,
+  Loader2,
   CheckCircle2,
   AlertCircle,
   Plus
@@ -23,7 +23,7 @@ export default function EditPostPage() {
   const params = useParams();
   const id = params.id as string;
   const selectedSiteId = process.env.NEXT_PUBLIC_SITE_ID;
-  
+
   const [loading, setLoading] = useState(true);
   const [saving, setSaving] = useState(false);
   const [uploading, setUploading] = useState(false);
@@ -75,7 +75,7 @@ export default function EditPostPage() {
 
   const handleAddCategory = async () => {
     if (!newCategoryName.trim() || !selectedSiteId) return;
-    
+
     const client = supabase;
     if (!client) return;
 
@@ -84,8 +84,8 @@ export default function EditPostPage() {
       const slug = newCategoryName.trim().toLowerCase().replace(/ /g, '-');
       const { data, error } = await client
         .from('site_dm_advogados_categorias')
-        .insert([{ 
-          nome: newCategoryName.trim(), 
+        .insert([{
+          nome: newCategoryName.trim(),
           slug: slug
         }])
         .select()
@@ -190,20 +190,55 @@ export default function EditPostPage() {
     setError(null);
 
     try {
+      const slug = formData.title
+        .toLowerCase()
+        .normalize("NFD")
+        .replace(/[\u0300-\u036f]/g, "")
+        .replace(/[^\w\s-]/g, "")
+        .replace(/\s+/g, "-");
+
+      // Obter nome da categoria
+      const categoryName = categories.find(c => c.id === formData.category_id)?.nome || "";
+
+      // Preparar payload alinhado com o banco de dados
+      const updateData = {
+        // Colunas em Inglês
+        title: formData.title,
+        content: formData.content,
+        image_url: formData.image_url || null,
+        status: formData.status,
+        slug: slug,
+        author_id: formData.author_id && formData.author_id.length === 36 ? formData.author_id : null,
+        category_id: formData.category_id && formData.category_id.length === 36 ? formData.category_id : null,
+        excerpt: formData.content.substring(0, 160).replace(/<[^>]*>/g, ''),
+        published_at: formData.status === 'published' || formData.status === 'Publicado' ? new Date().toISOString() : null,
+        seo_title: formData.title,
+        seo_description: formData.content.substring(0, 160).replace(/<[^>]*>/g, ''),
+
+        // Colunas em Português
+        titulo: formData.title,
+        autor: formData.author_id, // Usar o texto inserido no campo
+        categoria: categoryName,
+        conteudo: formData.content,
+        imagem_url: formData.image_url || null,
+        resumo: formData.content.substring(0, 160).replace(/<[^>]*>/g, ''),
+        updated_at: new Date().toISOString()
+      };
+
       const { error: updateError } = await client
         .from('site_dm_advogados_posts')
-        .update(formData)
+        .update(updateData)
         .eq('id', id);
 
       if (updateError) throw updateError;
-      
+
       setSuccess(true);
       setTimeout(() => {
         router.push('/admin/posts');
       }, 2000);
     } catch (err: any) {
-      console.error('Erro ao atualizar post:', err);
-      setError('Erro ao salvar as alterações. Tente novamente.');
+      console.error("Erro ao atualizar post:", err);
+      setError(err.message || "Erro ao atualizar o artigo. Verifique os campos e tente novamente.");
     } finally {
       setSaving(false);
     }
@@ -219,21 +254,21 @@ export default function EditPostPage() {
 
   if (success) {
     return (
-      <div style={{ 
-        height: '70vh', 
-        display: 'flex', 
-        flexDirection: 'column', 
-        alignItems: 'center', 
+      <div style={{
+        height: '70vh',
+        display: 'flex',
+        flexDirection: 'column',
+        alignItems: 'center',
         justifyContent: 'center',
-        textAlign: 'center' 
+        textAlign: 'center'
       }}>
-        <div style={{ 
-          width: '80px', 
-          height: '80px', 
-          borderRadius: '50%', 
-          backgroundColor: '#f0fdf4', 
-          display: 'flex', 
-          alignItems: 'center', 
+        <div style={{
+          width: '80px',
+          height: '80px',
+          borderRadius: '50%',
+          backgroundColor: '#f0fdf4',
+          display: 'flex',
+          alignItems: 'center',
           justifyContent: 'center',
           marginBottom: '24px'
         }}>
@@ -252,13 +287,13 @@ export default function EditPostPage() {
       {/* Header */}
       <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: '32px' }}>
         <div>
-          <Link 
-            href="/admin/posts" 
-            style={{ 
-              display: 'flex', 
-              alignItems: 'center', 
-              gap: '8px', 
-              color: '#64748b', 
+          <Link
+            href="/admin/posts"
+            style={{
+              display: 'flex',
+              alignItems: 'center',
+              gap: '8px',
+              color: '#64748b',
               textDecoration: 'none',
               fontSize: '14px',
               fontWeight: 600,
@@ -273,7 +308,7 @@ export default function EditPostPage() {
         </div>
 
         <div style={{ display: 'flex', gap: '12px' }}>
-          <button 
+          <button
             onClick={handleSubmit}
             disabled={saving}
             style={{
@@ -297,11 +332,11 @@ export default function EditPostPage() {
       </div>
 
       {error && (
-        <div style={{ 
-          backgroundColor: '#fef2f2', 
-          border: '1px solid #fecaca', 
-          padding: '16px', 
-          borderRadius: '12px', 
+        <div style={{
+          backgroundColor: '#fef2f2',
+          border: '1px solid #fecaca',
+          padding: '16px',
+          borderRadius: '12px',
           marginBottom: '24px',
           display: 'flex',
           alignItems: 'center',
@@ -320,19 +355,19 @@ export default function EditPostPage() {
         <div style={{ display: 'flex', flexDirection: 'column', gap: '24px' }}>
           <Card>
             <Field label="Título do Artigo">
-              <input 
+              <input
                 type="text"
                 placeholder="Ex: Novos Direitos do Paciente em 2026"
                 value={formData.title}
-                onChange={(e) => setFormData({...formData, title: e.target.value})}
+                onChange={(e) => setFormData({ ...formData, title: e.target.value })}
                 style={inputStyle}
               />
             </Field>
 
             <Field label="Conteúdo do Artigo">
-              <RichTextEditor 
+              <RichTextEditor
                 value={formData.content}
-                onChange={(content) => setFormData({...formData, content: content})}
+                onChange={(content) => setFormData({ ...formData, content: content })}
                 placeholder="Escreva seu artigo aqui..."
               />
             </Field>
@@ -343,11 +378,11 @@ export default function EditPostPage() {
         <div style={{ display: 'flex', flexDirection: 'column', gap: '24px' }}>
           <Card title="Configurações">
             <Field label="ID do Autor (Opcional)">
-              <input 
+              <input
                 type="text"
                 placeholder="ID do Usuário ou deixe em branco"
                 value={formData.author_id}
-                onChange={(e) => setFormData({...formData, author_id: e.target.value})}
+                onChange={(e) => setFormData({ ...formData, author_id: e.target.value })}
                 style={inputStyle}
               />
             </Field>
@@ -355,9 +390,9 @@ export default function EditPostPage() {
             <Field label="Categoria">
               <div style={{ position: 'relative' }}>
                 <div style={{ display: 'flex', gap: '8px' }}>
-                  <select 
+                  <select
                     value={formData.category_id}
-                    onChange={(e) => setFormData({...formData, category_id: e.target.value})}
+                    onChange={(e) => setFormData({ ...formData, category_id: e.target.value })}
                     style={{ ...inputStyle, flex: 1 }}
                     disabled={loadingCategories}
                   >
@@ -392,11 +427,11 @@ export default function EditPostPage() {
 
                 <AnimatePresence>
                   {isAddingCategory && (
-                    <motion.div 
+                    <motion.div
                       initial={{ opacity: 0, y: -10, scale: 0.95 }}
                       animate={{ opacity: 1, y: 0, scale: 1 }}
                       exit={{ opacity: 0, y: -10, scale: 0.95 }}
-                      style={{ 
+                      style={{
                         marginTop: '12px',
                         padding: '16px',
                         background: '#fff',
@@ -410,7 +445,7 @@ export default function EditPostPage() {
                         Nova Categoria
                       </label>
                       <div style={{ display: 'flex', flexDirection: 'column', gap: '10px' }}>
-                        <input 
+                        <input
                           type="text"
                           placeholder="Digite o nome..."
                           value={newCategoryName}
@@ -466,9 +501,9 @@ export default function EditPostPage() {
             </Field>
 
             <Field label="Status">
-              <select 
+              <select
                 value={formData.status}
-                onChange={(e) => setFormData({...formData, status: e.target.value})}
+                onChange={(e) => setFormData({ ...formData, status: e.target.value })}
                 style={inputStyle}
               >
                 <option value="published">Publicado</option>
@@ -479,14 +514,14 @@ export default function EditPostPage() {
           </Card>
 
           <Card title="Imagem de Capa">
-            <input 
+            <input
               type="file"
               ref={fileInputRef}
               onChange={handleImageUpload}
               accept="image/*"
               style={{ display: 'none' }}
             />
-            <div 
+            <div
               onClick={() => fileInputRef.current?.click()}
               style={{
                 width: '100%',

@@ -123,11 +123,35 @@ export default function AdminDashboard() {
     leads: 0,
     views: "0" 
   });
+  const [userName, setUserName] = useState<string>("Administrador");
   const [loading, setLoading] = useState(true);
 
   useEffect(() => {
     fetchCounts();
+    fetchUserName();
   }, []);
+
+  const fetchUserName = async () => {
+    const client = supabase;
+    if (!client) return;
+
+    try {
+      const { data: { user } } = await client.auth.getUser();
+      if (user) {
+        const { data: profile } = await client
+          .from("site_dm_advogados_usuarios")
+          .select("nome")
+          .eq("email", user.email || "")
+          .maybeSingle();
+        
+        if (profile?.nome) {
+          setUserName(profile.nome.split(' ')[0]); // Pega apenas o primeiro nome para a saudação
+        }
+      }
+    } catch (err) {
+      console.error("Erro ao buscar nome do usuário:", err);
+    }
+  };
 
   const fetchCounts = async () => {
     const client = supabase;
@@ -186,8 +210,9 @@ export default function AdminDashboard() {
               letterSpacing: "-0.5px",
             }}
           >
-            Olá, Administrador
+            Olá, {userName}
           </h1>
+
           <p style={{ fontSize: "15px", color: "#6b7280", marginTop: "6px", fontWeight: 500 }}>
             Bem-vindo de volta ao portal de gestão {selectedSiteName}.
           </p>

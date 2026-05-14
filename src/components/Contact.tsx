@@ -2,7 +2,7 @@
 
 import React, { useState, useEffect } from 'react';
 import { motion, AnimatePresence } from 'framer-motion';
-import { MapPin, Mail, ArrowRight, MessageSquare, Phone, CheckCircle2, Loader2 } from 'lucide-react';
+import { MapPin, Mail, ArrowRight, Phone, CheckCircle2, Loader2 } from 'lucide-react';
 import { supabase } from "@/lib/supabaseClient";
 
 const Contact = () => {
@@ -56,12 +56,12 @@ const Contact = () => {
       const { error: insertError } = await supabase
         .from('site_dm_advogados_leads')
         .insert([{
-          nome: formData.nome,
+          name: formData.nome,
           email: formData.email,
-          telefone: formData.telefone,
-          origem: formData.area,
-          mensagem: formData.mensagem,
-          site: 'Dohmen & Matta'
+          phone: formData.telefone,
+          area: formData.area,
+          message: formData.mensagem,
+          status: 'novo'
         }]);
 
       if (insertError) throw insertError;

@@ -118,7 +118,7 @@ export default function EquipePage() {
     try {
       const { error } = await supabase
         .from("site_dm_advogados_equipe")
-        .delete()
+        .update({ deleted_at: new Date().toISOString() })
         .eq("id", id);
       if (error) throw error;
       fetchMembers();

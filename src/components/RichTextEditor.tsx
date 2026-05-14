@@ -83,6 +83,13 @@ export default function RichTextEditor({ value, onChange, placeholder }: RichTex
           min-height: 250px;
           line-height: 1.6;
           color: #0B1E2D;
+          overflow-wrap: break-word !important;
+          word-wrap: break-word !important;
+          word-break: break-word !important;
+          white-space: pre-wrap !important;
+          max-width: 100% !important;
+          width: 100%;
+          overflow-x: hidden;
         }
         .ql-editor.ql-blank::before {
           color: #94a3b8;

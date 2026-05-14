@@ -60,7 +60,7 @@ export default function LeadsPage() {
     try {
       const { error } = await client
         .from("site_dm_advogados_leads")
-        .delete()
+        .update({ deleted_at: new Date().toISOString() })
         .eq("id", id);
       if (error) throw error;
       setLeads(prev => prev.filter(l => l.id !== id));

@@ -3,7 +3,7 @@
 import React, { useState, useEffect } from "react";
 import { supabase } from "@/lib/supabaseClient";
 import { useRouter } from "next/navigation";
-import { Shield, Lock, Mail, Eye, EyeOff, Loader2 } from "lucide-react";
+import { Shield, Lock, Mail, Eye, EyeOff, Loader2, ArrowLeft, CheckCircle } from "lucide-react";
 import { consumeRateLimit, logAudit } from "@/lib/security";
 
 export default function LoginPage() {
@@ -13,6 +13,40 @@ export default function LoginPage() {
   const [error, setError] = useState<string | null>(null);
   const [showPassword, setShowPassword] = useState(false);
   const router = useRouter();
+
+  // Estados do modal "Esqueci a Senha"
+  const [showForgotModal, setShowForgotModal] = useState(false);
+  const [forgotEmail, setForgotEmail] = useState("");
+  const [forgotLoading, setForgotLoading] = useState(false);
+  const [forgotSent, setForgotSent] = useState(false);
+  const [forgotError, setForgotError] = useState<string | null>(null);
+
+  const handleForgotPassword = async () => {
+    if (!forgotEmail) {
+      setForgotError("Digite seu e-mail.");
+      return;
+    }
+    if (!supabase) return;
+
+    setForgotLoading(true);
+    setForgotError(null);
+
+    try {
+      const { error } = await supabase.auth.resetPasswordForEmail(forgotEmail, {
+        redirectTo: `${window.location.origin}/admin/redefinir-senha`,
+      });
+
+      if (error) throw error;
+
+      setForgotSent(true);
+    } catch (err: any) {
+      setForgotError(`Erro: ${err.message}`);
+    } finally {
+      setForgotLoading(false);
+    }
+  };
+
+
 
   useEffect(() => {
     // Check if user is already logged in
@@ -51,13 +85,46 @@ export default function LoginPage() {
       });
 
       if (error) {
-        setError("Credenciais inválidas. Por favor, tente novamente.");
+        const translatedError = error.message === "Invalid login credentials" 
+          ? "E-mail ou senha incorretos." 
+          : error.message === "Email not confirmed"
+          ? "Conta pendente de ativação. Contate o administrador."
+          : error.message;
+        setError(translatedError);
         await logAudit("LOGIN_FAILURE", "auth", email, null, { error: error.message });
+        return;
+      }
+
+      // CAMADA 2: Verificar se o usuário existe e está ATIVO na tabela do sistema
+      const { data: userProfile, error: profileError } = await supabase!
+        .from("site_dm_advogados_usuarios")
+        .select("id, nome, funcao, status")
+        .eq("email", email)
+        .eq("status", "ativo")
+        .maybeSingle();
+
+      if (profileError || !userProfile) {
+        // Usuário existe no Auth mas não está autorizado na tabela
+        await supabase!.auth.signOut();
+        setError("Acesso negado. Sua conta não está autorizada neste sistema. Contate o administrador.");
+        await logAudit("LOGIN_FAILURE", "auth", email, null, { reason: "not_in_users_table" });
         return;
       }
 
       // 3. Success Audit
       await logAudit("LOGIN_SUCCESS", "auth", data.user?.id);
+
+      // 4. Anomaly Detection
+      try {
+        await fetch("/api/auth/audit", {
+          method: "POST",
+          headers: { "Content-Type": "application/json" },
+          body: JSON.stringify({ user_id: data.user?.id }),
+        });
+      } catch (auditErr) {
+        console.error("Erro ao rodar auditoria de login:", auditErr);
+      }
+
       router.push("/admin");
     } catch (err: any) {
       setError("Ocorreu um erro ao tentar entrar. Tente novamente mais tarde.");
@@ -329,10 +396,145 @@ export default function LoginPage() {
           </button>
         </form>
 
-        <div style={{ marginTop: "32px", fontSize: "12px", color: "rgba(255, 255, 255, 0.3)", fontWeight: 500 }}>
+        {/* Link Esqueci a Senha */}
+        <button
+          onClick={() => { setShowForgotModal(true); setForgotSent(false); setForgotError(null); setForgotEmail(""); }}
+          style={{
+            marginTop: "16px",
+            background: "none",
+            border: "none",
+            color: "rgba(197, 160, 89, 0.7)",
+            fontSize: "13px",
+            cursor: "pointer",
+            fontWeight: 500,
+            textDecoration: "underline",
+            textUnderlineOffset: "3px"
+          }}
+        >
+          Esqueceu sua senha?
+        </button>
+
+        <div style={{ marginTop: "24px", fontSize: "12px", color: "rgba(255, 255, 255, 0.3)", fontWeight: 500 }}>
           © 2026 Dohmen & Matta Advogados Associados
         </div>
       </div>
+
+      {/* Modal: Esqueci a Senha */}
+      {showForgotModal && (
+        <div
+          onClick={() => setShowForgotModal(false)}
+          style={{
+            position: "fixed", inset: 0,
+            background: "rgba(0,0,0,0.7)",
+            backdropFilter: "blur(6px)",
+            display: "flex", alignItems: "center", justifyContent: "center",
+            zIndex: 1000
+          }}
+        >
+          <div
+            onClick={(e) => e.stopPropagation()}
+            style={{
+              background: "#1a1f2e",
+              border: "1px solid rgba(197,160,89,0.2)",
+              borderRadius: "20px",
+              padding: "40px",
+              width: "100%",
+              maxWidth: "420px",
+              boxShadow: "0 25px 60px rgba(0,0,0,0.5)"
+            }}
+          >
+            {forgotSent ? (
+              /* Tela de Sucesso */
+              <div style={{ textAlign: "center" }}>
+                <CheckCircle size={56} color="#22c55e" style={{ marginBottom: "16px" }} />
+                <h3 style={{ color: "#ffffff", fontSize: "20px", fontWeight: 700, marginBottom: "12px" }}>
+                  E-mail Enviado!
+                </h3>
+                <p style={{ color: "rgba(255,255,255,0.6)", fontSize: "14px", lineHeight: 1.6, marginBottom: "24px" }}>
+                  Enviamos um link de redefinição para <strong style={{ color: "#c5a059" }}>{forgotEmail}</strong>.<br />
+                  Verifique sua caixa de entrada e spam.
+                </p>
+                <button
+                  onClick={() => setShowForgotModal(false)}
+                  style={{
+                    background: "#c5a059", color: "#fff", border: "none",
+                    borderRadius: "12px", padding: "12px 24px",
+                    fontWeight: 700, fontSize: "14px", cursor: "pointer", width: "100%"
+                  }}
+                >
+                  Voltar ao Login
+                </button>
+              </div>
+            ) : (
+              /* Formulário */
+              <>
+                <div style={{ display: "flex", alignItems: "center", gap: "12px", marginBottom: "24px" }}>
+                  <button
+                    onClick={() => setShowForgotModal(false)}
+                    style={{ background: "none", border: "none", color: "rgba(255,255,255,0.5)", cursor: "pointer", padding: 0 }}
+                  >
+                    <ArrowLeft size={20} />
+                  </button>
+                  <div>
+                    <h3 style={{ color: "#ffffff", fontSize: "18px", fontWeight: 700, margin: 0 }}>Redefinir Senha</h3>
+                    <p style={{ color: "rgba(255,255,255,0.4)", fontSize: "13px", margin: 0, marginTop: "2px" }}>Enviaremos um link para seu e-mail</p>
+                  </div>
+                </div>
+
+                <div style={{ marginBottom: "16px" }}>
+                  <label style={{ color: "rgba(255,255,255,0.6)", fontSize: "12px", fontWeight: 600, display: "block", marginBottom: "8px" }}>
+                    SEU E-MAIL CADASTRADO
+                  </label>
+                  <div style={{ position: "relative" }}>
+                    <Mail size={16} color="rgba(255,255,255,0.3)" style={{ position: "absolute", left: "14px", top: "50%", transform: "translateY(-50%)" }} />
+                    <input
+                      type="email"
+                      value={forgotEmail}
+                      onChange={(e) => setForgotEmail(e.target.value)}
+                      onKeyDown={(e) => e.key === "Enter" && handleForgotPassword()}
+                      placeholder="seu@email.com"
+                      style={{
+                        width: "100%", padding: "12px 12px 12px 40px",
+                        background: "rgba(255,255,255,0.05)",
+                        border: "1px solid rgba(255,255,255,0.1)",
+                        borderRadius: "12px", color: "#fff",
+                        fontSize: "14px", outline: "none",
+                        boxSizing: "border-box"
+                      }}
+                    />
+                  </div>
+                </div>
+
+                {forgotError && (
+                  <div style={{
+                    background: "rgba(239,68,68,0.1)", border: "1px solid rgba(239,68,68,0.3)",
+                    borderRadius: "10px", padding: "10px 14px",
+                    color: "#fca5a5", fontSize: "13px", marginBottom: "16px"
+                  }}>
+                    {forgotError}
+                  </div>
+                )}
+
+                <button
+                  onClick={handleForgotPassword}
+                  disabled={forgotLoading}
+                  style={{
+                    width: "100%", padding: "14px",
+                    background: "linear-gradient(135deg, #c5a059, #d4b06a)",
+                    color: "#fff", border: "none", borderRadius: "12px",
+                    fontWeight: 700, fontSize: "14px", cursor: forgotLoading ? "not-allowed" : "pointer",
+                    display: "flex", alignItems: "center", justifyContent: "center", gap: "8px",
+                    opacity: forgotLoading ? 0.7 : 1
+                  }}
+                >
+                  {forgotLoading ? <Loader2 className="animate-spin" size={18} /> : null}
+                  {forgotLoading ? "Enviando..." : "Enviar Link de Redefinição"}
+                </button>
+              </>
+            )}
+          </div>
+        </div>
+      )}
       
       {/* Background decoration elements */}
       <div style={{

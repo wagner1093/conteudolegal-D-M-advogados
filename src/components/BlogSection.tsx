@@ -29,8 +29,9 @@ const BlogSection = () => {
     try {
       const { data, error } = await client
         .from('site_dm_advogados_posts')
-        .select('*, site_dm_advogados_categorias(name)')
-        .or('status.eq.published,status.eq.Publicado')
+        .select('*, site_dm_advogados_categorias(nome)')
+        .in('status', ['published', 'Publicado'])
+        .is('deleted_at', null)
         .order('created_at', { ascending: false })
         .limit(3);
 
@@ -85,7 +86,7 @@ const BlogSection = () => {
         {/* Blog Cards Grid */}
         <div style={{ 
           display: 'grid', 
-          gridTemplateColumns: loading ? '1fr' : 'repeat(auto-fit, minmax(320px, 1fr))', 
+          gridTemplateColumns: loading ? '1fr' : 'repeat(auto-fill, minmax(320px, 1fr))', 
           gap: '32px' 
         }}>
           {loading ? (
@@ -118,7 +119,8 @@ const BlogSection = () => {
                   boxShadow: '0 10px 30px rgba(0,0,0,0.05)',
                   display: 'flex',
                   flexDirection: 'column',
-                  transition: 'all 0.3s ease'
+                  transition: 'all 0.3s ease',
+                  maxWidth: '450px'
                 }}
               >
                 {/* Image Container */}
@@ -143,7 +145,7 @@ const BlogSection = () => {
                     textTransform: 'uppercase',
                     letterSpacing: '0.5px'
                   }}>
-                    {post.site_dm_advogados_categorias?.name || 'Geral'}
+                    {post.site_dm_advogados_categorias?.nome || 'Geral'}
                   </div>
                 </div>
 
@@ -154,7 +156,7 @@ const BlogSection = () => {
                       <Calendar size={14} color="var(--accent)" /> {new Date(post.created_at).toLocaleDateString('pt-BR')}
                     </span>
                     <span style={{ display: 'flex', alignItems: 'center', gap: '6px' }}>
-                      <User size={14} color="var(--accent)" /> {post.author_name || 'Equipe D&M'}
+                      <User size={14} color="var(--accent)" /> {post.autor || post.author_name || 'Equipe D&M'}
                     </span>
                   </div>
                   
@@ -165,9 +167,11 @@ const BlogSection = () => {
                     lineHeight: 1.3,
                     fontWeight: 600,
                     fontFamily: "'Inter', sans-serif",
-                    letterSpacing: '-0.01em'
+                    letterSpacing: '-0.01em',
+                    overflowWrap: 'break-word',
+                    wordBreak: 'break-word'
                   }}>
-                    {post.title}
+                    {post.title || post.titulo}
                   </h3>
                   
                   <p style={{ 
@@ -179,9 +183,11 @@ const BlogSection = () => {
                     display: '-webkit-box',
                     WebkitLineClamp: 3,
                     WebkitBoxOrient: 'vertical',
-                    overflow: 'hidden'
+                    overflow: 'hidden',
+                    overflowWrap: 'break-word',
+                    wordBreak: 'break-word'
                   }}>
-                    {post.summary || post.content?.replace(/<[^>]*>/g, '').substring(0, 150) + '...'}
+                    {post.resumo || post.summary || post.content?.replace(/<[^>]*>/g, '').substring(0, 150) + '...'}
                   </p>
 
                   <Link 

@@ -3,6 +3,7 @@
 import AdminSidebar from "@/components/admin/Sidebar";
 import AdminHeader from "@/components/admin/AdminHeader";
 import AuthGuard from "@/components/admin/AuthGuard";
+import IdleTimeout from "@/components/admin/IdleTimeout";
 import { ReactNode } from "react";
 import { Inter } from "next/font/google";
 import { usePathname } from "next/navigation";
@@ -27,6 +28,7 @@ export default function AdminLayout({ children }: { children: ReactNode }) {
   return (
     <div className={inter.className}>
       <AuthGuard>
+          <IdleTimeout />
           <div
             suppressHydrationWarning
             style={{

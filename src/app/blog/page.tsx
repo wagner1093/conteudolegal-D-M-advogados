@@ -31,7 +31,8 @@ const BlogPage = () => {
       const { data, error } = await client
         .from('site_dm_advogados_posts')
         .select('*, site_dm_advogados_categorias(nome)')
-        .eq('status', 'published')
+        .in('status', ['published', 'Publicado'])
+        .is('deleted_at', null)
         .order('created_at', { ascending: false });
 
       if (error) throw error;
@@ -223,9 +224,12 @@ const BlogPage = () => {
                     lineHeight: 1.25,
                     fontWeight: 600,
                     fontFamily: "'Inter', sans-serif",
-                    letterSpacing: '-0.01em'
+                    letterSpacing: '-0.01em',
+                    overflowWrap: 'break-word',
+                    wordWrap: 'break-word',
+                    wordBreak: 'break-word'
                   }}>
-                    {post.title}
+                    {post.title || post.titulo}
                   </h3>
                   
                   <p style={{ 
@@ -233,9 +237,12 @@ const BlogPage = () => {
                     fontSize: '1rem', 
                     lineHeight: 1.6,
                     marginBottom: '24px',
-                    flex: 1
+                    flex: 1,
+                    overflowWrap: 'break-word',
+                    wordWrap: 'break-word',
+                    wordBreak: 'break-word'
                   }}>
-                    {post.content ? (post.content.replace(/<[^>]*>/g, '').substring(0, 150) + '...') : ''}
+                    {post.resumo || post.summary || (post.conteudo || post.content)?.replace(/<[^>]*>/g, '').substring(0, 150) + '...'}
                   </p>
                   
                   <div style={{ 
@@ -249,7 +256,7 @@ const BlogPage = () => {
                       <div style={{ width: '32px', height: '32px', borderRadius: '50%', backgroundColor: 'var(--bg-secondary)', display: 'flex', alignItems: 'center', justifyContent: 'center' }}>
                         <User size={16} color="var(--primary)" />
                       </div>
-                      <span style={{ fontSize: '0.85rem', fontWeight: 500, color: 'var(--text)' }}>Equipe</span>
+                      <span style={{ fontSize: '0.85rem', fontWeight: 500, color: 'var(--text)' }}>{post.autor || post.author_name || 'Equipe'}</span>
                     </div>
                     <Link href={`/blog/${post.id}`} style={{ color: 'var(--primary)', textDecoration: 'none' }}>
                       <motion.div whileHover={{ x: 5 }}>

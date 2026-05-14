@@ -115,15 +115,49 @@ export default function NewPostPage() {
       const client = supabase;
       if (!client) throw new Error("Database client not initialized");
       
-      const slug = formData.title.toLowerCase().replace(/ /g, '-').replace(/[^\w-]+/g, '');
-      
+      // Obter usuário logado para o user_id
+      const { data: { user } } = await client.auth.getUser();
+
+      const slug = formData.title
+        .toLowerCase()
+        .normalize("NFD")
+        .replace(/[\u0300-\u036f]/g, "")
+        .replace(/[^\w\s-]/g, "")
+        .replace(/\s+/g, "-");
+
+      // Obter nome da categoria
+      const categoryName = categories.find(c => c.id === formData.category_id)?.nome || "";
+
+      // Preparar payload alinhado com o banco de dados
+      // Inserimos em ambos (Inglês e Português) para manter compatibilidade e seguir o padrão solicitado
+      const insertData = {
+        // Colunas em Inglês (mantidas por compatibilidade)
+        title: formData.title,
+        content: formData.content,
+        image_url: formData.image_url || null,
+        status: formData.status,
+        slug: slug,
+        author_id: formData.author_id && formData.author_id.length === 36 ? formData.author_id : null,
+        category_id: formData.category_id && formData.category_id.length === 36 ? formData.category_id : null,
+        excerpt: formData.content.substring(0, 160).replace(/<[^>]*>/g, ''),
+        published_at: formData.status === 'published' || formData.status === 'Publicado' ? new Date().toISOString() : null,
+        seo_title: formData.title,
+        seo_description: formData.content.substring(0, 160).replace(/<[^>]*>/g, ''),
+        
+        // Colunas em Português (padrão solicitado pelo usuário)
+        titulo: formData.title,
+        autor: formData.author_id, // Usar o texto inserido no campo
+        categoria: categoryName,
+        conteudo: formData.content,
+        imagem_url: formData.image_url || null,
+        visualizacoes: 0,
+        user_id: user?.id || null,
+        resumo: formData.content.substring(0, 160).replace(/<[^>]*>/g, '') // Gerar resumo automático se vazio
+      };
+
       const { error: insertError } = await client
         .from('site_dm_advogados_posts')
-        .insert([{
-          ...formData,
-          slug: slug,
-          views: 0
-        }]);
+        .insert([insertData]);
 
       if (insertError) throw insertError;
       
@@ -133,7 +167,7 @@ export default function NewPostPage() {
       }, 2000);
     } catch (err: any) {
       console.error('Erro ao criar post:', err);
-      setError('Erro ao salvar o artigo. Verifique os campos e tente novamente.');
+      setError(err.message || 'Erro ao salvar o artigo. Verifique os campos e tente novamente.');
     } finally {
       setLoading(false);
     }

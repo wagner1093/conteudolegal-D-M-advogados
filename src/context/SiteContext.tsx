@@ -31,7 +31,7 @@ export function SiteProvider({ children }: { children: React.ReactNode }) {
       if (!user) return;
 
       const { data, error } = await supabase
-        .from("painel_sites")
+        .from("site_dm_advogados_sites")
         .select("id, name, slug");
 
       if (error) throw error;

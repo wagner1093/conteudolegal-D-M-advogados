@@ -4,7 +4,7 @@ import React from 'react';
 import { motion } from 'framer-motion';
 import Navbar from '@/components/Navbar';
 import Footer from '@/components/Footer';
-import { Calendar, User, ArrowLeft, Share2, MessageSquare, Clock } from 'lucide-react';
+import { Calendar, User, ArrowLeft, Share2, Clock } from 'lucide-react';
 
 const FacebookIcon = ({ size = 18, color = 'currentColor' }: { size?: number; color?: string }) => (
   <svg width={size} height={size} viewBox="0 0 24 24" fill="none" stroke={color} strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
@@ -54,8 +54,9 @@ const BlogPostPage = () => {
       const { data, error } = await client
         .from('site_dm_advogados_posts')
         .select('*, site_dm_advogados_categorias(nome)')
-        .eq('id', id)
-        .single();
+        .or(`id.eq.${id},slug.eq.${id}`)
+        .is('deleted_at', null)
+        .maybeSingle();
 
       if (error) throw error;
       setPost(data);
@@ -63,6 +64,31 @@ const BlogPostPage = () => {
       console.error('Erro ao buscar post:', err);
     } finally {
       setLoading(false);
+    }
+  };
+
+  const handleShare = (platform: string) => {
+    const url = window.location.href;
+    const title = post?.title || '';
+    let shareUrl = '';
+
+    switch (platform) {
+      case 'facebook':
+        shareUrl = `https://www.facebook.com/sharer/sharer.php?u=${encodeURIComponent(url)}`;
+        break;
+      case 'twitter':
+        shareUrl = `https://twitter.com/intent/tweet?url=${encodeURIComponent(url)}&text=${encodeURIComponent(title)}`;
+        break;
+      case 'linkedin':
+        shareUrl = `https://www.linkedin.com/sharing/share-offsite/?url=${encodeURIComponent(url)}`;
+        break;
+      case 'whatsapp':
+        shareUrl = `https://wa.me/?text=${encodeURIComponent(title + ' ' + url)}`;
+        break;
+    }
+
+    if (shareUrl) {
+      window.open(shareUrl, '_blank', 'width=600,height=400');
     }
   };
 
@@ -219,7 +245,10 @@ const BlogPostPage = () => {
               style={{ 
                 fontSize: '1.15rem', 
                 lineHeight: 1.8, 
-                color: '#374151' 
+                color: '#374151',
+                overflowWrap: 'break-word',
+                wordWrap: 'break-word',
+                wordBreak: 'break-word'
               }}
               className="blog-content"
               dangerouslySetInnerHTML={{ __html: post.content }}
@@ -239,25 +268,28 @@ const BlogPostPage = () => {
               <div style={{ display: 'flex', alignItems: 'center', gap: '16px' }}>
                 <span style={{ fontWeight: 700, color: 'var(--primary)', fontSize: '0.9rem', textTransform: 'uppercase' }}>Compartilhar:</span>
                 <div style={{ display: 'flex', gap: '12px' }}>
-                  {[FacebookIcon, TwitterIcon, LinkedinIcon].map((Icon, i) => (
-                    <button key={i} style={{ 
-                      width: '40px', height: '40px', borderRadius: '50%', border: '1px solid var(--border)', 
-                      display: 'flex', alignItems: 'center', justifyContent: 'center', cursor: 'pointer',
-                      backgroundColor: 'white', transition: 'all 0.3s ease'
-                    }} onMouseEnter={(e) => (e.currentTarget.style.borderColor = 'var(--accent)')} onMouseLeave={(e) => (e.currentTarget.style.borderColor = 'var(--border)')}>
-                      <Icon size={18} color="var(--primary)" />
+                  {[
+                    { Icon: FacebookIcon, label: 'facebook' },
+                    { Icon: TwitterIcon, label: 'twitter' },
+                    { Icon: LinkedinIcon, label: 'linkedin' }
+                  ].map((social, i) => (
+                    <button 
+                      key={i} 
+                      onClick={() => handleShare(social.label)}
+                      style={{ 
+                        width: '40px', height: '40px', borderRadius: '50%', border: '1px solid var(--border)', 
+                        display: 'flex', alignItems: 'center', justifyContent: 'center', cursor: 'pointer',
+                        backgroundColor: 'white', transition: 'all 0.3s ease',
+                        padding: 0
+                      }} 
+                      onMouseEnter={(e) => (e.currentTarget.style.borderColor = 'var(--accent)')} 
+                      onMouseLeave={(e) => (e.currentTarget.style.borderColor = 'var(--border)')}
+                    >
+                      <social.Icon size={18} color="var(--primary)" />
                     </button>
                   ))}
                 </div>
               </div>
-              
-              <button style={{ 
-                display: 'flex', alignItems: 'center', gap: '10px', backgroundColor: 'var(--bg-secondary)', 
-                border: 'none', padding: '12px 24px', borderRadius: '12px', cursor: 'pointer',
-                fontWeight: 600, color: 'var(--primary)', fontSize: '0.9rem'
-              }}>
-                <MessageSquare size={18} /> Comentar
-              </button>
             </div>
           </article>
 

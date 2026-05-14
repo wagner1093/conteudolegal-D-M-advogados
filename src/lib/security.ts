@@ -1,4 +1,4 @@
-import { supabase } from "./supabaseClient";
+import { supabase } from "./supabase";
 
 /**
  * Security utilities for the Motores project.
@@ -49,7 +49,7 @@ export async function logAudit(
 
   const { data: { user } } = await supabase.auth.getUser();
   
-  const { error } = await supabase.from("audit_logs").insert({
+  const { error } = await supabase.from("site_dm_advogados_audit_logs").insert({
     user_id: user?.id,
     action,
     entity_type: entityType,

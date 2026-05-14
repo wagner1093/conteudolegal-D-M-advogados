@@ -1,6 +1,6 @@
 import type { Metadata } from "next";
 import "./globals.css";
-import { supabase } from "@/lib/supabaseClient";
+import { supabase } from "@/lib/supabase";
 
 export async function generateMetadata(): Promise<Metadata> {
   const defaultMetadata: Metadata = {
