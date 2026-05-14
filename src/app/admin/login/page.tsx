@@ -116,9 +116,14 @@ export default function LoginPage() {
 
       // 4. Anomaly Detection
       try {
+        const { data: sessionData } = await supabase.auth.getSession();
+        const accessToken = sessionData?.session?.access_token;
         await fetch("/api/auth/audit", {
           method: "POST",
-          headers: { "Content-Type": "application/json" },
+          headers: { 
+            "Content-Type": "application/json",
+            ...(accessToken ? { "Authorization": `Bearer ${accessToken}` } : {})
+          },
           body: JSON.stringify({ user_id: data.user?.id }),
         });
       } catch (auditErr) {

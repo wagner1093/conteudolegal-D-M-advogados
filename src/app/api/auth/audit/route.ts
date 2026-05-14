@@ -1,20 +1,36 @@
 import { NextResponse } from 'next/server';
 import { createClient } from '@supabase/supabase-js';
 
-// Usamos as variáveis de ambiente base do Supabase
 const supabaseUrl = process.env.NEXT_PUBLIC_SUPABASE_URL!;
-// A função RPC 'check_login_anomaly' é SECURITY DEFINER, então a anon key é suficiente
 const supabaseAnonKey = process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY!;
-
-const supabase = createClient(supabaseUrl, supabaseAnonKey);
 
 export async function POST(request: Request) {
   try {
+    // SECURITY: Verificar autenticação antes de processar
+    const authHeader = request.headers.get('Authorization');
+    if (!authHeader?.startsWith('Bearer ')) {
+      return NextResponse.json({ error: 'Unauthorized' }, { status: 401 });
+    }
+
+    const token = authHeader.replace('Bearer ', '');
+    
+    // Criar cliente autenticado com o token do usuário
+    const supabaseAuth = createClient(supabaseUrl, supabaseAnonKey, {
+      global: { headers: { Authorization: `Bearer ${token}` } }
+    });
+
+    // Verificar se o token é válido
+    const { data: { user }, error: userError } = await supabaseAuth.auth.getUser(token);
+    if (userError || !user) {
+      return NextResponse.json({ error: 'Invalid token' }, { status: 401 });
+    }
+
     const body = await request.json();
     const { user_id } = body;
 
-    if (!user_id) {
-      return NextResponse.json({ error: 'user_id is required' }, { status: 400 });
+    // Garantir que o user_id do body corresponde ao usuário autenticado
+    if (!user_id || user_id !== user.id) {
+      return NextResponse.json({ error: 'Forbidden' }, { status: 403 });
     }
 
     // Capturar dados de IP e User Agent
@@ -22,7 +38,8 @@ export async function POST(request: Request) {
     const userAgent = request.headers.get('user-agent') || 'unknown';
     const country = request.headers.get('x-vercel-ip-country') || request.headers.get('cf-ipcountry') || 'unknown';
 
-    // Chama a função RPC para checar anomalia e registrar o login
+    // Usar cliente com anon key para chamar a RPC (que é SECURITY DEFINER)
+    const supabase = createClient(supabaseUrl, supabaseAnonKey);
     const { data: isAnomaly, error } = await supabase.rpc('check_login_anomaly', {
       p_user_id: user_id,
       p_ip_address: ip,
@@ -41,3 +58,4 @@ export async function POST(request: Request) {
     return NextResponse.json({ error: 'Internal Server Error' }, { status: 500 });
   }
 }
+

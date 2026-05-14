@@ -49,14 +49,69 @@ export async function generateMetadata(): Promise<Metadata> {
   return defaultMetadata;
 }
 
+// SECURITY: Domínios permitidos para scripts de integração
+const TRUSTED_SCRIPT_DOMAINS = [
+  'googletagmanager.com',
+  'google-analytics.com',
+  'googleapis.com',
+  'gtag',
+  'fbq',
+  'connect.facebook.net',
+  'snap.licdn.com',
+  'analytics',
+  'clarity.ms',
+  'hotjar.com',
+  'pixel',
+];
+
+// SECURITY: Padrões perigosos que nunca devem estar em scripts de integração
+const DANGEROUS_PATTERNS = [
+  /document\.cookie/i,
+  /document\.location\s*=/i,
+  /window\.location\s*=/i,
+  /eval\s*\(/i,
+  /Function\s*\(/i,
+  /fetch\s*\(\s*['"`](?!https:\/\/(www\.)?(google|facebook|analytics))/i,
+  /XMLHttpRequest/i,
+  /\.innerHTML\s*=/i,
+  /document\.write/i,
+];
+
+function isScriptSafe(script: string): boolean {
+  if (!script || typeof script !== 'string') return false;
+  
+  // Bloquear scripts com padrões perigosos
+  for (const pattern of DANGEROUS_PATTERNS) {
+    if (pattern.test(script)) {
+      console.warn('[SECURITY] Script de integração bloqueado - padrão perigoso detectado');
+      return false;
+    }
+  }
+
+  // Verificar se contém ao menos um domínio confiável OU é um snippet de configuração curto
+  const hasTrustedDomain = TRUSTED_SCRIPT_DOMAINS.some(domain => 
+    script.toLowerCase().includes(domain.toLowerCase())
+  );
+  
+  // Permitir snippets de configuração curtos (ex: variáveis de configuração do GTM)
+  const isShortConfig = script.length < 500 && !script.includes('http');
+  
+  if (!hasTrustedDomain && !isShortConfig) {
+    console.warn('[SECURITY] Script de integração bloqueado - domínio não confiável');
+    return false;
+  }
+
+  return true;
+}
+
 export default async function RootLayout({
   children,
 }: Readonly<{
   children: React.ReactNode;
 }>) {
   // Fetch active scripts from database
-  let headScripts: any[] = [];
-  let bodyScripts: any[] = [];
+  let headScripts: string[] = [];
+  let bodyScripts: string[] = [];
 
   try {
     if (supabase) {
@@ -67,8 +122,13 @@ export default async function RootLayout({
 
       if (scriptsData) {
         scriptsData.forEach((s: any) => {
-          if (s.head_script) headScripts.push(s.head_script);
-          if (s.body_script) bodyScripts.push(s.body_script);
+          // SECURITY: Sanitizar scripts antes de injetar
+          if (s.head_script && isScriptSafe(s.head_script)) {
+            headScripts.push(s.head_script);
+          }
+          if (s.body_script && isScriptSafe(s.body_script)) {
+            bodyScripts.push(s.body_script);
+          }
         });
       }
     }

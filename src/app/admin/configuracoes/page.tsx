@@ -1356,7 +1356,7 @@ export default function SettingsPage() {
                 <input 
                   type="text" 
                   value={editingUser.nome}
-                  onChange={(e) => setEditingUser(prev => ({ ...prev, nome: e.target.value }))}
+                  onChange={(e) => setEditingUser((prev: any) => ({ ...prev, nome: e.target.value }))}
                   placeholder="Ex: João Silva"
                   style={{
                     width: "100%",
@@ -1375,7 +1375,7 @@ export default function SettingsPage() {
                 <input 
                   type="email" 
                   value={editingUser.email}
-                  onChange={(e) => setEditingUser(prev => ({ ...prev, email: e.target.value }))}
+                  onChange={(e) => setEditingUser((prev: any) => ({ ...prev, email: e.target.value }))}
                   placeholder="email@exemplo.com"
                   style={{
                     width: "100%",
@@ -1393,7 +1393,7 @@ export default function SettingsPage() {
                 <label style={{ display: "block", fontSize: "13px", fontWeight: 700, color: "#475569", marginBottom: "8px" }}>Cargo / Nível de Acesso</label>
                 <select 
                   value={editingUser.funcao}
-                  onChange={(e) => setEditingUser(prev => ({ ...prev, funcao: e.target.value }))}
+                  onChange={(e) => setEditingUser((prev: any) => ({ ...prev, funcao: e.target.value }))}
                   style={{
                     width: "100%",
                     padding: "12px 16px",

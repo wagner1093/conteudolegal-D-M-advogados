@@ -30,8 +30,10 @@ const Contact = () => {
     email: '',
     telefone: '',
     area: '',
-    mensagem: ''
+    mensagem: '',
+    website: '' // SECURITY: Honeypot field - invisible to humans, filled by bots
   });
+  const [lastSubmitTime, setLastSubmitTime] = useState(0);
 
 
   const whatsAppContacts = [
@@ -50,6 +52,21 @@ const Contact = () => {
     setIsSubmitting(true);
     setError(null);
 
+    // SECURITY: Honeypot check - se o campo invisível foi preenchido, é um bot
+    if (formData.website) {
+      setSubmitted(true); // Finge sucesso para não alertar o bot
+      setIsSubmitting(false);
+      return;
+    }
+
+    // SECURITY: Rate limiting local - mínimo 10 segundos entre envios
+    const now = Date.now();
+    if (lastSubmitTime && now - lastSubmitTime < 10000) {
+      setError('Aguarde alguns segundos antes de enviar novamente.');
+      setIsSubmitting(false);
+      return;
+    }
+
     try {
       if (!supabase) throw new Error("Database client not initialized");
 
@@ -65,6 +82,7 @@ const Contact = () => {
         }]);
 
       if (insertError) throw insertError;
+      setLastSubmitTime(Date.now());
       setSubmitted(true);
     } catch (err: any) {
       console.error('Erro ao enviar lead:', err);
@@ -286,6 +304,18 @@ const Contact = () => {
                         resize: 'vertical', minHeight: '80px'
                       }} 
                       placeholder="Descreva brevemente o motivo do contato..." 
+                    />
+                  </div>
+
+                  {/* SECURITY: Honeypot field - invisible to humans, attracts bots */}
+                  <div style={{ position: 'absolute', left: '-9999px', top: '-9999px', opacity: 0, height: 0, overflow: 'hidden' }} aria-hidden="true">
+                    <input 
+                      type="text" 
+                      name="website" 
+                      tabIndex={-1}
+                      autoComplete="off"
+                      value={formData.website}
+                      onChange={(e) => setFormData({ ...formData, website: e.target.value })}
                     />
                   </div>
 

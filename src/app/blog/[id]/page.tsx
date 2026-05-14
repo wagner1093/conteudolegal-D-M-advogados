@@ -29,6 +29,7 @@ import Link from 'next/link';
 import { useParams } from 'next/navigation';
 
 import { supabase } from '@/lib/supabaseClient';
+import DOMPurify from 'dompurify';
 
 const BlogPostPage = () => {
   const params = useParams();
@@ -51,10 +52,12 @@ const BlogPostPage = () => {
     }
 
     try {
+      // Sanitizar o ID para prevenir injeção de filtros
+      const sanitizedId = id.replace(/[^a-zA-Z0-9\-]/g, '');
       const { data, error } = await client
         .from('site_dm_advogados_posts')
         .select('*, site_dm_advogados_categorias(nome)')
-        .or(`id.eq.${id},slug.eq.${id}`)
+        .or(`id.eq.${sanitizedId},slug.eq.${sanitizedId}`)
         .is('deleted_at', null)
         .maybeSingle();
 
@@ -251,7 +254,7 @@ const BlogPostPage = () => {
                 wordBreak: 'break-word'
               }}
               className="blog-content"
-              dangerouslySetInnerHTML={{ __html: post.content }}
+              dangerouslySetInnerHTML={{ __html: DOMPurify.sanitize(post.content || '', { ALLOWED_TAGS: ['p','br','strong','em','b','i','u','a','h1','h2','h3','h4','h5','h6','ul','ol','li','blockquote','img','span','div','table','thead','tbody','tr','th','td','pre','code','hr','sub','sup'], ALLOWED_ATTR: ['href','src','alt','title','target','rel','class','style','width','height'] }) }}
             />
 
             {/* Social Share */}

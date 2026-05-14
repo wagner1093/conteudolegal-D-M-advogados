@@ -258,7 +258,7 @@ const BlogPage = () => {
                       </div>
                       <span style={{ fontSize: '0.85rem', fontWeight: 500, color: 'var(--text)' }}>{post.autor || post.author_name || 'Equipe'}</span>
                     </div>
-                    <Link href={`/blog/${post.id}`} style={{ color: 'var(--primary)', textDecoration: 'none' }}>
+                    <Link href={`/blog/${post.slug || encodeURIComponent(post.title?.toLowerCase().replace(/\s+/g, '-').replace(/[^a-z0-9\-]/g, '').substring(0, 80) || post.id)}`} style={{ color: 'var(--primary)', textDecoration: 'none' }}>
                       <motion.div whileHover={{ x: 5 }}>
                         <ArrowRight size={20} />
                       </motion.div>
