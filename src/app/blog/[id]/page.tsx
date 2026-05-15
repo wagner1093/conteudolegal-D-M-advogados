@@ -54,12 +54,20 @@ const BlogPostPage = () => {
     try {
       // Sanitizar o ID para prevenir injeção de filtros
       const sanitizedId = id.replace(/[^a-zA-Z0-9\-]/g, '');
-      const { data, error } = await client
+      const isUuid = /^[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}$/i.test(sanitizedId);
+      
+      let query = client
         .from('site_dm_advogados_posts')
         .select('*, site_dm_advogados_categorias(nome)')
-        .or(`id.eq.${sanitizedId},slug.eq.${sanitizedId}`)
-        .is('deleted_at', null)
-        .maybeSingle();
+        .is('deleted_at', null);
+        
+      if (isUuid) {
+        query = query.eq('id', sanitizedId);
+      } else {
+        query = query.eq('slug', sanitizedId);
+      }
+
+      const { data, error } = await query.maybeSingle();
 
       if (error) throw error;
       setPost(data);

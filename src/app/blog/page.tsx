@@ -178,8 +178,12 @@ const BlogPage = () => {
               </div>
             ) : filteredPosts.length > 0 ? (
               filteredPosts.map((post, index) => (
-                <motion.article
+                <Link 
                   key={post.id}
+                  href={`/blog/${post.slug || encodeURIComponent(post.title?.toLowerCase().replace(/\s+/g, '-').replace(/[^a-z0-9\-]/g, '').substring(0, 80) || post.id)}`}
+                  style={{ textDecoration: 'none', color: 'inherit', display: 'block', height: '100%' }}
+                >
+                <motion.article
                   layout
                   initial={{ opacity: 0, scale: 0.9 }}
                   animate={{ opacity: 1, scale: 1 }}
@@ -242,7 +246,7 @@ const BlogPage = () => {
                     wordWrap: 'break-word',
                     wordBreak: 'break-word'
                   }}>
-                    {post.resumo || post.summary || (post.conteudo || post.content)?.replace(/<[^>]*>/g, '').substring(0, 150) + '...'}
+                    {String(post.resumo || post.summary || post.conteudo || post.content || '').replace(/<[^>]*>/g, '').replace(/&nbsp;|\u00A0|&[a-zA-Z0-9#]+;/gi, ' ').substring(0, 150) + '...'}
                   </p>
                   
                   <div style={{ 
@@ -258,14 +262,15 @@ const BlogPage = () => {
                       </div>
                       <span style={{ fontSize: '0.85rem', fontWeight: 500, color: 'var(--text)' }}>{post.autor || post.author_name || 'Equipe'}</span>
                     </div>
-                    <Link href={`/blog/${post.slug || encodeURIComponent(post.title?.toLowerCase().replace(/\s+/g, '-').replace(/[^a-z0-9\-]/g, '').substring(0, 80) || post.id)}`} style={{ color: 'var(--primary)', textDecoration: 'none' }}>
+                    <div style={{ color: 'var(--primary)' }}>
                       <motion.div whileHover={{ x: 5 }}>
                         <ArrowRight size={20} />
                       </motion.div>
-                    </Link>
+                    </div>
                   </div>
                 </div>
               </motion.article>
+              </Link>
               ))
             ) : (
               <motion.div 

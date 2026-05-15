@@ -105,8 +105,12 @@ const BlogSection = () => {
             </div>
           ) : latestPosts.length > 0 ? (
             latestPosts.map((post, index) => (
-              <motion.div
+              <Link 
                 key={post.id}
+                href={`/blog/${post.slug || post.id}`}
+                style={{ textDecoration: 'none', color: 'inherit', display: 'block' }}
+              >
+              <motion.div
                 initial={{ opacity: 0, y: 30 }}
                 whileInView={{ opacity: 1, y: 0 }}
                 viewport={{ once: true }}
@@ -187,11 +191,10 @@ const BlogSection = () => {
                     overflowWrap: 'break-word',
                     wordBreak: 'break-word'
                   }}>
-                    {post.resumo || post.summary || post.content?.replace(/<[^>]*>/g, '').substring(0, 150) + '...'}
+                    {String(post.resumo || post.summary || post.content || '').replace(/<[^>]*>/g, '').replace(/&nbsp;|\u00A0|&[a-zA-Z0-9#]+;/gi, ' ').substring(0, 150) + '...'}
                   </p>
 
-                  <Link 
-                    href={`/blog/${post.slug || post.id}`} 
+                  <div 
                     style={{ 
                       display: 'flex', 
                       alignItems: 'center', 
@@ -206,9 +209,10 @@ const BlogSection = () => {
                     onMouseLeave={(e) => (e.currentTarget.style.gap = '8px')}
                   >
                     Continuar lendo <ArrowRight size={16} />
-                  </Link>
+                  </div>
                 </div>
               </motion.div>
+              </Link>
             ))
           ) : (
             <div style={{ textAlign: 'center', padding: '60px 0', gridColumn: '1 / -1' }}>
