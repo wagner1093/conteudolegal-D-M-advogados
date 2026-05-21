@@ -400,33 +400,140 @@ section { padding: var(--section-pad); }
 }
 
 
-/* Blog Content Styling */
-.blog-content h3 {
-  font-size: 1.8rem;
-  color: var(--primary);
-  margin: 40px 0 20px;
-  font-weight: 700;
-  line-height: 1.2;
+/* ───────────────────────────────────────────
+   Blog Content — espelha exatamente o Quill
+   ─────────────────────────────────────────── */
+.blog-content {
+  font-size: 1.05rem;
+  line-height: 1.6;
+  color: #374151;
+  overflow-wrap: break-word;
+  word-wrap: break-word;
+  word-break: break-word;
 }
 
+/* Parágrafos: sem margin-bottom extra, igual ao editor Quill */
 .blog-content p {
-  margin-bottom: 24px;
-  color: var(--text);
-  font-size: 1.1rem;
+  margin: 0;
+  padding: 0;
+  min-height: 1.6em; /* preserva linha em branco intencional */
+  color: #374151;
+  font-size: 1.05rem;
+  line-height: 1.6;
 }
 
+/* Headings */
+.blog-content h1 {
+  font-size: 2rem;
+  font-weight: 700;
+  color: var(--primary);
+  margin: 1.4em 0 0.5em;
+  line-height: 1.2;
+  letter-spacing: -0.02em;
+}
+.blog-content h2 {
+  font-size: 1.6rem;
+  font-weight: 700;
+  color: var(--primary);
+  margin: 1.4em 0 0.5em;
+  line-height: 1.2;
+  letter-spacing: -0.02em;
+}
+.blog-content h3 {
+  font-size: 1.3rem;
+  font-weight: 700;
+  color: var(--primary);
+  margin: 1.2em 0 0.4em;
+  line-height: 1.25;
+}
+.blog-content h4 {
+  font-size: 1.1rem;
+  font-weight: 700;
+  color: var(--primary);
+  margin: 1em 0 0.3em;
+  line-height: 1.3;
+}
+.blog-content h5,
+.blog-content h6 {
+  font-size: 1rem;
+  font-weight: 700;
+  color: var(--primary);
+  margin: 1em 0 0.3em;
+}
+
+/* Listas */
+.blog-content ul,
+.blog-content ol {
+  margin: 0.5em 0;
+  padding-left: 1.8em;
+}
+.blog-content li {
+  margin-bottom: 0.25em;
+  line-height: 1.6;
+  color: #374151;
+}
+.blog-content ul li {
+  list-style-type: disc;
+}
+.blog-content ol li {
+  list-style-type: decimal;
+}
+
+/* Blockquote */
 .blog-content blockquote {
   border-left: 4px solid var(--accent);
-  padding: 24px 40px;
-  margin: 48px 0;
+  padding: 16px 24px;
+  margin: 1.2em 0;
   background-color: var(--bg-secondary);
-  font-size: 1.4rem;
+  font-size: 1.05rem;
   font-style: italic;
   color: var(--primary);
-  line-height: 1.5;
-  font-family: 'Outfit', serif;
-  border-radius: 0 16px 16px 0;
+  line-height: 1.6;
+  border-radius: 0 12px 12px 0;
 }
+
+/* Código inline e blocos */
+.blog-content code {
+  background: #f1f5f9;
+  border: 1px solid #e2e8f0;
+  border-radius: 4px;
+  padding: 2px 6px;
+  font-size: 0.9em;
+  font-family: 'Courier New', monospace;
+  color: #1e293b;
+}
+.blog-content pre {
+  background: #1e293b;
+  color: #e2e8f0;
+  padding: 20px 24px;
+  border-radius: 12px;
+  margin: 1em 0;
+  overflow-x: auto;
+  font-size: 0.9em;
+  line-height: 1.6;
+}
+.blog-content pre code {
+  background: none;
+  border: none;
+  padding: 0;
+  color: inherit;
+}
+
+/* Links */
+.blog-content a {
+  color: var(--accent);
+  text-decoration: underline;
+  text-underline-offset: 3px;
+}
+.blog-content a:hover {
+  color: var(--accent-hover);
+}
+
+/* Strong / Em */
+.blog-content strong { font-weight: 700; }
+.blog-content em { font-style: italic; }
+.blog-content u { text-decoration: underline; }
+.blog-content s { text-decoration: line-through; }
 
 @media (max-width: 992px) {
   .blog-article-grid {

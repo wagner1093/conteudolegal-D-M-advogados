@@ -72,11 +72,26 @@ export async function logAudit(
  * Specifically handles common image types for upload hardening.
  */
 export async function validateFileSignature(file: File): Promise<boolean> {
+  // ICO files start with 00 00 01 00 — treated specially since they contain null bytes
+  const icoTypes = ["image/x-icon", "image/vnd.microsoft.icon"];
+  if (icoTypes.includes(file.type)) {
+    // Validate ICO magic bytes: 00 00 01 00
+    const header = await new Promise<Uint8Array>((resolve) => {
+      const reader = new FileReader();
+      reader.onloadend = (e) => {
+        resolve(new Uint8Array(e.target?.result as ArrayBuffer).subarray(0, 4));
+      };
+      reader.readAsArrayBuffer(file.slice(0, 4));
+    });
+    return header[0] === 0x00 && header[1] === 0x00 && header[2] === 0x01 && header[3] === 0x00;
+  }
+
   const signatures: Record<string, number[]> = {
     "image/jpeg": [0xFF, 0xD8, 0xFF],
     "image/png": [0x89, 0x50, 0x4E, 0x47],
     "image/gif": [0x47, 0x49, 0x46, 0x38],
     "image/webp": [0x52, 0x49, 0x46, 0x46], // WebP has 'RIFF' header
+    "image/svg+xml": [0x3C], // SVG starts with '<'
   };
 
   if (!signatures[file.type]) return false;

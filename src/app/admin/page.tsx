@@ -167,7 +167,8 @@ export default function AdminDashboard() {
           .is("deleted_at", null),
         client
           .from("site_dm_advogados_leads")
-          .select("*", { count: "exact", head: true }),
+          .select("*", { count: "exact", head: true })
+          .is("deleted_at", null),
         client
           .from("site_dm_advogados_posts")
           .select("visualizacoes")

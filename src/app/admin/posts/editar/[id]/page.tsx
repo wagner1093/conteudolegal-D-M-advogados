@@ -29,12 +29,18 @@ export default function EditPostPage() {
   const [saving, setSaving] = useState(false);
   const [uploading, setUploading] = useState(false);
   const fileInputRef = React.useRef<HTMLInputElement>(null);
+  
+  const [uploadingAuthorPhoto, setUploadingAuthorPhoto] = useState(false);
+  const authorFileInputRef = React.useRef<HTMLInputElement>(null);
+  
   const [success, setSuccess] = useState(false);
   const [error, setError] = useState<string | null>(null);
 
   const [formData, setFormData] = useState({
     title: '',
-    author_id: '',
+    author_name: '',
+    author_description: '',
+    author_image_url: '',
     category_id: '',
     status: '',
     content: '',
@@ -56,7 +62,7 @@ export default function EditPostPage() {
 
   const fetchCategories = async () => {
     const client = supabase;
-    if (!client || !selectedSiteId) {
+    if (!client) {
       setLoadingCategories(false);
       return;
     }
@@ -78,7 +84,7 @@ export default function EditPostPage() {
   };
 
   const handleAddCategory = async () => {
-    if (!newCategoryName.trim() || !selectedSiteId) return;
+    if (!newCategoryName.trim()) return;
 
     const client = supabase;
     if (!client) return;
@@ -128,7 +134,9 @@ export default function EditPostPage() {
       if (data) {
         setFormData({
           title: data.title || '',
-          author_id: data.author_id || '',
+          author_name: data.author_name || '',
+          author_description: data.author_description || '',
+          author_image_url: data.author_image_url || '',
           category_id: data.category_id || '',
           status: data.status || '',
           content: data.content || '',
@@ -186,6 +194,47 @@ export default function EditPostPage() {
     }
   };
 
+  const handleAuthorImageUpload = async (e: React.ChangeEvent<HTMLInputElement>) => {
+    const file = e.target.files?.[0];
+    if (!file) return;
+
+    const isValid = await validateFileSignature(file);
+    if (!isValid) {
+      alert("Arquivo inválido. Por favor, envie uma imagem real (JPG, PNG, GIF ou WebP).");
+      await logAudit("UPLOAD_REJECTED", "storage", file.name, null, { reason: "invalid_signature", type: file.type });
+      return;
+    }
+
+    setUploadingAuthorPhoto(true);
+    try {
+      const client = supabase;
+      if (!client) return;
+
+      const fileExt = file.name.split('.').pop();
+      const fileName = `author_${Math.random().toString(36).substring(2)}.${fileExt}`;
+      const filePath = `${fileName}`;
+
+      const { data, error: uploadError } = await client.storage
+        .from('blog_covers')
+        .upload(filePath, file);
+
+      if (uploadError) throw uploadError;
+
+      const { data: { publicUrl } } = client.storage
+        .from('blog_covers')
+        .getPublicUrl(filePath);
+
+      setFormData(prev => ({ ...prev, author_image_url: publicUrl }));
+      await logAudit("UPLOAD_SUCCESS", "storage", filePath, null, { bucket: "blog_covers" });
+    } catch (err: any) {
+      console.error('Erro no upload da foto do autor:', err);
+      alert('Erro ao fazer upload da foto.');
+      await logAudit("UPLOAD_ERROR", "storage", file.name, null, { error: err.message });
+    } finally {
+      setUploadingAuthorPhoto(false);
+    }
+  };
+
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
     const client = supabase;
@@ -197,12 +246,18 @@ export default function EditPostPage() {
     setError(null);
 
     try {
-      const slug = formData.title
-        .toLowerCase()
-        .normalize("NFD")
-        .replace(/[\u0300-\u036f]/g, "")
-        .replace(/[^\w\s-]/g, "")
-        .replace(/\s+/g, "-");
+      // Preservar o slug existente; só gerar um novo se ainda não houver
+      const slug = formData.slug || (() => {
+        const base = formData.title
+          .toLowerCase()
+          .normalize("NFD")
+          .replace(/[\u0300-\u036f]/g, "")
+          .replace(/[^\w\s-]/g, "")
+          .replace(/\s+/g, "-")
+          .replace(/-+/g, "-")
+          .replace(/^-|-$/g, "");
+        return `${base}-${Date.now().toString(36)}`;
+      })();
 
       // Obter nome da categoria
       const categoryName = categories.find(c => c.id === formData.category_id)?.nome || "";
@@ -215,7 +270,7 @@ export default function EditPostPage() {
         image_url: formData.image_url || null,
         status: formData.status,
         slug: slug,
-        author_id: formData.author_id && formData.author_id.length === 36 ? formData.author_id : null,
+        author_id: null,
         category_id: formData.category_id && formData.category_id.length === 36 ? formData.category_id : null,
         excerpt: formData.content.substring(0, 160).replace(/<[^>]*>/g, ''),
         published_at: formData.status === 'published' || formData.status === 'Publicado' ? new Date().toISOString() : null,
@@ -224,12 +279,17 @@ export default function EditPostPage() {
 
         // Colunas em Português
         titulo: formData.title,
-        autor: formData.author_id, // Usar o texto inserido no campo
+        autor: formData.author_name || "",
         categoria: categoryName,
         conteudo: formData.content,
         imagem_url: formData.image_url || null,
         resumo: formData.content.substring(0, 160).replace(/<[^>]*>/g, ''),
-        updated_at: new Date().toISOString()
+        updated_at: new Date().toISOString(),
+
+        // Novas colunas customizadas
+        author_name: formData.author_name || null,
+        author_description: formData.author_description || null,
+        author_image_url: formData.author_image_url || null
       };
 
       const { error: updateError } = await client
@@ -384,14 +444,81 @@ export default function EditPostPage() {
         {/* Sidebar Settings */}
         <div style={{ display: 'flex', flexDirection: 'column', gap: '24px' }}>
           <Card title="Configurações">
-            <Field label="ID do Autor (Opcional)">
-              <input
+            <Field label="Nome do Autor (Opcional)">
+              <input 
                 type="text"
-                placeholder="ID do Usuário ou deixe em branco"
-                value={formData.author_id}
-                onChange={(e) => setFormData({ ...formData, author_id: e.target.value })}
+                placeholder="Ex: Dr. Lucas Dohmen"
+                value={formData.author_name}
+                onChange={(e) => setFormData({...formData, author_name: e.target.value})}
                 style={inputStyle}
               />
+            </Field>
+
+            <Field label="Descrição Curta (Opcional)">
+              <textarea 
+                placeholder="Ex: Advogado Especialista em Direito da Saúde..."
+                value={formData.author_description}
+                onChange={(e) => setFormData({...formData, author_description: e.target.value})}
+                rows={3}
+                style={{ ...inputStyle, resize: 'vertical', minHeight: '80px', fontFamily: 'inherit' }}
+              />
+            </Field>
+
+            <Field label="Foto do Autor (Opcional)">
+              <input 
+                type="file"
+                ref={authorFileInputRef}
+                onChange={handleAuthorImageUpload}
+                accept="image/*"
+                style={{ display: 'none' }}
+              />
+              <div style={{ display: 'flex', alignItems: 'center', gap: '16px' }}>
+                <div 
+                  onClick={() => authorFileInputRef.current?.click()}
+                  style={{
+                    width: '64px',
+                    height: '64px',
+                    borderRadius: '50%',
+                    border: '2px dashed #e2e8f0',
+                    display: 'flex',
+                    alignItems: 'center',
+                    justifyContent: 'center',
+                    color: '#94a3b8',
+                    cursor: 'pointer',
+                    overflow: 'hidden',
+                    position: 'relative',
+                    background: formData.author_image_url ? `url(${formData.author_image_url}) center/cover` : '#f8fafc',
+                    transition: 'all 0.2s ease',
+                    flexShrink: 0
+                  }}
+                  onMouseOver={(e) => e.currentTarget.style.borderColor = '#1e293b'}
+                  onMouseOut={(e) => e.currentTarget.style.borderColor = '#e2e8f0'}
+                >
+                  {uploadingAuthorPhoto ? (
+                    <Loader2 size={20} className="animate-spin" />
+                  ) : !formData.author_image_url ? (
+                    <Plus size={20} />
+                  ) : null}
+                </div>
+                {formData.author_image_url ? (
+                  <button
+                    type="button"
+                    onClick={() => setFormData({...formData, author_image_url: ''})}
+                    style={{
+                      background: 'none',
+                      border: 'none',
+                      color: '#ef4444',
+                      fontSize: '12px',
+                      fontWeight: 600,
+                      cursor: 'pointer'
+                    }}
+                  >
+                    Remover Foto
+                  </button>
+                ) : (
+                  <span style={{ fontSize: '12px', color: '#64748b' }}>Clique para enviar</span>
+                )}
+              </div>
             </Field>
 
             <Field label="Categoria">

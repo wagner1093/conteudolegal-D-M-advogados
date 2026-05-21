@@ -19,13 +19,11 @@ import {
 import React, { useState, useEffect } from "react";
 import Link from "next/link";
 import { supabase } from "@/lib/supabaseClient";
-import { useSite } from "@/context/SiteContext";
 
 export default function PostsPage() {
-  const { selectedSiteId } = useSite();
   const [searchTerm, setSearchTerm] = useState("");
   const [posts, setPosts] = useState<any[]>([]);
-  const [loading, setLoading] = useState(false); // Inicializa como false para evitar loop se o ID demorar
+  const [loading, setLoading] = useState(false);
   const [stats, setStats] = useState({
     total: 0,
     publicados: 0,
@@ -34,14 +32,12 @@ export default function PostsPage() {
   });
 
   useEffect(() => {
-    if (selectedSiteId) {
-      fetchPosts();
-    }
-  }, [selectedSiteId]);
+    fetchPosts();
+  }, []);
 
   const fetchPosts = async () => {
     const client = supabase;
-    if (!client || !selectedSiteId) return;
+    if (!client) return;
     
     try {
       setLoading(true);

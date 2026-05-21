@@ -207,7 +207,7 @@ const BlogPostPage = () => {
                 <Calendar size={18} color="var(--accent)" /> {new Date(post.created_at).toLocaleDateString('pt-BR')}
               </span>
               <span style={{ display: 'flex', alignItems: 'center', gap: '10px' }}>
-                <User size={18} color="var(--accent)" /> Equipe
+                <User size={18} color="var(--accent)" /> {post.author_name || post.autor || 'Equipe'}
               </span>
               <span style={{ display: 'flex', alignItems: 'center', gap: '10px' }}>
                 <Clock size={18} color="var(--accent)" /> {post.tempo_leitura || '5 min'} de leitura
@@ -254,9 +254,6 @@ const BlogPostPage = () => {
           <article>
             <div 
               style={{ 
-                fontSize: '1.15rem', 
-                lineHeight: 1.8, 
-                color: '#374151',
                 overflowWrap: 'break-word',
                 wordWrap: 'break-word',
                 wordBreak: 'break-word'
@@ -313,16 +310,25 @@ const BlogPostPage = () => {
               }}>
                 <h4 style={{ color: 'var(--primary)', marginBottom: '16px', fontWeight: 700 }}>Sobre o Autor</h4>
                 <div style={{ display: 'flex', alignItems: 'center', gap: '16px', marginBottom: '16px' }}>
-                  <div style={{ width: '60px', height: '60px', borderRadius: '50%', backgroundColor: 'var(--primary)', display: 'flex', alignItems: 'center', justifyContent: 'center' }}>
-                    <User size={30} color="white" />
-                  </div>
+                  {post.author_image_url ? (
+                    <img
+                      src={post.author_image_url}
+                      alt={post.author_name || 'Autor'}
+                      style={{ width: '60px', height: '60px', borderRadius: '50%', objectFit: 'cover', flexShrink: 0, border: '2px solid var(--accent)' }}
+                    />
+                  ) : (
+                    <div style={{ width: '60px', height: '60px', borderRadius: '50%', backgroundColor: 'var(--primary)', display: 'flex', alignItems: 'center', justifyContent: 'center', flexShrink: 0 }}>
+                      <User size={30} color="white" />
+                    </div>
+                  )}
                   <div>
-                    <span style={{ display: 'block', fontWeight: 700, color: 'var(--primary)', fontFamily: "'Inter', sans-serif" }}>Equipe</span>
-                    <span style={{ fontSize: '0.8rem', color: 'var(--text-light)', fontFamily: "'Inter', sans-serif" }}>Advogado Especialista</span>
+                    <span style={{ display: 'block', fontWeight: 700, color: 'var(--primary)', fontFamily: "'Inter', sans-serif" }}>
+                      {post.author_name || post.autor || 'Equipe'}
+                    </span>
                   </div>
                 </div>
                 <p style={{ fontSize: '0.85rem', color: 'var(--text-light)', lineHeight: 1.5 }}>
-                  Atua há mais de 10 anos em causas complexas de Direito da Saúde e Bioética.
+                  {post.author_description || 'Atua há mais de 10 anos em causas complexas de Direito da Saúde e Bioética.'}
                 </p>
               </div>
 

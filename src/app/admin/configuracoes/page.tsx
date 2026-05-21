@@ -234,6 +234,7 @@ export default function SettingsPage() {
 
       if (authUserId) {
         insertData.auth_id = authUserId;
+        insertData.user_id = authUserId; // Garante compatibilidade com políticas de RLS que usam user_id
       }
 
       const { error: dbError } = await client
@@ -503,7 +504,7 @@ export default function SettingsPage() {
     // 1. Upload Hardening: Magic Byte Validation
     const isValid = await validateFileSignature(file);
     if (!isValid) {
-      alert("Arquivo inválido. Por favor, envie uma imagem real (JPG, PNG, GIF ou WebP).");
+      alert("Arquivo inválido. Por favor, envie uma imagem real (PNG, ICO, JPG ou SVG).");
       await logAudit("UPLOAD_REJECTED", "storage", file.name, null, { reason: "invalid_signature", type: file.type });
       return;
     }
@@ -530,8 +531,31 @@ export default function SettingsPage() {
 
       const { data } = client.storage.from('site_dm_advogados').getPublicUrl(filePath);
       if (data?.publicUrl) {
+        // Atualiza state local
         updateField("favicon_url", data.publicUrl);
-        alert("Favicon carregado com sucesso! URL: " + data.publicUrl);
+
+        // Auto-salva favicon_url direto no banco sem precisar clicar em "Salvar"
+        const { data: existingConfig } = await client
+          .from("site_dm_advogados_configuracoes")
+          .select("id")
+          .limit(1)
+          .maybeSingle();
+
+        if (existingConfig) {
+          await client
+            .from("site_dm_advogados_configuracoes")
+            .update({ favicon_url: data.publicUrl, updated_at: new Date().toISOString() })
+            .eq("id", existingConfig.id);
+        } else {
+          await client
+            .from("site_dm_advogados_configuracoes")
+            .insert([{ favicon_url: data.publicUrl }]);
+        }
+
+        // Exibe toast de sucesso
+        setShowSuccess(true);
+        setTimeout(() => setShowSuccess(false), 4000);
+
         await logAudit("UPLOAD_SUCCESS", "storage", filePath, null, { bucket: "site_dm_advogados", type: "favicon" });
       }
     } catch (err: any) {

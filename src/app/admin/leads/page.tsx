@@ -39,6 +39,7 @@ export default function LeadsPage() {
       const { data, error } = await client
         .from("site_dm_advogados_leads")
         .select("*")
+        .is("deleted_at", null)
         .order("created_at", { ascending: false });
 
       if (error) throw error;
