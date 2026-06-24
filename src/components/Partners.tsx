@@ -20,7 +20,7 @@ const partners = [
     role: 'Sócio Fundador',
     spec: 'Direito da saúde',
     bio: 'Diretor Operacional e Financeiro, com atuação relevante na estruturação e condução estratégica das demandas do escritório.\n\nPossui experiência consolidada em relações de consumo e atuação institucional no Direito da Saúde, contribuindo para a organização dos fluxos internos e para a entrega de soluções com consistência técnica e operacional.\n\nSua atuação garante solidez na condução dos casos e alinhamento entre estratégia jurídica e execução.',
-    whatsapp: '11983380371',
+    whatsapp: '11988380371',
     image: '/images/alexandre-matta.png'
   },
 ];

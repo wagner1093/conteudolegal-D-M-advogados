@@ -78,7 +78,7 @@ export default function SettingsPage() {
     id: null,
     site_name: "Dohmen & Matta Advogados Associados",
     site_description: "Especialistas em Direito da Saúde e Erro Médico",
-    contact_email: "contato@dmatta.com.br",
+    contact_email: "contato@dmaadvs.com.br",
     contact_phone: "(11) 98779-5023",
     address: "Av. Paulista, 1439 - 1º Andar, São Paulo - SP",
     seo_title: "Dohmen & Matta Advogados Associados | Direito da Saúde e Erro Médico",

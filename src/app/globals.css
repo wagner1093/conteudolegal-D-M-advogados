@@ -407,9 +407,9 @@ section { padding: var(--section-pad); }
   font-size: 1.05rem;
   line-height: 1.6;
   color: #374151;
+  /* Quebra apenas palavras longas que nao cabem (ex.: URLs); nunca quebra palavras
+     normais. word-break/word-wrap removidos: causavam quebra no meio das palavras. */
   overflow-wrap: break-word;
-  word-wrap: break-word;
-  word-break: break-word;
 }
 
 /* Parágrafos: sem margin-bottom extra, igual ao editor Quill */

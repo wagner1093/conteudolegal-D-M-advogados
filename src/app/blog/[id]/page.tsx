@@ -254,12 +254,10 @@ const BlogPostPage = () => {
           <article>
             <div 
               style={{ 
-                overflowWrap: 'break-word',
-                wordWrap: 'break-word',
-                wordBreak: 'break-word'
+                overflowWrap: 'break-word'
               }}
               className="blog-content"
-              dangerouslySetInnerHTML={{ __html: DOMPurify.sanitize(post.content || '', { ALLOWED_TAGS: ['p','br','strong','em','b','i','u','a','h1','h2','h3','h4','h5','h6','ul','ol','li','blockquote','img','span','div','table','thead','tbody','tr','th','td','pre','code','hr','sub','sup'], ALLOWED_ATTR: ['href','src','alt','title','target','rel','class','style','width','height'] }) }}
+              dangerouslySetInnerHTML={{ __html: DOMPurify.sanitize((post.content || '').replace(/&nbsp;|\u00a0/g, ' '), { ALLOWED_TAGS: ['p','br','strong','em','b','i','u','a','h1','h2','h3','h4','h5','h6','ul','ol','li','blockquote','img','span','div','table','thead','tbody','tr','th','td','pre','code','hr','sub','sup'], ALLOWED_ATTR: ['href','src','alt','title','target','rel','class','style','width','height'] }) }}
             />
 
             {/* Social Share */}

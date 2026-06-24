@@ -246,7 +246,7 @@ const BlogPage = () => {
                     wordWrap: 'break-word',
                     wordBreak: 'break-word'
                   }}>
-                    {String(post.resumo || post.summary || post.conteudo || post.content || '').replace(/<[^>]*>/g, '').replace(/&nbsp;|\u00A0|&[a-zA-Z0-9#]+;/gi, ' ').substring(0, 150) + '...'}
+                    {String(post.resumo || post.summary || post.conteudo || post.content || '').replace(/<[^>]*>/g, '').replace(/&nbsp;|\u00A0|&[a-zA-Z0-9#]+;/gi, ' ').replace(/&[a-z#0-9]{1,8};?$/i, '').trim().substring(0, 150) + '...'}
                   </p>
                   
                   <div style={{ 

@@ -44,7 +44,7 @@ const Contact = () => {
       raw: config?.contact_phone?.replace(/\D/g, '') || '11987795023' 
     },
     { name: 'Dr. Lucas Dohmen', role: 'Sócio Fundador', number: '(11) 94862-2339', raw: '11948622339' },
-    { name: 'Dr. Alexandre Matta', role: 'Sócio Fundador', number: '(11) 98338-0371', raw: '11983380371' },
+    { name: 'Dr. Alexandre Matta', role: 'Sócio Fundador', number: '(11) 98838-0371', raw: '11988380371' },
   ];
 
   const handleSubmit = async (e: React.FormEvent) => {
@@ -504,7 +504,7 @@ const Contact = () => {
                 <div>
                   <span style={{ display: "block", color: "#fff", fontWeight: 600, fontSize: "0.9rem", marginBottom: "2px" }}>E-mail Institucional</span>
                   <span style={{ display: "block", color: "#94a3b8", fontSize: "0.85rem" }}>
-                    {config?.contact_email || "contato@dmatta.com.br"}
+                    {config?.contact_email || "contato@dmaadvs.com.br"}
                   </span>
                 </div>
               </div>

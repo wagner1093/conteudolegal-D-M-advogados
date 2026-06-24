@@ -263,27 +263,31 @@ export default function EditPostPage() {
       const categoryName = categories.find(c => c.id === formData.category_id)?.nome || "";
 
       // Preparar payload alinhado com o banco de dados
+      // Normaliza &nbsp; (e o caractere U+00A0) inserido pelo editor Quill no lugar de espacos
+      // normais — sem isso o texto nao quebra linha corretamente na pagina publicada.
+      const cleanContent = (formData.content || '').replace(/&nbsp;|\u00a0/g, ' ');
+
       const updateData = {
         // Colunas em Inglês
         title: formData.title,
-        content: formData.content,
+        content: cleanContent,
         image_url: formData.image_url || null,
         status: formData.status,
         slug: slug,
         author_id: null,
         category_id: formData.category_id && formData.category_id.length === 36 ? formData.category_id : null,
-        excerpt: formData.content.substring(0, 160).replace(/<[^>]*>/g, ''),
+        excerpt: cleanContent.substring(0, 160).replace(/<[^>]*>/g, ''),
         published_at: formData.status === 'published' || formData.status === 'Publicado' ? new Date().toISOString() : null,
         seo_title: formData.title,
-        seo_description: formData.content.substring(0, 160).replace(/<[^>]*>/g, ''),
+        seo_description: cleanContent.substring(0, 160).replace(/<[^>]*>/g, ''),
 
         // Colunas em Português
         titulo: formData.title,
         autor: formData.author_name || "",
         categoria: categoryName,
-        conteudo: formData.content,
+        conteudo: cleanContent,
         imagem_url: formData.image_url || null,
-        resumo: formData.content.substring(0, 160).replace(/<[^>]*>/g, ''),
+        resumo: cleanContent.substring(0, 160).replace(/<[^>]*>/g, ''),
         updated_at: new Date().toISOString(),
 
         // Novas colunas customizadas
