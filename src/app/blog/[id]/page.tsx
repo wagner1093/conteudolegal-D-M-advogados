@@ -30,6 +30,7 @@ import { useParams } from 'next/navigation';
 
 import { supabase } from '@/lib/supabaseClient';
 import DOMPurify from 'dompurify';
+import AudioPlayer from '@/components/AudioPlayer';
 
 const BlogPostPage = () => {
   const params = useParams();
@@ -252,8 +253,11 @@ const BlogPostPage = () => {
           
           {/* Main Article */}
           <article>
-            <div 
-              style={{ 
+            {post.audio_url && (
+              <AudioPlayer audioUrl={post.audio_url} title={post.title || post.titulo || '\u00c1udio do Artigo'} />
+            )}
+            <div
+              style={{
                 overflowWrap: 'break-word'
               }}
               className="blog-content"

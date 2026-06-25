@@ -9,14 +9,15 @@ import {
   Loader2,
   CheckCircle2,
   AlertCircle,
-  Plus
+  Plus,
+  Music
 } from 'lucide-react';
 import { motion, AnimatePresence } from 'framer-motion';
 import Link from 'next/link';
 import { useRouter, useParams } from 'next/navigation';
 import { supabase } from "@/lib/supabaseClient";
 import { useSite } from "@/context/SiteContext";
-import { validateFileSignature, logAudit } from "@/lib/security";
+import { validateFileSignature, validateAudioSignature, logAudit } from "@/lib/security";
 import RichTextEditor from '@/components/RichTextEditor';
 
 export default function EditPostPage() {
@@ -29,9 +30,12 @@ export default function EditPostPage() {
   const [saving, setSaving] = useState(false);
   const [uploading, setUploading] = useState(false);
   const fileInputRef = React.useRef<HTMLInputElement>(null);
-  
+
   const [uploadingAuthorPhoto, setUploadingAuthorPhoto] = useState(false);
   const authorFileInputRef = React.useRef<HTMLInputElement>(null);
+
+  const [uploadingAudio, setUploadingAudio] = useState(false);
+  const audioFileInputRef = React.useRef<HTMLInputElement>(null);
   
   const [success, setSuccess] = useState(false);
   const [error, setError] = useState<string | null>(null);
@@ -45,6 +49,7 @@ export default function EditPostPage() {
     status: '',
     content: '',
     image_url: '',
+    audio_url: '',
     slug: ''
   });
 
@@ -141,6 +146,7 @@ export default function EditPostPage() {
           status: data.status || '',
           content: data.content || '',
           image_url: data.image_url || '',
+          audio_url: data.audio_url || '',
           slug: data.slug || ''
         });
       }
@@ -191,6 +197,47 @@ export default function EditPostPage() {
       await logAudit("UPLOAD_ERROR", "storage", file.name, null, { error: err.message });
     } finally {
       setUploading(false);
+    }
+  };
+
+  const handleAudioUpload = async (e: React.ChangeEvent<HTMLInputElement>) => {
+    const file = e.target.files?.[0];
+    if (!file) return;
+
+    const isValid = await validateAudioSignature(file);
+    if (!isValid) {
+      alert("Arquivo inválido. Por favor, envie um áudio real (MP3, WAV, OGG ou M4A).");
+      await logAudit("UPLOAD_REJECTED", "storage", file.name, null, { reason: "invalid_audio_signature", type: file.type });
+      return;
+    }
+
+    setUploadingAudio(true);
+    try {
+      const client = supabase;
+      if (!client) return;
+
+      const fileExt = file.name.split('.').pop();
+      const fileName = `audio_${Math.random().toString(36).substring(2)}.${fileExt}`;
+
+      const { error: uploadError } = await client.storage
+        .from('blog_covers')
+        .upload(fileName, file);
+
+      if (uploadError) throw uploadError;
+
+      const { data: { publicUrl } } = client.storage
+        .from('blog_covers')
+        .getPublicUrl(fileName);
+
+      setFormData(prev => ({ ...prev, audio_url: publicUrl }));
+      await logAudit("UPLOAD_SUCCESS", "storage", fileName, null, { bucket: "blog_covers", type: "audio" });
+    } catch (err: any) {
+      console.error('Erro no upload do áudio:', err);
+      alert('Erro ao fazer upload do áudio.');
+      await logAudit("UPLOAD_ERROR", "storage", file.name, null, { error: err.message });
+    } finally {
+      setUploadingAudio(false);
+      if (audioFileInputRef.current) audioFileInputRef.current.value = '';
     }
   };
 
@@ -293,7 +340,8 @@ export default function EditPostPage() {
         // Novas colunas customizadas
         author_name: formData.author_name || null,
         author_description: formData.author_description || null,
-        author_image_url: formData.author_image_url || null
+        author_image_url: formData.author_image_url || null,
+        audio_url: formData.audio_url || null
       };
 
       const { error: updateError } = await client
@@ -704,6 +752,112 @@ export default function EditPostPage() {
                 </div>
               )}
             </div>
+          </Card>
+
+          <Card title="Áudio do Artigo">
+            <input
+              type="file"
+              ref={audioFileInputRef}
+              onChange={handleAudioUpload}
+              accept="audio/mpeg,audio/mp3,audio/x-mpeg,audio/x-mp3,audio/wav,audio/wave,audio/ogg,audio/mp4,audio/m4a,audio/x-m4a,.mp3,.wav,.ogg,.m4a,.mp4"
+              style={{ display: 'none' }}
+            />
+            {!formData.audio_url ? (
+              <div
+                onClick={() => audioFileInputRef.current?.click()}
+                style={{
+                  width: '100%',
+                  borderRadius: '12px',
+                  border: '2px dashed #e2e8f0',
+                  display: 'flex',
+                  flexDirection: 'column',
+                  alignItems: 'center',
+                  justifyContent: 'center',
+                  color: '#94a3b8',
+                  cursor: uploadingAudio ? 'not-allowed' : 'pointer',
+                  padding: '32px 16px',
+                  background: '#f8fafc',
+                  transition: 'all 0.2s ease',
+                  gap: '8px'
+                }}
+                onMouseOver={(e) => { if (!uploadingAudio) e.currentTarget.style.borderColor = '#1e293b'; }}
+                onMouseOut={(e) => { e.currentTarget.style.borderColor = '#e2e8f0'; }}
+              >
+                {uploadingAudio ? (
+                  <Loader2 size={28} className="animate-spin" />
+                ) : (
+                  <>
+                    <Music size={28} />
+                    <span style={{ fontSize: '12px', fontWeight: 600 }}>Clique para Upload</span>
+                    <span style={{ fontSize: '11px', color: '#cbd5e1' }}>MP3, WAV, OGG ou M4A</span>
+                  </>
+                )}
+              </div>
+            ) : (
+              <div style={{ display: 'flex', flexDirection: 'column', gap: '12px' }}>
+                <div style={{
+                  background: 'linear-gradient(135deg, #0f172a 0%, #1e293b 100%)',
+                  borderRadius: '12px',
+                  padding: '16px',
+                  display: 'flex',
+                  alignItems: 'center',
+                  gap: '12px'
+                }}>
+                  <div style={{
+                    width: '40px',
+                    height: '40px',
+                    borderRadius: '50%',
+                    background: 'var(--accent, #4caf50)',
+                    display: 'flex',
+                    alignItems: 'center',
+                    justifyContent: 'center',
+                    flexShrink: 0
+                  }}>
+                    <Music size={18} color="white" />
+                  </div>
+                  <div>
+                    <span style={{ fontSize: '12px', fontWeight: 600, color: 'rgba(255,255,255,0.9)', display: 'block' }}>
+                      Áudio enviado
+                    </span>
+                    <span style={{ fontSize: '11px', color: 'rgba(255,255,255,0.5)' }}>
+                      Será exibido no artigo
+                    </span>
+                  </div>
+                </div>
+                <div style={{ display: 'flex', gap: '12px' }}>
+                  <button
+                    type="button"
+                    onClick={() => audioFileInputRef.current?.click()}
+                    style={{
+                      background: 'none',
+                      border: 'none',
+                      color: '#1e293b',
+                      fontSize: '12px',
+                      fontWeight: 600,
+                      cursor: 'pointer',
+                      padding: 0
+                    }}
+                  >
+                    Trocar Áudio
+                  </button>
+                  <button
+                    type="button"
+                    onClick={() => setFormData({ ...formData, audio_url: '' })}
+                    style={{
+                      background: 'none',
+                      border: 'none',
+                      color: '#ef4444',
+                      fontSize: '12px',
+                      fontWeight: 600,
+                      cursor: 'pointer',
+                      padding: 0
+                    }}
+                  >
+                    Remover Áudio
+                  </button>
+                </div>
+              </div>
+            )}
           </Card>
         </div>
       </form>
