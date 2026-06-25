@@ -16,6 +16,8 @@ export default function AudioPlayer({ audioUrl, title }: AudioPlayerProps) {
   const [volume, setVolume] = useState(1);
   const [isMuted, setIsMuted] = useState(false);
   const [showVolume, setShowVolume] = useState(false);
+  const [isDragging, setIsDragging] = useState(false);
+  const draggingRef = useRef(false);
 
   const formatTime = (seconds: number) => {
     if (!isFinite(seconds) || isNaN(seconds)) return '0:00';
@@ -44,7 +46,7 @@ export default function AudioPlayer({ audioUrl, title }: AudioPlayerProps) {
     const audio = audioRef.current;
     if (!audio) return;
 
-    const onTimeUpdate = () => setCurrentTime(audio.currentTime);
+    const onTimeUpdate = () => { if (!draggingRef.current) setCurrentTime(audio.currentTime); };
     const onDurationChange = () => setDuration(audio.duration);
     const onLoadedMetadata = () => setDuration(audio.duration);
     const onEnded = () => { setIsPlaying(false); setCurrentTime(0); };
@@ -81,14 +83,37 @@ export default function AudioPlayer({ audioUrl, title }: AudioPlayerProps) {
     }
   };
 
-  const seekTo = (e: React.MouseEvent<HTMLDivElement>) => {
+  const computeRatio = (clientX: number, el: HTMLElement) => {
+    const rect = el.getBoundingClientRect();
+    return Math.max(0, Math.min(1, (clientX - rect.left) / rect.width));
+  };
+
+  const seekToRatio = (ratio: number) => {
     const audio = audioRef.current;
-    const bar = progressRef.current;
-    if (!audio || !bar || !duration) return;
-    const rect = bar.getBoundingClientRect();
-    const ratio = Math.max(0, Math.min(1, (e.clientX - rect.left) / rect.width));
-    audio.currentTime = ratio * duration;
-    setCurrentTime(ratio * duration);
+    if (!audio || !duration) return;
+    const t = ratio * duration;
+    audio.currentTime = t;
+    setCurrentTime(t);
+  };
+
+  const handleSeekPointerDown = (e: React.PointerEvent<HTMLDivElement>) => {
+    if (!duration) return;
+    try { e.currentTarget.setPointerCapture(e.pointerId); } catch {}
+    draggingRef.current = true;
+    setIsDragging(true);
+    seekToRatio(computeRatio(e.clientX, e.currentTarget));
+  };
+
+  const handleSeekPointerMove = (e: React.PointerEvent<HTMLDivElement>) => {
+    if (!draggingRef.current) return;
+    seekToRatio(computeRatio(e.clientX, e.currentTarget));
+  };
+
+  const handleSeekPointerUp = (e: React.PointerEvent<HTMLDivElement>) => {
+    if (!draggingRef.current) return;
+    draggingRef.current = false;
+    setIsDragging(false);
+    try { e.currentTarget.releasePointerCapture(e.pointerId); } catch {}
   };
 
   const handleVolumeChange = (e: React.ChangeEvent<HTMLInputElement>) => {
@@ -217,17 +242,21 @@ export default function AudioPlayer({ audioUrl, title }: AudioPlayerProps) {
             </span>
           </div>
 
-          {/* Waveform visualizer com seek por clique */}
+          {/* Waveform visualizer com seek por arraste */}
           <div
             ref={progressRef}
-            onClick={seekTo}
+            onPointerDown={handleSeekPointerDown}
+            onPointerMove={handleSeekPointerMove}
+            onPointerUp={handleSeekPointerUp}
+            onPointerCancel={handleSeekPointerUp}
             style={{
               display: 'flex',
               alignItems: 'center',
               gap: '2px',
               height: '44px',
               cursor: 'pointer',
-              position: 'relative'
+              position: 'relative',
+              touchAction: 'none'
             }}
           >
             {barHeights.map((h, i) => {
@@ -256,39 +285,53 @@ export default function AudioPlayer({ audioUrl, title }: AudioPlayerProps) {
             })}
           </div>
 
-          {/* Linha de progresso fina + volume */}
+          {/* Linha de progresso fina (arrastavel) + volume */}
           <div style={{ display: 'flex', alignItems: 'center', gap: '14px' }}>
             <div
-              onClick={seekTo}
+              onPointerDown={handleSeekPointerDown}
+              onPointerMove={handleSeekPointerMove}
+              onPointerUp={handleSeekPointerUp}
+              onPointerCancel={handleSeekPointerUp}
               style={{
                 flex: 1,
-                height: '4px',
-                borderRadius: '3px',
-                background: 'rgba(255,255,255,0.12)',
+                paddingTop: '9px',
+                paddingBottom: '9px',
                 cursor: 'pointer',
-                position: 'relative'
+                position: 'relative',
+                touchAction: 'none'
               }}
             >
               <div style={{
-                height: '100%',
+                height: isDragging ? '6px' : '4px',
                 borderRadius: '3px',
-                background: 'var(--accent, #4caf50)',
-                width: `${progress}%`,
-                transition: 'width 0.1s linear',
-                position: 'relative'
+                background: 'rgba(255,255,255,0.12)',
+                position: 'relative',
+                transition: 'height 0.12s ease'
               }}>
                 <div style={{
-                  position: 'absolute',
-                  right: '-5px',
-                  top: '50%',
-                  transform: 'translateY(-50%)',
-                  width: '11px',
-                  height: '11px',
-                  borderRadius: '50%',
-                  background: '#fff',
-                  boxShadow: '0 0 5px rgba(76,175,80,0.9)',
-                  opacity: progress > 0 ? 1 : 0
-                }} />
+                  height: '100%',
+                  borderRadius: '3px',
+                  background: 'var(--accent, #4caf50)',
+                  width: `${progress}%`,
+                  transition: isDragging ? 'none' : 'width 0.1s linear',
+                  position: 'relative'
+                }}>
+                  <div style={{
+                    position: 'absolute',
+                    right: isDragging ? '-8px' : '-6px',
+                    top: '50%',
+                    transform: 'translateY(-50%)',
+                    width: isDragging ? '16px' : '12px',
+                    height: isDragging ? '16px' : '12px',
+                    borderRadius: '50%',
+                    background: '#fff',
+                    boxShadow: isDragging
+                      ? '0 0 0 5px rgba(76,175,80,0.25), 0 0 6px rgba(76,175,80,0.9)'
+                      : '0 0 5px rgba(76,175,80,0.9)',
+                    transition: 'width 0.12s ease, height 0.12s ease, box-shadow 0.12s ease',
+                    pointerEvents: 'none'
+                  }} />
+                </div>
               </div>
             </div>
 
