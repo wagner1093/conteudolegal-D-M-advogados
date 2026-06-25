@@ -127,7 +127,7 @@ export default function AudioPlayer({ audioUrl, title }: AudioPlayerProps) {
   };
 
   return (
-    <div style={{
+    <div className="audio-player-card" style={{
       background: 'linear-gradient(135deg, #0b1220 0%, #1a2740 60%, #16243d 100%)',
       borderRadius: '22px',
       padding: '22px 28px',
@@ -135,7 +135,10 @@ export default function AudioPlayer({ audioUrl, title }: AudioPlayerProps) {
       border: '1px solid rgba(255,255,255,0.06)',
       marginBottom: '40px',
       position: 'relative',
-      overflow: 'hidden'
+      overflow: 'hidden',
+      width: '100%',
+      maxWidth: '100%',
+      boxSizing: 'border-box'
     }}>
       {/* Brilho de fundo */}
       <div style={{
@@ -152,11 +155,12 @@ export default function AudioPlayer({ audioUrl, title }: AudioPlayerProps) {
 
       <audio ref={audioRef} src={audioUrl} preload="metadata" />
 
-      <div style={{ display: 'flex', alignItems: 'center', gap: '22px', position: 'relative', zIndex: 1 }}>
+      <div className="audio-player-row" style={{ display: 'flex', alignItems: 'center', gap: '22px', position: 'relative', zIndex: 1, minWidth: 0 }}>
         {/* Play/Pause button */}
         <button
           onClick={togglePlay}
           aria-label={isPlaying ? 'Pausar' : 'Reproduzir'}
+          className="audio-player-playbtn"
           style={{
             width: '58px',
             height: '58px',
@@ -200,11 +204,13 @@ export default function AudioPlayer({ audioUrl, title }: AudioPlayerProps) {
               letterSpacing: '0.2px',
               whiteSpace: 'nowrap',
               overflow: 'hidden',
-              textOverflow: 'ellipsis'
+              textOverflow: 'ellipsis',
+              flex: 1,
+              minWidth: 0
             }}>
               {title || 'Áudio do Artigo'}
             </span>
-            <span style={{ display: 'flex', gap: '5px', color: 'rgba(255,255,255,0.45)', fontSize: '12px', fontFamily: 'monospace', whiteSpace: 'nowrap' }}>
+            <span style={{ display: 'flex', gap: '5px', color: 'rgba(255,255,255,0.45)', fontSize: '12px', fontFamily: 'monospace', whiteSpace: 'nowrap', flexShrink: 0 }}>
               <span style={{ color: 'rgba(255,255,255,0.88)' }}>{formatTime(currentTime)}</span>
               <span>/</span>
               <span>{formatTime(duration)}</span>
@@ -379,6 +385,32 @@ export default function AudioPlayer({ audioUrl, title }: AudioPlayerProps) {
           background: #fff;
           box-shadow: 0 0 4px rgba(0,0,0,0.4);
           cursor: pointer;
+        }
+
+        @media (max-width: 600px) {
+          .audio-player-card {
+            padding: 16px 16px !important;
+            border-radius: 18px !important;
+          }
+          .audio-player-row {
+            gap: 14px !important;
+          }
+          .audio-player-playbtn {
+            width: 48px !important;
+            height: 48px !important;
+          }
+        }
+        @media (max-width: 400px) {
+          .audio-player-card {
+            padding: 14px 12px !important;
+          }
+          .audio-player-row {
+            gap: 10px !important;
+          }
+          .audio-player-playbtn {
+            width: 44px !important;
+            height: 44px !important;
+          }
         }
       `}</style>
     </div>

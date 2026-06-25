@@ -220,22 +220,23 @@ const BlogPostPage = () => {
 
       {/* Featured Image */}
       <section style={{ marginTop: '-80px', padding: '0 24px', position: 'relative', zIndex: 10 }}>
-        <div className="container" style={{ maxWidth: '1000px' }}>
+        <div className="container" style={{ maxWidth: '1000px', width: '100%', boxSizing: 'border-box' }}>
           <motion.div
             initial={{ opacity: 0, scale: 0.95 }}
             animate={{ opacity: 1, scale: 1 }}
             transition={{ duration: 0.6, delay: 0.2 }}
-            style={{ 
-              borderRadius: '24px', 
-              overflow: 'hidden', 
+            style={{
+              borderRadius: '24px',
+              overflow: 'hidden',
               boxShadow: '0 30px 60px rgba(0,0,0,0.15)',
-              height: '500px'
+              width: '100%',
+              aspectRatio: '2 / 1'
             }}
           >
-            <img 
-              src={post.image_url || '/images/blog/health-law.png'} 
-              alt={post.title} 
-              style={{ width: '100%', height: '100%', objectFit: 'cover' }}
+            <img
+              src={post.image_url || '/images/blog/health-law.png'}
+              alt={post.title}
+              style={{ width: '100%', height: '100%', objectFit: 'cover', display: 'block' }}
             />
           </motion.div>
         </div>
@@ -243,16 +244,16 @@ const BlogPostPage = () => {
 
       {/* Content Section */}
       <section style={{ padding: '80px 24px 120px' }}>
-        <div className="container blog-article-grid" style={{ 
-          maxWidth: '1200px', 
-          display: 'grid', 
-          gridTemplateColumns: '1fr 300px', 
+        <div className="container blog-article-grid" style={{
+          maxWidth: '1200px',
+          display: 'grid',
+          gridTemplateColumns: '1fr 300px',
           gap: '80px',
           margin: '0 auto'
         }}>
-          
+
           {/* Main Article */}
-          <article>
+          <article style={{ minWidth: 0 }}>
             {post.audio_url && (
               <AudioPlayer audioUrl={post.audio_url} title={post.title || post.titulo || '\u00c1udio do Artigo'} />
             )}
