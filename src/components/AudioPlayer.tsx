@@ -17,6 +17,7 @@ export default function AudioPlayer({ audioUrl, title }: AudioPlayerProps) {
   const [isMuted, setIsMuted] = useState(false);
   const [showVolume, setShowVolume] = useState(false);
   const [isDragging, setIsDragging] = useState(false);
+  const [isTouch, setIsTouch] = useState(false);
   const draggingRef = useRef(false);
 
   const formatTime = (seconds: number) => {
@@ -70,6 +71,16 @@ export default function AudioPlayer({ audioUrl, title }: AudioPlayerProps) {
     audio.volume = volume;
     audio.muted = isMuted;
   }, [volume, isMuted]);
+
+  // Detecta dispositivos sem hover (toque) para abrir o volume por toque
+  useEffect(() => {
+    if (typeof window === 'undefined' || !window.matchMedia) return;
+    const mq = window.matchMedia('(hover: none), (pointer: coarse)');
+    const update = () => setIsTouch(mq.matches);
+    update();
+    mq.addEventListener?.('change', update);
+    return () => mq.removeEventListener?.('change', update);
+  }, []);
 
   const togglePlay = async () => {
     const audio = audioRef.current;
@@ -337,25 +348,26 @@ export default function AudioPlayer({ audioUrl, title }: AudioPlayerProps) {
 
             {/* Controle de volume */}
             <div
-              onMouseEnter={() => setShowVolume(true)}
-              onMouseLeave={() => setShowVolume(false)}
+              onMouseEnter={() => { if (!isTouch) setShowVolume(true); }}
+              onMouseLeave={() => { if (!isTouch) setShowVolume(false); }}
               style={{ display: 'flex', alignItems: 'center', gap: '8px', flexShrink: 0 }}
             >
               <button
-                onClick={toggleMute}
-                aria-label={isMuted ? 'Ativar som' : 'Silenciar'}
+                onClick={() => { if (isTouch) { setShowVolume((s) => !s); } else { toggleMute(); } }}
+                aria-label={isTouch ? 'Ajustar volume' : (isMuted ? 'Ativar som' : 'Silenciar')}
                 style={{
                   background: 'none',
                   border: 'none',
-                  color: 'rgba(255,255,255,0.7)',
+                  color: showVolume ? '#fff' : 'rgba(255,255,255,0.7)',
                   cursor: 'pointer',
                   display: 'flex',
                   alignItems: 'center',
-                  padding: 0,
+                  padding: '4px',
+                  margin: '-4px',
                   transition: 'color 0.2s ease'
                 }}
                 onMouseEnter={(e) => { e.currentTarget.style.color = '#fff'; }}
-                onMouseLeave={(e) => { e.currentTarget.style.color = 'rgba(255,255,255,0.7)'; }}
+                onMouseLeave={(e) => { if (!showVolume) e.currentTarget.style.color = 'rgba(255,255,255,0.7)'; }}
               >
                 <VolumeIcon />
               </button>
@@ -428,6 +440,20 @@ export default function AudioPlayer({ audioUrl, title }: AudioPlayerProps) {
           background: #fff;
           box-shadow: 0 0 4px rgba(0,0,0,0.4);
           cursor: pointer;
+        }
+
+        @media (pointer: coarse) {
+          .audio-volume-slider {
+            height: 6px;
+          }
+          .audio-volume-slider::-webkit-slider-thumb {
+            width: 18px;
+            height: 18px;
+          }
+          .audio-volume-slider::-moz-range-thumb {
+            width: 18px;
+            height: 18px;
+          }
         }
 
         @media (max-width: 600px) {
